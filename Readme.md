@@ -1,6 +1,5 @@
-All right reserved.
-You cannot use any part of this software unless you get my permission.
 This software isn't finished and hasn't been tested.
+You use it on your own responsibility.  
 
 
 Current Stats
