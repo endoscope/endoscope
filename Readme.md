@@ -23,17 +23,17 @@ Deploy example WAR to Wildfy and open stats UI page:
 Storage directory changes every time to restart application. 
 In example application those values are hardcoded in:
     
-    org.endoscope.CustomPropertyProvider
+    com.github.endoscope.CustomPropertyProvider
 
 Development
 --------------
 You may serve static files from disk insterad from JAR resource by settings following property:
  
-    org.endoscope.dev.res.dir=/path_to_sources/endoscope/cdi-simple-ui/src/main/resources/res
+    endoscope.dev.res.dir=/path_to_sources/endoscope/cdi-simple-ui/src/main/resources/res
     
 Configuration
 -------------
 For complete list of available properties please refer to:
 
-    org.endoscope.properties.Properties
+    com.github.endoscope.properties.Properties
      
