@@ -1,0 +1,13 @@
+{
+  "id" : "a1",
+  "time" : 100,
+  "children" : [ {
+    "id" : "a11",
+    "time" : 10,
+    "children" : [ {
+      "id" : "a111",
+      "time" : 2,
+      "children" : null
+    } ]
+  } ]
+}

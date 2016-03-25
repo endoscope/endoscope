@@ -1,0 +1,41 @@
+{
+  "id" : "a1",
+  "time" : 100,
+  "children" : [ {
+    "id" : "a11",
+    "time" : 10,
+    "children" : [ {
+      "id" : "a111",
+      "time" : 2,
+      "children" : null
+    }, {
+      "id" : "a112",
+      "time" : 3,
+      "children" : null
+    }, {
+      "id" : "a113",
+      "time" : 5,
+      "children" : null
+    } ]
+  }, {
+    "id" : "a11",
+    "time" : 20,
+    "children" : null
+  }, {
+    "id" : "a13",
+    "time" : 20,
+    "children" : null
+  }, {
+    "id" : "a13",
+    "time" : 20,
+    "children" : null
+  }, {
+    "id" : "a13",
+    "time" : 20,
+    "children" : null
+  }, {
+    "id" : "a111",
+    "time" : 4,
+    "children" : null
+  } ]
+}

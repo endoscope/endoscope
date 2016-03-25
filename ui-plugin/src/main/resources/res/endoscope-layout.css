@@ -1,0 +1,85 @@
+/* Override Bootstrap's width - we need all space we can get. */
+@media (min-width: 768px) {
+    .container {
+        width: 100%;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 100%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 100%;
+    }
+}
+
+body {
+    padding-top: 70px;/* navbar doesn't cover content */
+    padding-bottom: 300px; /* bottom details doesn't cover content */
+}
+.es-details {
+    background-color: #222222;
+}
+.es-details .es-title {
+    font-weight: bold;
+    padding: 5px 15px;
+}
+.es-details .es-content {
+    padding: 10px 15px;
+}
+@media (max-width: 1199px) {
+    .es-details {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        margin-bottom: 0;
+        height: 300px;
+    }
+    .es-details .es-title {
+        background-color: #375a7f;
+    }
+    .es-chart {
+        height: 125px;
+    }
+}
+@media (max-width: 768px) {
+    .navbar-header {
+        display: none;
+    }
+    .navbar-form {
+        margin-bottom: 0;
+        margin-top: 0;
+    }
+    .navbar-form .form-group {
+        display: inline-block;
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+}
+@media (min-width: 1200px) {
+    body {
+        padding-bottom: 10px;
+    }
+    .es-placeholder {
+        width: 50%;
+        float: left;
+        padding-right: 7px;
+        border-right: 2px solid #375a7f;
+        min-height: 1000px;
+    }
+    .es-details {
+        padding-left: 7px;
+        width: 50%;
+        position: fixed;
+        top: 60px;
+        right: 0;
+    }
+    .es-chart {
+        height: 200px;
+    }
+}
