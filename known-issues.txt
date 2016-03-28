@@ -1,0 +1,14 @@
+- reset details after changing period
+- reset details after text search
+- scroll to top after refresh/search/period change
+- allow to click top level elements without children
+- remove verbose logs for gzip storage
+- add loading image for all operations (with min show time 2s)
+- time on charts is in GMT time not in local time
+- histogram points should be in the middle of the range
+- threshold line on chart shouldn't affect scale of chart
+- set threshold to 1000ms and 3000ms
+- add auto refresh of top level & detail stats
+- add time range selection (also using chart)
+- add reset or short time range in order to allow current stats monitoring
+- cover more code with tests

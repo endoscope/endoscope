@@ -99,8 +99,8 @@ public class GzipFileStorage extends StatsStorage {
     public Stats load(String name) {
         try {
             return readFromGzipFile(name);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read: " + name, e);
         }
     }
 

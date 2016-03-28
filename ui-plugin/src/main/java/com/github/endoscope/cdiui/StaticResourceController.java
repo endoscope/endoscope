@@ -21,11 +21,12 @@ public abstract class StaticResourceController {
     private static final String DEV_DIR;
 
     static {
-        DEV_DIR = System.getProperty(Properties.getDevResourcesDir());
+        DEV_DIR = Properties.getDevResourcesDir();
+        log.info("Using DEV resources dir: {}", DEV_DIR);
     }
 
     @GET
-    @Path("/ui")// this path is related in PopulateUiDataFilter
+    @Path("/ui")// this path is referenced in PopulateUiDataFilter
     public Response ui() throws FileNotFoundException {
         return uiResource("index.html");
     }

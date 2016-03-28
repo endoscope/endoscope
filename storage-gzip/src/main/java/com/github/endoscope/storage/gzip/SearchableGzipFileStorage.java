@@ -38,8 +38,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
     @Override
     public StatDetails stat(String id, Date from, Date to) {
         log.info("Searching for stat {} from {} to {}", id, getDateFormat().format(from), getDateFormat().format(to));
-        StatDetails result = new StatDetails(null);
-        result.setId(id);
+        StatDetails result = new StatDetails(id, null);
 
         listParts().stream()
                 .peek( fileInfo -> log.info("Checking {}", fileInfo.getName()))

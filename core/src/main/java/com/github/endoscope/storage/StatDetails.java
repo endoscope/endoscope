@@ -14,7 +14,8 @@ public class StatDetails {
         merged = new Stat();
     }
 
-    public StatDetails(Stat merged) {
+    public StatDetails(String id, Stat merged) {
+        this.id = id;
         this.merged = merged;
     }
 

@@ -95,8 +95,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     @Override
     public StatDetails stat(String id, Date from, Date to) {
-        StatDetails result = new StatDetails(null);
-        result.setId(id);
+        StatDetails result = new StatDetails(id, null);
 
         List<Group> groups = findByDates(from, to);
         groups.forEach(g -> {

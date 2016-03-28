@@ -1,24 +1,16 @@
 This software isn't finished and hasn't been tested.
 You use it on your own responsibility.  
 
-
-Current Stats
--------------
-Deploy WAR to Wildfy and open UI page:
-
-	http://localhost:8080/example-war/rest/endoscope/current/ui
-
-You may run some additional processing in order to change statistics by entering:
-     
-    http://localhost:8080/example-war/rest/controller/process
-
-
-Stored Stats
-------------
+Stats UI
+--------
 Deploy example WAR to Wildfy and open stats UI page:
 
     http://localhost:8080/example-war/rest/endoscope/storage/ui
-        
+
+You may run some additional processing in order to change statistics by entering:
+             
+            http://localhost:8080/example-war/rest/controller/process
+
 Storage directory changes every time to restart application. 
 In example application those values are hardcoded in:
     

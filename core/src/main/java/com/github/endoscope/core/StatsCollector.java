@@ -1,12 +1,15 @@
 package com.github.endoscope.core;
 
+import org.slf4j.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
-import org.slf4j.Logger;
-
 import static org.slf4j.LoggerFactory.getLogger;
 
+/**
+ * Thread which updates stats with data from queue.
+ */
 public class StatsCollector implements Runnable {
     private static final Logger log = getLogger(StatsCollector.class);
 

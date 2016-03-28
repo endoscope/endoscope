@@ -21,7 +21,7 @@ public class PopulateUiDataFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String url = ((HttpServletRequest)servletRequest).getRequestURL().toString();
         if( url.endsWith("/ui") ){//main page only
-            controller.process();
+            controller.process(null);
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }
