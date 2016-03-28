@@ -33,7 +33,7 @@ span.es-btn {
     background-repeat: no-repeat;
     background-position: center;
 }
-tr.es-parent.es-has-children {
+tr.es-parent {
     cursor: pointer;
 }
 tr.es-parent.es-has-children span.es-btn {

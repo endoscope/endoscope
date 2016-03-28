@@ -12,3 +12,6 @@
 - add time range selection (also using chart)
 - add reset or short time range in order to allow current stats monitoring
 - cover more code with tests
+- it may be hard to distinguish children from top level row
+- persist most recent page settings
+- verify how UI behaves for long identifiers multiple levels of sub-calls

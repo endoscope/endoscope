@@ -89,9 +89,7 @@
         orderedStats.forEach(function(stat){
             var row = buildRow(stat.id, stat, 0);
             table.append(row);
-            if( stat.children ){
-                row.click(onRowClick);
-            }
+            row.click(onRowClick);
         });
 
         var headers = esTable.find("thead th");
@@ -139,12 +137,9 @@
 
     var onRowClick = function() {
         var row = $(this);
-        if( row.hasClass('es-expanded') ){
-            removeChildStats(row);
-        } else {
-            if( !row.hasClass('es-loading') ){
-                loadChildStats(row);
-            }
+        closeAllRows();
+        if( !row.hasClass('es-loading') ){
+            loadChildStats(row);
         }
     };
 
