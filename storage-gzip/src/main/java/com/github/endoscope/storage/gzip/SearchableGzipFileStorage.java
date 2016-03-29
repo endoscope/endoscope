@@ -24,12 +24,12 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
 
     @Override
     public Stats topLevel(Date from, Date to) {
-        log.info("Searching for top level stats from {} to {}", getDateFormat().format(from), getDateFormat().format(to));
+        log.debug("Searching for top level stats from {} to {}", getDateFormat().format(from), getDateFormat().format(to));
         Stats merged = new Stats();
         listParts().stream()
-                .peek( statsInfo -> log.info("Checking {}", statsInfo.getName()))
+                .peek( statsInfo -> log.debug("Checking {}", statsInfo.getName()))
                 .filter(statsInfo -> statsInfo.inRange(from, to))
-                .peek( statsInfo -> log.info("Matches: {}", statsInfo.getName()))
+                .peek( statsInfo -> log.debug("Matches: {}", statsInfo.getName()))
                 .map( statsInfo -> load(statsInfo.getName()))
                 .forEach(stats -> merged.merge(stats, false));
         return merged;
@@ -37,13 +37,13 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
 
     @Override
     public StatDetails stat(String id, Date from, Date to) {
-        log.info("Searching for stat {} from {} to {}", id, getDateFormat().format(from), getDateFormat().format(to));
+        log.debug("Searching for stat {} from {} to {}", id, getDateFormat().format(from), getDateFormat().format(to));
         StatDetails result = new StatDetails(id, null);
 
         listParts().stream()
-                .peek( fileInfo -> log.info("Checking {}", fileInfo.getName()))
+                .peek( fileInfo -> log.debug("Checking {}", fileInfo.getName()))
                 .filter(fileInfo -> fileInfo.inRange(from, to))
-                .peek( fileInfo -> log.info("Matches: {}", fileInfo.getName()))
+                .peek( fileInfo -> log.debug("Matches: {}", fileInfo.getName()))
                 .forEach( fileInfo -> {
                     Stats stats = load(fileInfo.getName());
                     Stat details = stats.getMap().get(id);

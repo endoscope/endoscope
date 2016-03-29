@@ -23,7 +23,7 @@ public class TypeChecker {
         classes.add(ApplicationScoped.class);
         classes.add(Path.class);
         try{
-            log.info("Loading EJB classes - if present");
+            log.debug("Loading EJB classes - if present");
             Class classSingleton = Class.forName("javax.ejb.Singleton");
             Class classStatefull = Class.forName("javax.ejb.Stateful");
             Class classStateless = Class.forName("javax.ejb.Stateless");
@@ -108,7 +108,7 @@ public class TypeChecker {
 
         for( String pkg : excludedPackages){
             if( canonicalName.startsWith(pkg) ){
-                log.info("isInExcludedPackage: {}", canonicalName);
+                log.debug("isInExcludedPackage: {}", canonicalName);
                 return true;
             }
         }
@@ -122,22 +122,22 @@ public class TypeChecker {
         }
 
         if( !isValidType(annotatedType) ){
-            log.info("class is invalid: {}", annotatedType.getJavaClass());
+            log.debug("class is invalid: {}", annotatedType.getJavaClass());
             return true;
         }
 
         String canonicalName = annotatedType.getJavaClass().getCanonicalName();
         if( !isInScannedPackage(canonicalName) ){
-            log.info("not in scanned package: {}", annotatedType.getJavaClass());
+            log.debug("not in scanned package: {}", annotatedType.getJavaClass());
             return true;
         }
         if( isInExcludedPackage(canonicalName) ){
-            log.info("is in excluded package: {}", annotatedType.getJavaClass());
+            log.debug("is in excluded package: {}", annotatedType.getJavaClass());
             return true;
         }
 
         if( !isSupportedType(annotatedType) && !isSupportedName(annotatedType)){
-            log.info("doesn't have supported annotation nor matching class name: {}", annotatedType.getJavaClass());
+            log.debug("doesn't have supported annotation nor matching class name: {}", annotatedType.getJavaClass());
             return true;
         }
 
