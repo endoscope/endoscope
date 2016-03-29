@@ -1,14 +1,11 @@
 package com.github.endoscope.storage.jdbc;
 
-import org.apache.commons.dbutils.QueryRunner;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.StatsStorage;
+import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,20 +23,8 @@ public class JdbcStorage extends StatsStorage {
         super(initParam);
 
         //initParam = "java:jboss/datasources/ExampleDS"
-        DataSource ds = findDatasource(initParam);
+        DataSource ds = DataSourceHelper.findDatasource(initParam);
         run = new QueryRunner(ds);
-
-        ensureTableExists();
-    }
-
-    private DataSource findDatasource(String dsJndiPath) {
-        try{
-            Context initContext = new InitialContext();
-            DataSource ds = (DataSource)initContext.lookup(dsJndiPath);
-            return ds;
-        }catch(NamingException e){
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -95,37 +80,5 @@ public class JdbcStorage extends StatsStorage {
                 process(groupId, statId, currentRoot, stat.getChildren(), list);
             }
         });
-    }
-
-    private void ensureTableExists() {
-        //this is DB specific - so far just for H2
-        try {
-            run.update(
-                    "CREATE TABLE IF NOT EXISTS endoscopeGroup(" +
-                    "  id VARCHAR(36) PRIMARY KEY, " +
-                    "  startDate TIMESTAMP, " +
-                    "  endDate TIMESTAMP, " +
-                    "  statsLeft INT, " +
-                    "  lost INT, " +
-                    "  fatalError VARCHAR(255)" +
-                    ")");
-
-            run.update(
-                    "CREATE TABLE IF NOT EXISTS endoscopeStat(" +
-                    "  id VARCHAR(36) PRIMARY KEY, " +
-                    "  groupId VARCHAR(36), " +
-                    "  parentId VARCHAR(36), " +
-                    "  rootId VARCHAR(36), " +
-                    "  name VARCHAR(255), " +
-                    "  hits INT, " +
-                    "  max INT, " +
-                    "  min INT, " +
-                    "  avg INT, " +
-                    "  ah10 INT, " +
-                    "  hasChildren BOOLEAN " +
-                    ")");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

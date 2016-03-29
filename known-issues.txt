@@ -14,4 +14,8 @@
 - cover more code with tests
 - it may be hard to distinguish children from top level row
 - persist most recent page settings
-- verify how UI behaves for long identifiers multiple levels of sub-calls
+# verify how UI behaves for long identifiers multiple levels of sub-calls
+- highlight selected row
+- allow to un-select row
+- add tooltip for long and/or nested identifiers that are partially hidden
+- check TODO notes

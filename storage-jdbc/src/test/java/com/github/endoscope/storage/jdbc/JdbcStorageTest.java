@@ -47,6 +47,8 @@ public class JdbcStorageTest {
         ds = new JdbcDataSource();
         ds.setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false;");
 
+        Schema.createH2Tables(ds);
+
         Mockito.when(contextMock.lookup("jdbc/dsName")).thenReturn(ds);
     }
 
