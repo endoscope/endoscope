@@ -2,7 +2,7 @@
     var options = {
         valueBadLevel:  300, //3000
         valueWarnLevel: 100, //1000
-        statUrl: "ui/data/details/{id}",
+        statUrl: "ui/data/details",
         topUrl: "ui/data/top",
         from: null,
         to: null,
@@ -151,9 +151,10 @@
     var loadChildStats = function(row) {
         row.addClass('es-loading');
         var statId = row.data('id');
-        $.ajax(options.statUrl.replace("{id}", statId), {
+        $.ajax(options.statUrl, {
             dataType: "json",
             data: {
+                id: statId,
                 from: options.from,
                 to: options.to,
                 past: options.past

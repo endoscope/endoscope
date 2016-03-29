@@ -29,10 +29,10 @@ public class StorageStatsUiController extends StaticResourceController{
     }
 
     @GET
-    @Path("ui/data/details/{id}")
+    @Path("ui/data/details")
     @Produces("application/json")
-    public String details(@PathParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
-                      @QueryParam("past") String past){
+    public String details(@QueryParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
+                           @QueryParam("past") String past){
         StatDetails child = stat(id, toLong(from), toLong(to), toLong(past));
         return jsonUtil.toJson(child);
     }
@@ -80,9 +80,6 @@ public class StorageStatsUiController extends StaticResourceController{
         if( includeCurrent ){
             Stats current = topLevelInMemory();
             result.merge(current, false);
-
-            log.info("current start time: {}", current.getStartDate());
-            log.info("current end time: {}", current.getEndDate());
         }
         return result;
     }

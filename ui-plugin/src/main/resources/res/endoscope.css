@@ -21,6 +21,8 @@
 }
 .es-table td.es-id {
     text-align: left;
+    max-width: 300px;
+    overflow: hidden;
 }
 tr.es-child {
     /*background-color: #444444;*/
