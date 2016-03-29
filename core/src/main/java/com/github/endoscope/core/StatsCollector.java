@@ -36,7 +36,7 @@ public class StatsCollector implements Runnable {
 
     private void safeSleep() {
         try {
-            Thread.sleep(10);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
         }
     }

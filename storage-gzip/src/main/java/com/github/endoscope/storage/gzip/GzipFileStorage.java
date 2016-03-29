@@ -70,6 +70,9 @@ public class GzipFileStorage extends StatsStorage {
 
     public List<GzipFileInfo> listParts(){
         String[] arr = dir.list((dir, name) -> NAME_PATTERN.matcher(name).matches());
+        if( arr == null ){
+            return new ArrayList<>();
+        }
         return toStatsInfo(arr);
     }
 

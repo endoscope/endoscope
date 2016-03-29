@@ -17,6 +17,7 @@ public class StatsCyclicWriter {
     private StatsStorage statsStorage = null;
     private DateUtil dateUtil;
     private Date lastSave;
+    private Date lastError;
 
     /**
      *
@@ -40,6 +41,15 @@ public class StatsCyclicWriter {
     public boolean shouldSave(){
         if( statsStorage != null && saveFreqMinutes > 0 ){
             Date now = dateUtil.now();
+
+            //do not try to save for some time if error occured
+            if( lastError != null ){
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - lastError.getTime());
+                if( minutes < 5 ){
+                    return false;
+                }
+            }
+
             long offset = now.getTime() - lastSave.getTime();
             long minutes = TimeUnit.MILLISECONDS.toMinutes(offset);
             return minutes >= saveFreqMinutes;
@@ -53,9 +63,11 @@ public class StatsCyclicWriter {
                 ensureDatesAreSet(stats);
                 statsStorage.save(stats);
                 lastSave = dateUtil.now();
+                lastError = null;
             }
         }catch(Exception e){
-            log.error("failed to save stats", e);
+            log.error("failed to save stats - next attempt in 5 minutes", e);
+            lastError = new Date();
         }
     }
 
