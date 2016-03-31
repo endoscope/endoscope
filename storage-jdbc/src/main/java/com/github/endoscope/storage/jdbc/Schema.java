@@ -33,7 +33,7 @@ public class Schema {
                             "  min INT, " +
                             "  avg INT, " +
                             "  ah10 INT, " +
-                            "  hasChildren BOOLEAN " +
+                            "  hasChildren INT " +
                             ")");
         } catch (SQLException e) {
             throw new RuntimeException(e);

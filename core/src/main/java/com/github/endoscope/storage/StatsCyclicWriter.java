@@ -64,19 +64,20 @@ public class StatsCyclicWriter {
                 statsStorage.save(stats);
                 lastSave = dateUtil.now();
                 lastError = null;
+                log.info("successfully saved stats");
             }
         }catch(Exception e){
             log.error("failed to save stats - next attempt in 5 minutes", e);
-            lastError = new Date();
+            lastError = dateUtil.now();
         }
     }
 
     private void ensureDatesAreSet(Stats stats) {
         if( stats.getStartDate() == null ){
-            stats.setStartDate(new Date());
+            stats.setStartDate(dateUtil.now());
         }
         if( stats.getEndDate() == null ){
-            stats.setEndDate(new Date());
+            stats.setEndDate(dateUtil.now());
         }
     }
 

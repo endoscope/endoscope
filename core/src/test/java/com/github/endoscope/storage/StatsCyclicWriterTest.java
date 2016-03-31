@@ -66,8 +66,37 @@ public class StatsCyclicWriterTest {
 
         verify(statsStorage).save(same(stats));
         verifyNoMoreInteractions(statsStorage);
-        verify(dateUtil, times(2)).now();
+        verify(dateUtil, times(3)).now();
         verifyNoMoreInteractions(dateUtil);
         assertEquals(saveTime, statsCyclicWriter.getLastSaveTime());
+    }
+
+    @Test
+    public void should_not_save_for_5_minutes_since_error() throws Exception {
+        withProperty(SAVE_FREQ_MINUTES, "1", () -> {
+            long ONE_MINUTE = 60*1000;
+            given(dateUtil.now()).willReturn(new Date(0));
+
+            StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(statsStorage, dateUtil);
+            assertFalse(statsCyclicWriter.shouldSave());
+
+            //it's time for first save
+            given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE + 500));
+            assertTrue(statsCyclicWriter.shouldSave());
+
+            //this will fail and set last error date
+            given(dateUtil.now()).willReturn(new Date(0));
+            statsCyclicWriter.safeSave(null);
+
+            //let's go back to the moment where we should save
+            given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE + 500));
+            assertFalse(statsCyclicWriter.shouldSave());
+
+            given(dateUtil.now()).willReturn(new Date( 3 * ONE_MINUTE + 500));
+            assertFalse(statsCyclicWriter.shouldSave());
+
+            given(dateUtil.now()).willReturn(new Date( 5 * ONE_MINUTE + 500)); //5,5minutes
+            assertTrue(statsCyclicWriter.shouldSave());
+        });
     }
 }

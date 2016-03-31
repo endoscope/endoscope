@@ -8,6 +8,7 @@ import com.github.endoscope.storage.StatHistory;
 import org.slf4j.Logger;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,12 +34,13 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     private List<Group> findByDates(Date from, Date to) {
         try {
-            //TODO switch to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
+            Timestamp fromTs = new Timestamp(from.getTime());
+            Timestamp toTs = new Timestamp(to.getTime());
             List<Map<String, Object>> list = run.query(
                     " select " +
                     "   id, startDate, endDate, statsLeft, lost, fatalError " +
                     " from endoscopeGroup " +
-                    " where startDate >= ? and endDate <= ? order by startDate", handler, from, to);
+                    " where startDate >= ? and endDate <= ? order by startDate", handler, fromTs, toTs);
             return list.stream()
                     .map( data -> toGroup(data))
                     .collect(Collectors.toList());
@@ -49,7 +51,8 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     private void loadTopLevel(Group group) {
         try {
-            //TODO switch to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
+            //TODO consider switching to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
+            //TODO: warning: column identifiers are case sensitive right now
             List<Map<String, Object>> stats = run.query(
                     " select " +
                     "  name, hits, max, min, avg, ah10, hasChildren " +
@@ -58,7 +61,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
             stats.forEach( data -> {
                 String statName = data.get("name").toString();
-                boolean hasChildren = (Boolean)data.get("hasChildren");
+                boolean hasChildren = ((Number)data.get("haschildren")).intValue() == 1;
                 Stat stat = toStat(data);
                 if( hasChildren ){
                     stat.ensureChildrenMap();
@@ -84,11 +87,11 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         Group group = new Group();
 
         group.setId(data.get("id").toString());
-        group.setStartDate((Date)data.get("startDate"));
-        group.setEndDate((Date)data.get("endDate"));
-        group.setStatsLeft(((Number)data.get("statsLeft")).longValue());
+        group.setStartDate((Date)data.get("startdate"));
+        group.setEndDate((Date)data.get("enddate"));
+        group.setStatsLeft(((Number)data.get("statsleft")).longValue());
         group.setLost(((Number)data.get("lost")).longValue());
-        group.setFatalError(data.get("fatalError").toString());
+        group.setFatalError((String)data.get("fatalerror"));
 
         return group;
     }
@@ -132,11 +135,11 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     " from endoscopeStat " +
                     " where parentId is null and groupId = ? and name = ?", handler, groupId, rootName);
 
-            Map<String, Object> rootData = rootDataList.get(0);
-            if( rootDataList.size() != 1 || rootData.get("id") == null ){
-                log.warn("Unable to load root stat for group: {} and name: {}", groupId, rootName);
+            if( rootDataList.size() != 1 ){
                 return null;
             }
+
+            Map<String, Object> rootData = rootDataList.get(0);
             String rootId = rootData.get("id").toString();
             Stat root = toStat(rootData);
 
@@ -158,7 +161,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
         Map<String, List<StatInfo>> statsByParentId = new HashMap<>();
         stats.forEach( data -> {
-            String statParentId = data.get("parentId").toString();
+            String statParentId = data.get("parentid").toString();
             StatInfo statInfo = new StatInfo();
             statInfo.setName(data.get("name").toString());
             statInfo.setStat(toStat(data));

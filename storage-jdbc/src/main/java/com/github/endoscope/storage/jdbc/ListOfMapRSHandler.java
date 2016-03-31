@@ -13,7 +13,7 @@ public class ListOfMapRSHandler implements ResultSetHandler<List<Map<String, Obj
         while (rs.next()) {
             Map<String, Object> record = new HashMap<>();
             for(int c=1; c<=columns; c++){
-                record.put(rs.getMetaData().getColumnName(c),rs.getObject(c));
+                record.put(rs.getMetaData().getColumnName(c).toLowerCase(),rs.getObject(c));
             }
             result.add(record);
         }

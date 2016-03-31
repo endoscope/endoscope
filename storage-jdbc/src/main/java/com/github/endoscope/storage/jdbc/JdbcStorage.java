@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -35,8 +37,12 @@ public class JdbcStorage extends StatsStorage {
                 try{
                     String groupId = UUID.randomUUID().toString();
                     int u = run.update(conn, "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError) values(?,?,?,?,?,?)",
-                            groupId, stats.getStartDate(), stats.getEndDate(),
-                            stats.getStatsLeft(), stats.getLost(), stats.getFatalError()
+                            groupId,
+                            new Timestamp(stats.getStartDate().getTime()),
+                            new Timestamp(stats.getEndDate().getTime()),
+                            stats.getStatsLeft(),
+                            stats.getLost(),
+                            stats.getFatalError()
                     );
                     if( u != 1 ){
                         throw new RuntimeException("Failed to insert stats group. Expected 1 result but got: " + u);
@@ -44,9 +50,11 @@ public class JdbcStorage extends StatsStorage {
 
                     Object[][] data = prepareStatsData(groupId, stats);
                     int[] result = run.batch(conn, "INSERT INTO endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) values(?,?,?,?,?,?,?,?,?,?,?)", data);
-                    int inserts = Arrays.stream(result).sum();
-                    if( inserts != data.length ){
-                        throw new RuntimeException("Failed to insert stats. Expected " + data.length + " but got: " + inserts);
+                    long errors = Arrays.stream(result)
+                            .filter( i -> i < 0 && i != Statement.SUCCESS_NO_INFO )
+                            .count();
+                    if( errors > 0 ){
+                        throw new RuntimeException("Failed to insert stats. Got " + errors + " errors");
                     }
 
                     conn.commit();
@@ -73,7 +81,7 @@ public class JdbcStorage extends StatsStorage {
             list.add(new Object[]{
                     statId, groupId, parentId, rootId, statName,
                     stat.getHits(), stat.getMax(), stat.getMin(), stat.getAvg(), stat.getAh10(),
-                    stat.getChildren() != null
+                    stat.getChildren() != null ? 1 : 0
             });
             if( stat.getChildren() != null ){
                 String currentRoot = rootId == null ? statId : rootId;

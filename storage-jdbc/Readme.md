@@ -21,7 +21,7 @@ H2 schema
         min INT, 
         avg INT, 
         ah10 INT, 
-        hasChildren BOOLEAN 
+        hasChildren INT 
     );
     
 Oracle schema
@@ -35,6 +35,8 @@ Oracle schema
          lost NUMBER, 
          fatalError VARCHAR(255)
      );
+     CREATE INDEX test_endo_startDate ON SMARTRDS.endoscopeGroup(startDate);
+     CREATE INDEX test_endo_endDate ON SMARTRDS.endoscopeGroup(endDate);     
                      
      CREATE TABLE endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -49,3 +51,7 @@ Oracle schema
          ah10 NUMBER, 
          hasChildren NUMBER 
      );
+     CREATE INDEX test_endo_parentId ON SMARTRDS.endoscopeStat(parentId);
+     CREATE INDEX test_endo_groupId ON SMARTRDS.endoscopeStat(groupId);
+     CREATE INDEX test_endo_name ON SMARTRDS.endoscopeStat(name);
+     CREATE INDEX test_endo_rootId ON SMARTRDS.endoscopeStat(rootId);
