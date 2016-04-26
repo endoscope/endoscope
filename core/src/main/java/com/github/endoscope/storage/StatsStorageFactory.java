@@ -25,6 +25,8 @@ public class StatsStorageFactory {
             } catch (Exception e) {
                 log.warn("Failed to create new StatsStorage: {}, with params: {}.", className, classInitParam, e);
             }
+        } else {
+            log.warn("Storage class not specified");
         }
         return null;
     }

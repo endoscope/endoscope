@@ -63,7 +63,7 @@ public class Endoscope {
 
     /**
      * Access to stored stats.
-     * @return
+     * @return null if not supported
      */
     public static StatsStorage getStatsStorage(){ return ENGINE.getStatsStorage(); }
 

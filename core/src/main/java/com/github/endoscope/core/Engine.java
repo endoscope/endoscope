@@ -16,9 +16,11 @@ public class Engine {
     private int maxIdLength = Properties.getMaxIdLength();
 
     public Engine(){
-        statsStorage = new StatsStorageFactory().safeCreate();//may return null
-        statsCyclicWriter = new StatsCyclicWriter(statsStorage);
-        statsProcessor = new StatsProcessor(statsCyclicWriter);
+        if( isEnabled()) {
+            statsStorage = new StatsStorageFactory().safeCreate();//may return null
+            statsCyclicWriter = new StatsCyclicWriter(statsStorage);
+            statsProcessor = new StatsProcessor(statsCyclicWriter);
+        }
     }
 
     public boolean isEnabled(){
@@ -32,12 +34,19 @@ public class Engine {
         this.enabled = enabled;
     }
 
+    private void checkEnabled(){
+        if( !isEnabled() ){
+            throw new IllegalStateException("feature not enabled");
+        }
+    }
     /**
      *
      * @param id required, might get cut if too long
      * @return true if it was first element pushed to call stack
      */
     public boolean push(String id){
+        checkEnabled();
+
         id = prepareId(id);
         Context context = new Context(id, System.currentTimeMillis());
 
@@ -70,6 +79,8 @@ public class Engine {
     }
 
     public void pop(){
+        checkEnabled();
+
         LinkedList<Context> stack = contextStack.get();
         if( stack.isEmpty() ){
             return;
@@ -83,6 +94,8 @@ public class Engine {
     }
 
     public void popAll(){
+        checkEnabled();
+
         LinkedList<Context> stack = contextStack.get();
         Context context = null;
         while(!stack.isEmpty()){
@@ -95,8 +108,12 @@ public class Engine {
     }
 
     public StatsProcessor getStatsProcessor() {
+        checkEnabled();
         return statsProcessor;
     }
 
-    public StatsStorage getStatsStorage(){ return statsStorage; }
+    public StatsStorage getStatsStorage(){
+        checkEnabled();
+        return statsStorage;
+    }
 }

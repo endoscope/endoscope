@@ -30,7 +30,9 @@ public class AppLifecycleManager {
     @PreDestroy
     public void preDestroy(){
         log.debug("Detected Endoscope CDI app shutdown");
-        Endoscope.stopStatsProcessorThread();
+        if (Endoscope.isEnabled()) {
+            Endoscope.stopStatsProcessorThread();
+        }
     }
 
     /*

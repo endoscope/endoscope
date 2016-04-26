@@ -19,10 +19,13 @@ public abstract class StaticResourceController {
     private static final Logger log = getLogger(StaticResourceController.class);
 
     private static final String DEV_DIR;
+    private static final boolean ENABLED;
 
     static {
         DEV_DIR = Properties.getDevResourcesDir();
         log.info("Using DEV resources dir: {}", DEV_DIR);
+        ENABLED = Properties.isEnabled();
+        log.info("Using ENABLED: {}", ENABLED);
     }
 
     @GET
@@ -34,6 +37,9 @@ public abstract class StaticResourceController {
     @GET
     @Path("/ui/res/{path:.*}")
     public Response uiResource(@PathParam("path") String path) throws FileNotFoundException {
+        if( !ENABLED ){
+            return Response.status(401).build();
+        }
         InputStream resourceAsStream = null;
         if( DEV_DIR != null ){
             resourceAsStream = new FileInputStream(new File(DEV_DIR + "/" + path));

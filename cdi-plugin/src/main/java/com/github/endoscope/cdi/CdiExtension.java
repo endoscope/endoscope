@@ -42,12 +42,18 @@ public class CdiExtension implements Extension {
     }
 
     <X> void processBean(@Observes ProcessBean<X> event) {
+        if (!Endoscope.isEnabled()) {
+            return;
+        }
         if( event.getAnnotated().isAnnotationPresent(EndoscopeStartup.class) ){
             startupBeans.add(event.getBean());
         }
     }
 
     void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+        if (!Endoscope.isEnabled()) {
+            return;
+        }
         for( Bean bean : startupBeans) {
             manager.getReference(bean, bean.getBeanClass(), manager.createCreationalContext(bean)).toString();
         }

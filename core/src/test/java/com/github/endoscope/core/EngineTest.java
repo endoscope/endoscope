@@ -9,24 +9,25 @@ import java.util.Map;
 public class EngineTest {
     @Test
     public void test_flow(){
-        Engine ci = new Engine();
-        ci.setEnabled(true);
+        PropertyTestUtil.withProperty(Properties.ENABLED, "true", ()->{
+            Engine ci = new Engine();
 
-        ci.push("a1");
-        ci.push("a11");
-        ci.pop();
-        ci.pop();
+            ci.push("a1");
+            ci.push("a11");
+            ci.pop();
+            ci.pop();
 
-        waitUtilStatsGetCollected(ci);
+            waitUtilStatsGetCollected(ci);
 
-        ci.getStatsProcessor().process(stats -> {
-            Map<String, Stat> map = stats.getMap();
-            Assert.assertEquals(2, map.size());
-            Assert.assertTrue(map.containsKey("a1"));
-            Assert.assertTrue(map.containsKey("a11"));
-            Assert.assertEquals(1, map.get("a1").getChildren().size());
-            Assert.assertNotNull(map.get("a1").getChildren().get("a11"));
-            return null;
+            ci.getStatsProcessor().process(stats -> {
+                Map<String, Stat> map = stats.getMap();
+                Assert.assertEquals(2, map.size());
+                Assert.assertTrue(map.containsKey("a1"));
+                Assert.assertTrue(map.containsKey("a11"));
+                Assert.assertEquals(1, map.get("a1").getChildren().size());
+                Assert.assertNotNull(map.get("a1").getChildren().get("a11"));
+                return null;
+            });
         });
     }
 

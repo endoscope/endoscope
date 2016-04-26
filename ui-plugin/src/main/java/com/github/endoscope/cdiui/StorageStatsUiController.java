@@ -121,6 +121,9 @@ public class StorageStatsUiController extends StaticResourceController{
         SearchableStatsStorage storage;
         try{
             storage = (SearchableStatsStorage) Endoscope.getStatsStorage();
+            if( storage == null ){
+                throw new RuntimeException("Storage not supported");
+            }
         }catch(ClassCastException e){
             throw new RuntimeException("Range search is not supported");
         }
