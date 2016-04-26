@@ -25,9 +25,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StatsProcessor {
     private static final Logger log = getLogger(StatsProcessor.class);
 
+    private static int debug_stuff_thread_counter = 0;
+
     private Stats stats;//will get reset after each save
     private LinkedBlockingDeque<Context> queue;
     private StatsCyclicWriter statsCyclicWriter;
+    private ExecutorService collector;
 
     public StatsProcessor(StatsCyclicWriter statsCyclicWriter) {
         if( statsCyclicWriter == null ){
@@ -42,13 +45,32 @@ public class StatsProcessor {
         queue = new LinkedBlockingDeque<>(Properties.getMaxQueueSize());
         this.statsCyclicWriter = statsCyclicWriter;
 
-        ExecutorService collector = Executors.newSingleThreadExecutor(runnable -> {
+
+        collector = Executors.newSingleThreadExecutor(runnable -> {
             Thread t = Executors.defaultThreadFactory().newThread(runnable);
             t.setDaemon(true);//we don't want to block JVM shutdown
             t.setName("endoscope-stats-collector");
             return t;
         });
         collector.submit(new StatsCollector(this));
+
+        String prop = System.getProperty("endoscope-stats-collector");
+        if( prop == null ){
+            prop = "1";
+        } else {
+            long p =Long.valueOf(prop);
+            p++;
+            prop = ""+p;
+        }
+        System.setProperty("endoscope-stats-collector", prop);
+        debug_stuff_thread_counter++;
+        log.info("starting new endoscope-stats-collector thread. Current counter: {}, prop: {}", debug_stuff_thread_counter, prop);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        System.out.println("stoping new endoscope-stats-collector thread. Current counter: " + debug_stuff_thread_counter);
+        super.finalize();
     }
 
     public void store(Context context){
@@ -95,5 +117,10 @@ public class StatsProcessor {
     //internal use - accessed from processing thread
     void setFatalError(String message){
         stats.setFatalError(message);//assignment is thread safe
+    }
+
+    public void stopStatsProcessorThread(){
+        log.info("Requested endoscope-stats-collector shutdown");
+        collector.shutdownNow();
     }
 }

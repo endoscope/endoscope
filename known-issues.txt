@@ -1,3 +1,8 @@
+BUGS:
+- endoscope-stats-collector doesn't stop on undeployment/redeployment, what is more multiple threads are started!
+- check what slows down queries (too much data?, missing indexes?): set this before fetching data!!! stmt.fetchSize = 1000
+
+IMPROVEMENTS:
 - reset details after changing period
 - reset details after text search
 - scroll to top after refresh/search/period change
@@ -10,14 +15,11 @@
 - set threshold to 1000ms and 3000ms
 - add auto refresh of top level & detail stats
 - add time range selection (also using chart)
-- add reset or short time range in order to allow current stats monitoring
+- add reset or short time range in order to allow current stats monitoring (partialy done)
 - cover more code with tests
 - it may be hard to distinguish children from top level row
 - persist most recent page settings
-# verify how UI behaves for long identifiers multiple levels of sub-calls
 - highlight selected row
 - allow to un-select row
 - add tooltip for long and/or nested identifiers that are partially hidden
 - check TODO notes
-- endoscope-stats-collector doesn't stop on undeployment/redeployment, what is more multiple threads are started!
-- too many queries!!!! sloooow!

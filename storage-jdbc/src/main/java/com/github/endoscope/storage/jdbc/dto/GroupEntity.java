@@ -1,10 +1,10 @@
-package com.github.endoscope.storage.jdbc;
+package com.github.endoscope.storage.jdbc.dto;
 
 import com.github.endoscope.core.Stats;
 
 import java.beans.Transient;
 
-public class Group extends Stats {
+public class GroupEntity extends Stats {
     private String id;
 
     @Transient

@@ -2,7 +2,9 @@ package com.github.endoscope.storage;
 
 import com.github.endoscope.core.Stat;
 
+import java.beans.Transient;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class StatDetails {
@@ -41,5 +43,18 @@ public class StatDetails {
 
     public void setHistogram(List<StatHistory> histogram) {
         this.histogram = histogram;
+    }
+
+    @Transient
+    public void add(Stat details, Date startDate, Date endDate){
+        if( details == null ){
+            return;
+        }
+        if( getMerged() == null ){
+            setMerged(details.deepCopy(true));
+        } else {
+            getMerged().merge(details, true);
+        }
+        getHistogram().add( new StatHistory(details, startDate, endDate) );
     }
 }

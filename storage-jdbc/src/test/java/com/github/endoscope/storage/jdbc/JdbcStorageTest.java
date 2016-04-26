@@ -1,10 +1,12 @@
 package com.github.endoscope.storage.jdbc;
 
-import org.apache.commons.dbutils.QueryRunner;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
+import com.github.endoscope.util.JsonUtil;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
 import org.junit.AfterClass;
@@ -21,9 +23,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class JdbcStorageTest {
     private static Server server;
@@ -84,9 +84,11 @@ public class JdbcStorageTest {
         Stats stats = buildStats(new Date(21000L), new Date(22000L), 27, 123);
         storage.save(stats);
 
-        dump();
-
         StatDetails read = storage.stat("s1", new Date(21000L), new Date(22000L));
+
+        dumpDB();
+        //dumpObjects(stats.getMap().get("s1"), read);
+
         assertNotNull(read);
         assertEquals("s1", read.getId());
         assertEquals(27, read.getMerged().getMin());
@@ -104,6 +106,13 @@ public class JdbcStorageTest {
         assertNotNull(read);
         assertEquals("s2", read.getId());
         assertEquals(2*123, read.getMerged().getMax());
+    }
+
+    private void dumpObjects(Object ... oo) {
+        JsonUtil jsonUtil = new JsonUtil(true);
+        for( Object o : oo ){
+            System.out.println(jsonUtil.toJson(o));
+        }
     }
 
     @Test
@@ -145,6 +154,7 @@ public class JdbcStorageTest {
         storage.save(buildStats(new Date(313000L), new Date(314000L), 2, 20));
         storage.save(buildStats(new Date(315000L), new Date(316000L), 3, 30, 300));
 
+        dumpDB();
         StatDetails details = storage.stat("s1", new Date(311000L), new Date(333316000L));
         List<StatHistory> history = details.getHistogram();
 
@@ -171,7 +181,7 @@ public class JdbcStorageTest {
         assertEquals(111, history.get(2).getAvg());
     }
 
-    private static void dump(){
+    private static void dumpDB(){
         try {
             q("SELECT * from endoscopeGroup");
             q("SELECT * from endoscopestat");
@@ -181,7 +191,7 @@ public class JdbcStorageTest {
     }
     private static void q(String q) throws SQLException {
         QueryRunner run = new QueryRunner(ds);
-        List<Map<String, Object>> result = run.query(q, new ListOfMapRSHandler());
+        List<Map<String, Object>> result = run.query(q, new MapListHandler());
         System.out.println(result);
     }
 

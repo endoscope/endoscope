@@ -1,13 +1,13 @@
 package com.github.endoscope.cdi;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import java.lang.annotation.Annotation;
-
 import com.github.endoscope.Endoscope;
 import com.github.endoscope.properties.Properties;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.*;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CdiExtension implements Extension {
     private TypeChecker typeChecker = new TypeChecker(
@@ -16,11 +16,18 @@ public class CdiExtension implements Extension {
             Properties.getSupportedNames()
     );
 
+    //CDI 1.0 eager startup workaround
+    private List<Bean> startupBeans = new ArrayList<>();
+
     public <T> void processAnnotatedType(@Observes ProcessAnnotatedType<T> processAnnotatedType) {
         if (!Endoscope.isEnabled()) {
             return;
         }
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
+
+        if( AppLifecycleManager.class.equals(annotatedType.getJavaClass()) ){
+
+        }
 
         if (typeChecker.isNotSupported(annotatedType)) return;
 
@@ -32,5 +39,17 @@ public class CdiExtension implements Extension {
             }
         });
         processAnnotatedType.setAnnotatedType(wrapper);
+    }
+
+    <X> void processBean(@Observes ProcessBean<X> event) {
+        if( event.getAnnotated().isAnnotationPresent(EndoscopeStartup.class) ){
+            startupBeans.add(event.getBean());
+        }
+    }
+
+    void afterDeploymentValidation(@Observes AfterDeploymentValidation event, BeanManager manager) {
+        for( Bean bean : startupBeans) {
+            manager.getReference(bean, bean.getBeanClass(), manager.createCreationalContext(bean)).toString();
+        }
     }
 }

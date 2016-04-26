@@ -4,18 +4,26 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
-import com.github.endoscope.storage.StatHistory;
+import com.github.endoscope.storage.jdbc.dto.GroupEntity;
+import com.github.endoscope.storage.jdbc.dto.StatEntity;
+import com.github.endoscope.storage.jdbc.handler.GroupEntityHandler;
+import com.github.endoscope.storage.jdbc.handler.StatEntityHandler;
 import org.slf4j.Logger;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class SearchableJdbcStorage extends JdbcStorage implements SearchableStatsStorage {
     private static final Logger log = getLogger(SearchableJdbcStorage.class);
+    private GroupEntityHandler groupHandler = new GroupEntityHandler();
+    private StatEntityHandler statHandler = new StatEntityHandler();
+    private static final int IN_SIZE = 100;
+    private InParamsUtil inParamsUtil = new InParamsUtil(IN_SIZE, null);
+
 
     public SearchableJdbcStorage(String initParam){
         super(initParam);
@@ -23,168 +31,115 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     @Override
     public Stats topLevel(Date from, Date to) {
-        Stats result = new Stats();
-        List<Group> groups = findByDates(from, to);
-        groups.forEach(g -> {
-            loadTopLevel(g);
-            result.merge(g, false);
-        });
+        List<GroupEntity> groups = findGroupsInRange(from, to);
+
+        Stats result = collectTopLevel(groups);
         return result;
     }
 
-    private List<Group> findByDates(Date from, Date to) {
+    private List<GroupEntity> findGroupsInRange(Date from, Date to) {
         try {
+            long start = System.currentTimeMillis();
+
             Timestamp fromTs = new Timestamp(from.getTime());
             Timestamp toTs = new Timestamp(to.getTime());
-            List<Map<String, Object>> list = run.query(
-                    " select " +
-                    "   id, startDate, endDate, statsLeft, lost, fatalError " +
-                    " from endoscopeGroup " +
-                    " where startDate >= ? and endDate <= ? order by startDate", handler, fromTs, toTs);
-            return list.stream()
-                    .map( data -> toGroup(data))
-                    .collect(Collectors.toList());
+            List<GroupEntity> list = run.queryExt(200,
+                    " SELECT " + GroupEntityHandler.GROUP_FIELDS +
+                    " FROM endoscopeGroup " +
+                    " WHERE startDate >= ? AND endDate <= ? " +
+                    " ORDER BY startDate", groupHandler, fromTs, toTs);
+
+            log.info("Loaded {} groups for range: {} to {} in {}ms",
+                    list.size(), from, to, System.currentTimeMillis() - start);
+            return list;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void loadTopLevel(Group group) {
-        try {
-            //TODO consider switching to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
-            //TODO: warning: column identifiers are case sensitive right now
-            List<Map<String, Object>> stats = run.query(
-                    " select " +
-                    "  name, hits, max, min, avg, ah10, hasChildren " +
-                    " from endoscopeStat " +
-                    " where parentId is null and groupId = ?", handler, group.getId());
+    private Stats collectTopLevel(List<GroupEntity> groups) {
+        Stats result = new Stats();
+        if( !groups.isEmpty() ){
+            //DB have a limit of elements in IN clause
+            ListUtil.partition(groups, IN_SIZE).forEach( partition -> loadTopLevel(partition) );
+            groups.forEach(g -> result.merge(g, false));
+        }
+        return result;
+    }
 
-            stats.forEach( data -> {
-                String statName = data.get("name").toString();
-                boolean hasChildren = ((Number)data.get("haschildren")).intValue() == 1;
-                Stat stat = toStat(data);
-                if( hasChildren ){
-                    stat.ensureChildrenMap();
-                }
-                group.getMap().put(statName, stat);
+    private void loadTopLevel(List<GroupEntity> groups) {
+        try {
+            Map<String, GroupEntity> groupMap = groups.stream().collect(toMap(g -> g.getId(), g -> g));
+            long start = System.currentTimeMillis();
+            List<StatEntity> stats = run.queryExt(200,
+                    " SELECT " + StatEntityHandler.STAT_FIELDS +
+                    " FROM endoscopeStat " +
+                    " WHERE parentId is null AND groupId in(" + inParamsUtil.getInParams() + ")",
+                    statHandler,
+                    inParamsUtil.fillMissingValues(groupMap.keySet().toArray())
+            );
+            log.info("Loaded {} top level stats for partition size: {} in {}ms",
+                    stats.size(), groups.size(), System.currentTimeMillis() - start);
+            stats.forEach( se -> {
+                GroupEntity g = groupMap.get(se.getGroupId());
+                g.getMap().put(se.getName(), se.getStat());
             });
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private Stat toStat(Map<String, Object> data) {
-        Stat stat = new Stat();
-        stat.setHits(((Number)data.get("hits")).longValue());
-        stat.setMax(((Number)data.get("max")).longValue());
-        stat.setMin(((Number)data.get("min")).longValue());
-        stat.setAvg(((Number)data.get("avg")).longValue());
-        stat.setAh10(((Number)data.get("ah10")).longValue());
-        return stat;
-    }
-
-    private Group toGroup(Map<String, Object> data){
-        Group group = new Group();
-
-        group.setId(data.get("id").toString());
-        group.setStartDate((Date)data.get("startdate"));
-        group.setEndDate((Date)data.get("enddate"));
-        group.setStatsLeft(((Number)data.get("statsleft")).longValue());
-        group.setLost(((Number)data.get("lost")).longValue());
-        group.setFatalError((String)data.get("fatalerror"));
-
-        return group;
     }
 
     @Override
-    public StatDetails stat(String id, Date from, Date to) {
-        StatDetails result = new StatDetails(id, null);
+    public StatDetails stat(String rootName, Date from, Date to) {
+        StatDetails result = new StatDetails(rootName, null);
 
-        List<Group> groups = findByDates(from, to);
-        groups.forEach(g -> {
-            Stat details = loadTree(g.getId(), id);
+        List<GroupEntity> groups = findGroupsInRange(from, to);
 
-            if( details != null ){
-                if( result.getMerged() == null ){
-                    result.setMerged(details.deepCopy(true));
-                } else {
-                    result.getMerged().merge(details, true);
-                }
-                //TODO merge to no more than 100 points
-                result.getHistogram().add(
-                        new StatHistory(
-                                details,
-                                g.getStartDate(),
-                                g.getEndDate()
-                        ));
-
-            }
+        //DB have a limit of elements in IN clause
+        ListUtil.partition(groups, IN_SIZE).forEach(partition -> {
+            loadTree(partition, rootName);
+            partition.forEach(g -> {
+                Stat details = g.getMap().get(rootName);
+                result.add(details, g.getStartDate(),g.getEndDate());
+            });
         });
         if( result.getMerged() == null ){
-            result.setMerged(new Stat());
+            result.setMerged(Stat.EMPTY_STAT);
         }
         return result;
     }
 
-    private Stat loadTree(String groupId, String rootName) {
+    private void loadTree(List<GroupEntity> partition, String rootName) {
+        Map<String, GroupEntity> groupById = partition.stream().collect(toMap(g -> g.getId(), g -> g));
+        Collection<String> groupIds = groupById.keySet();
         try {
-            //TODO switch to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
-            List<Map<String, Object>> rootDataList = run.query(
-                    " select " +
-                    "  id, hits, max, min, avg, ah10 " +
-                    " from endoscopeStat " +
-                    " where parentId is null and groupId = ? and name = ?", handler, groupId, rootName);
+            long start = System.currentTimeMillis();
+            List<StatEntity> stats = run.queryExt(200,
+                    " SELECT " + StatEntityHandler.STAT_FIELDS +
+                    " FROM endoscopeStat " +
+                    " WHERE rootId IN(" +
+                    "     SELECT rootId " +
+                    "     FROM endoscopeStat " +
+                    "     WHERE parentId is null AND name = ? AND groupId IN(" + inParamsUtil.getInParams() + ") " +
+                    " )",
+                    statHandler,
+                    inParamsUtil.fillMissingValues(new Object[]{rootName}, groupIds.toArray())
+            );
+            log.info("Loaded {} stats for partition of size {} in {}ms",
+                    stats.size(), partition.size(), System.currentTimeMillis() - start);
 
-            if( rootDataList.size() != 1 ){
-                return null;
-            }
-
-            Map<String, Object> rootData = rootDataList.get(0);
-            String rootId = rootData.get("id").toString();
-            Stat root = toStat(rootData);
-
-            loadChildren(groupId, rootId, root);
-
-            return root;
+            Map<String, StatEntity> statsById = stats.stream().collect(toMap( se -> se.getId(), se -> se));
+            stats.forEach( se -> {
+                if( se.getParentId() == null ){
+                    GroupEntity g = groupById.get(se.getGroupId());
+                    g.getMap().put(rootName, se.getStat());
+                } else {
+                    StatEntity parent = statsById.get(se.getParentId());
+                    parent.getStat().getChildren().put(se.getName(), se.getStat());
+                }
+            });
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void loadChildren(String groupId, String rootId, Stat root) throws SQLException {
-        //TODO switch to ResultSetHandler<Map<Long, Person>> h = new BeanMapdHandler<Long, Person>(Person.class, "id");
-        List<Map<String, Object>> stats = run.query(
-                " select " +
-                "  parentId, name, hits, max, min, avg, ah10 " +
-                " from endoscopeStat " +
-                " where groupId = ? and rootId = ?", handler, groupId, rootId);
-
-        Map<String, List<StatInfo>> statsByParentId = new HashMap<>();
-        stats.forEach( data -> {
-            String statParentId = data.get("parentid").toString();
-            StatInfo statInfo = new StatInfo();
-            statInfo.setName(data.get("name").toString());
-            statInfo.setStat(toStat(data));
-
-            List<StatInfo> list = statsByParentId.get(statParentId);
-            if( list == null ){
-                list = new ArrayList<>();
-                statsByParentId.put(statParentId, list);
-            }
-            list.add(statInfo);
-        });
-
-        addChildren(statsByParentId, rootId, root);
-    }
-
-    private void addChildren(Map<String, List<StatInfo>> statsByParentId, String parentId, Stat parent){
-        List<StatInfo> children = statsByParentId.get(parentId);
-        if( children != null && children.size() > 0){
-            parent.ensureChildrenMap();
-            children.forEach(c -> {
-                parent.getChildren().put(c.getName(), c.getStat());
-                addChildren(statsByParentId, c.getId(), c.getStat());
-            });
         }
     }
 }

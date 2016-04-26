@@ -4,7 +4,6 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
-import com.github.endoscope.storage.StatHistory;
 import org.slf4j.Logger;
 
 import java.util.Date;
@@ -47,24 +46,10 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
                 .forEach( fileInfo -> {
                     Stats stats = load(fileInfo.getName());
                     Stat details = stats.getMap().get(id);
-                    if( details != null ){
-                        if( result.getMerged() == null ){
-                            result.setMerged(details.deepCopy(true));
-                        } else {
-                            result.getMerged().merge(details, true);
-                        }
-                        //TODO merge to no more than 100 points
-                        result.getHistogram().add(
-                                new StatHistory(
-                                    details,
-                                    stats.getStartDate(),
-                                    stats.getEndDate()
-                                ));
-
-                    }
+                    result.add(details, stats.getStartDate(), stats.getEndDate());
                 });
         if( result.getMerged() == null ){
-            result.setMerged(new Stat());
+            result.setMerged(Stat.EMPTY_STAT);
         }
         return result;
     }

@@ -66,4 +66,8 @@ public class Endoscope {
      * @return
      */
     public static StatsStorage getStatsStorage(){ return ENGINE.getStatsStorage(); }
+
+    public static void stopStatsProcessorThread(){
+        ENGINE.getStatsProcessor().stopStatsProcessorThread();
+    }
 }

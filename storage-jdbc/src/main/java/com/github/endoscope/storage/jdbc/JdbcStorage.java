@@ -3,7 +3,6 @@ package com.github.endoscope.storage.jdbc;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.StatsStorage;
-import org.apache.commons.dbutils.QueryRunner;
 import org.slf4j.Logger;
 
 import javax.sql.DataSource;
@@ -18,15 +17,14 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class JdbcStorage extends StatsStorage {
     private static final Logger log = getLogger(JdbcStorage.class);
-    protected QueryRunner run;
-    protected ListOfMapRSHandler handler = new ListOfMapRSHandler();
+    protected QueryRunnerExt run;
 
     public JdbcStorage(String initParam){
         super(initParam);
 
         //initParam = "java:jboss/datasources/ExampleDS"
         DataSource ds = DataSourceHelper.findDatasource(initParam);
-        run = new QueryRunner(ds);
+        run = new QueryRunnerExt(ds);
     }
 
     @Override
@@ -36,27 +34,8 @@ public class JdbcStorage extends StatsStorage {
                 conn.setAutoCommit(false);
                 try{
                     String groupId = UUID.randomUUID().toString();
-                    int u = run.update(conn, "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError) values(?,?,?,?,?,?)",
-                            groupId,
-                            new Timestamp(stats.getStartDate().getTime()),
-                            new Timestamp(stats.getEndDate().getTime()),
-                            stats.getStatsLeft(),
-                            stats.getLost(),
-                            stats.getFatalError()
-                    );
-                    if( u != 1 ){
-                        throw new RuntimeException("Failed to insert stats group. Expected 1 result but got: " + u);
-                    }
-
-                    Object[][] data = prepareStatsData(groupId, stats);
-                    int[] result = run.batch(conn, "INSERT INTO endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) values(?,?,?,?,?,?,?,?,?,?,?)", data);
-                    long errors = Arrays.stream(result)
-                            .filter( i -> i < 0 && i != Statement.SUCCESS_NO_INFO )
-                            .count();
-                    if( errors > 0 ){
-                        throw new RuntimeException("Failed to insert stats. Got " + errors + " errors");
-                    }
-
+                    insertGroup(stats, conn, groupId);
+                    insertStats(stats, conn, groupId);
                     conn.commit();
                     return groupId;
                 }catch(Exception e){
@@ -69,6 +48,36 @@ public class JdbcStorage extends StatsStorage {
         }
     }
 
+    private void insertStats(Stats stats, Connection conn, String groupId) throws SQLException {
+        Object[][] data = prepareStatsData(groupId, stats);
+        int[] result = run.batch(conn,
+                "INSERT INTO endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
+                "                   values( ?,       ?,        ?,      ?,    ?,    ?,   ?,   ?,   ?,    ?,           ?)",
+                data);
+        long errors = Arrays.stream(result)
+                .filter( i -> i < 0 && i != Statement.SUCCESS_NO_INFO )
+                .count();
+        if( errors > 0 ){
+            throw new RuntimeException("Failed to insert stats. Got " + errors + " errors");
+        }
+    }
+
+    private void insertGroup(Stats stats, Connection conn, String groupId) throws SQLException {
+        int u = run.update(conn,
+                "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError) " +
+                "                    values( ?,         ?,       ?,         ?,    ?,          ?)",
+                groupId,
+                new Timestamp(stats.getStartDate().getTime()),
+                new Timestamp(stats.getEndDate().getTime()),
+                stats.getStatsLeft(),
+                stats.getLost(),
+                stats.getFatalError()
+        );
+        if( u != 1 ){
+            throw new RuntimeException("Failed to insert stats group. Expected 1 result but got: " + u);
+        }
+    }
+
     private Object[][] prepareStatsData(String groupId, Stats stats) {
         List<Object[]> list = new ArrayList<>();
         process(groupId, null, null, stats.getMap(), list);
@@ -78,14 +87,14 @@ public class JdbcStorage extends StatsStorage {
     private void process(String groupId, String parentId, String rootId, Map<String, Stat> map, List<Object[]> list){
         map.forEach((statName, stat) -> {
             String statId = UUID.randomUUID().toString();
+            String fixedRootId = (rootId == null) ? statId : rootId;
             list.add(new Object[]{
-                    statId, groupId, parentId, rootId, statName,
+                    statId, groupId, parentId, fixedRootId, statName,
                     stat.getHits(), stat.getMax(), stat.getMin(), stat.getAvg(), stat.getAh10(),
                     stat.getChildren() != null ? 1 : 0
             });
             if( stat.getChildren() != null ){
-                String currentRoot = rootId == null ? statId : rootId;
-                process(groupId, statId, currentRoot, stat.getChildren(), list);
+                process(groupId, statId, fixedRootId, stat.getChildren(), list);
             }
         });
     }

@@ -61,10 +61,11 @@ public class StatsCyclicWriter {
         try{
             if( statsStorage != null ){
                 ensureDatesAreSet(stats);
+                long start = System.currentTimeMillis();
                 statsStorage.save(stats);
                 lastSave = dateUtil.now();
                 lastError = null;
-                log.info("successfully saved stats");
+                log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
             }
         }catch(Exception e){
             log.error("failed to save stats - next attempt in 5 minutes", e);
