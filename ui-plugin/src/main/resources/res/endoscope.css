@@ -1,3 +1,7 @@
+.es-loading img {
+    margin-top: 25px;
+}
+
 .es-table {
     border-spacing: 0px;
     border-collapse: separate;

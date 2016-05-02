@@ -22,7 +22,7 @@ public class TheRestController {
     @Produces({ "application/json" })
     public String process(@QueryParam("sleepMs") String sleepMs){
         log.info("Processing");
-        int level = 5;
+        int level = 3;
         for( int i=0; i<level; i++){
             theService.process(level);
         }

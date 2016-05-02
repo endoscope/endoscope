@@ -1,25 +1,34 @@
 BUGS:
-- endoscope-stats-collector doesn't stop on undeployment/redeployment, what is more multiple threads are started!
-- check what slows down queries (too much data?, missing indexes?): set this before fetching data!!! stmt.fetchSize = 1000
+-DONE endoscope-stats-collector doesn't stop on undeployment/redeployment, what is more multiple threads are started!
+-DONE check what slows down queries (too much data?, missing indexes?): set this before fetching data!!! stmt.fetchSize = 1000
 
 IMPROVEMENTS:
-- reset details after changing period
-- reset details after text search
-- scroll to top after refresh/search/period change
-- allow to click top level elements without children
-- remove verbose logs for gzip storage
-- add loading image for all operations (with min show time 2s)
+- DONE reset details after changing period
+- DONE reset details after text search
+- DONE allow to click top level elements without children
+- DONE add loading image for all operations
 - time on charts is in GMT time not in local time
-- histogram points should be in the middle of the range
-- threshold line on chart shouldn't affect scale of chart
-- set threshold to 1000ms and 3000ms
+- DONE set threshold to 1000ms and 3000ms
 - add auto refresh of top level & detail stats
-- add time range selection (also using chart)
 - add reset or short time range in order to allow current stats monitoring (partialy done)
-- cover more code with tests
-- it may be hard to distinguish children from top level row
 - persist most recent page settings
-- highlight selected row
-- allow to un-select row
-- add tooltip for long and/or nested identifiers that are partially hidden
+- DONE add tooltip for long and/or nested identifiers that are partially hidden
 - check TODO notes
+- enable gzip compression in UI - we send quite a lot of data
+- set no cache for responses
+- calls per parent are incorrect:
+        A 5->B 1
+        A 5->C1
+        gives you
+        A 10->B 1
+            ->C 1
+        but it should be:
+        A 10->B 0.5
+            ->C 0.5
+
+MINOR:
+- remove verbose logs for gzip storage
+- example doesn't work well on JBoss (REST interceptor doesn't execute example calls)
+- scroll to top after refresh/search/period change
+- highlight selected row
+- highlight whole block of methods - identation is not very well visible in case of many subcalls

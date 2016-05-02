@@ -1,7 +1,7 @@
 (function($) {
     var options = {
-        valueBadLevel:  300, //3000
-        valueWarnLevel: 100, //1000
+        valueBadLevel:  3000,
+        valueWarnLevel: 1000,
         statUrl: "ui/data/details",
         topUrl: "ui/data/top",
         from: null,
@@ -12,19 +12,14 @@
     };
 
     var placeholder;
+    var loadingTim;
 
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
 
         loadTopLevel();
 
-        $("#es-past").change(function(){
-            options.past = $(this).val();
-            options.from = null;
-            options.to = null;
-
-            loadTopLevel();
-        });
+        $("#es-past").change(onPeriodChange);
 
         $("#es-search").typeWatch({ //https://github.com/dennyferra/TypeWatch
             callback: onSearch,
@@ -32,12 +27,30 @@
             highlight: true,
             captureLength: 2
         });
+
+        $(document).bind("ajaxSend", function(){
+            clearTimeout(loadingTim);
+            $('.es-loading').show();
+        }).bind("ajaxComplete", function(){
+            loadingTim = setTimeout(function(){
+                $('.es-loading').hide();
+            }, 500);
+        });
     }
+
+    var onPeriodChange = function(){
+        options.past = $(this).val();
+        options.from = null;
+        options.to = null;
+
+        loadTopLevel();
+    };
 
     var onSearch = function(value){
         value = value.toLowerCase();
 
         closeAllRows();
+        hideDetails();
 
         placeholder.find("tbody tr.es-parent").each(function(index, row){
             row = $(row);
@@ -56,6 +69,7 @@
     };
 
     var loadTopLevel = function(){
+        clearTopLevel();
         $.ajax(options.topUrl, {
             dataType: "json",
             data: {
@@ -72,6 +86,15 @@
         var err = $("#es-error");
         err.find(".text").text(text);
         err.show();
+    };
+
+    var clearTopLevel = function(){
+        placeholder.empty();
+        hideDetails();
+    };
+
+    var hideDetails = function(){
+        $(".es-details").hide();
     };
 
     var onTopLevelStatsLoad = function(topLevelStats) {
@@ -151,6 +174,7 @@
     var loadChildStats = function(row) {
         row.addClass('es-loading');
         var statId = row.data('id');
+        hideDetails();
         $.ajax(options.statUrl, {
             dataType: "json",
             data: {
@@ -200,9 +224,6 @@
     };
 
     var buildDetails = function(details, parentRow){
-        $(".es-details").show();
-        $(".es-details .es-title").text(details.id);
-
         var histogram = details.histogram;
         var chartOptions = {
             legend: {
@@ -243,6 +264,8 @@
         ];
         container = $(".es-details .es-chart-times");
         container.empty();
+        $(".es-details .es-title").text(details.id);
+        $(".es-details").show();
         opts = $.extend(true, {}, chartOptions, {yaxis: {tickFormatter: function (x) {return x + " ms";}}});
         $.plot(container, data, opts);
 
@@ -293,6 +316,7 @@
         }
         if(level == 0){
             row.attr("data-id", id);
+            row.attr("title", id);
             row.addClass("es-parent");
             row.find(".es-count").append(obj.hits);
         } else {
