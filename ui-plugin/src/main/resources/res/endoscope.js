@@ -289,14 +289,12 @@
         if( property == "bad" ){
             result.push([histogram[0].startDate, options.valueBadLevel]);
             result.push([histogram[histogram.length-1].startDate, options.valueBadLevel]);
-            var x=0;
         } else if( property == "warn" ){
             result.push([histogram[0].startDate, options.valueWarnLevel]);
             result.push([histogram[histogram.length-1].startDate, options.valueWarnLevel]);
-            var x=0;
         } else {
             histogram.forEach(function(h){
-                var tick = [h.startDate, h[property]]
+                var tick = [h.startDate, h[property]];
                 if( property == "hits" ){
                     //convert to average tick per second, as total hits doesn't look well espiecially when tick length may differ
                     var seconds = (h.endDate - h.startDate)/1000;

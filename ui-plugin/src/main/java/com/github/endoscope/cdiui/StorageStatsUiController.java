@@ -3,13 +3,18 @@ package com.github.endoscope.cdiui;
 import com.github.endoscope.Endoscope;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
-import com.github.endoscope.storage.StatHistory;
-import com.github.endoscope.util.JsonUtil;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
+import com.github.endoscope.storage.StatHistory;
+import com.github.endoscope.util.JsonUtil;
 import org.slf4j.Logger;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Response;
 import java.util.Date;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -20,21 +25,30 @@ public class StorageStatsUiController extends StaticResourceController{
 
     private JsonUtil jsonUtil = new JsonUtil();
 
+    protected Response noCacheResponse( Object entity ) {
+        CacheControl cc = new CacheControl();
+        cc.setNoCache( true );
+        cc.setMaxAge( -1 );
+        cc.setMustRevalidate( true );
+
+        return Response.ok( entity ).cacheControl( cc ).build();
+    }
+
     @GET
     @Path("ui/data/top")
     @Produces("application/json")
-    public String top(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("past") String past) {
+    public Response top(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("past") String past) {
         Stats stats = topLevel(toLong(from), toLong(to), toLong(past));
-        return jsonUtil.toJson(stats.getMap());
+        return noCacheResponse(jsonUtil.toJson(stats.getMap()));
     }
 
     @GET
     @Path("ui/data/details")
     @Produces("application/json")
-    public String details(@QueryParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
+    public Response details(@QueryParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
                            @QueryParam("past") String past){
         StatDetails child = stat(id, toLong(from), toLong(to), toLong(past));
-        return jsonUtil.toJson(child);
+        return noCacheResponse(jsonUtil.toJson(child));
     }
 
     private Long toLong(String value){

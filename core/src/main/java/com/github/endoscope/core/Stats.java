@@ -43,9 +43,9 @@ public class Stats {
     }
 
     private void store(Context context, final Stat parentStat, boolean firstPass){
+        Map<String, Long> subcalls = new HashMap<>();
         if( context.getChildren() != null ){
             //first collect number of calls per parent
-            Map<String, Long> subcalls = new HashMap<>();
             context.getChildren().stream().forEach( child -> {
                 Long perParent = subcalls.getOrDefault(child.getId(), 0L) + 1;
 
@@ -62,16 +62,28 @@ public class Stats {
                     //recurse and update next level of child stats
                     store(child, childStat, firstPass);
 
-                    //recurse and update top level stats
+                    //stats for child calls are collected in two places:
+                    //- in context of parent
+                    //- separately as root stats
+                    //Context like this:
+                    // a -> b -> c
+                    //Results in following stats:
+                    // a -> b -> c
+                    // b -> c
+                    // c
+
+                    //recurse and update top level stats for this child
                     if( firstPass ) {
                         store(child, false);
                     }
                 }
             });
+        }
 
-            subcalls.entrySet().stream().forEach( entry -> {
-                Stat childStat = parentStat.getChildren().get(entry.getKey());
-                childStat.updateAvgHits(entry.getValue());
+        if( parentStat.getChildren() != null ){
+            parentStat.getChildren().forEach((statId,childStat) ->{
+                Long perParent = subcalls.getOrDefault(statId, 0L);
+                childStat.updateAvgHits(perParent);
             });
         }
     }
