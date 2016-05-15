@@ -109,6 +109,7 @@
         value = value.toLowerCase();
 
         closeAllRows();
+        window.scrollTo(0,0);
         hideDetails();
 
         placeholder.find("tbody tr.es-parent").each(function(index, row){
