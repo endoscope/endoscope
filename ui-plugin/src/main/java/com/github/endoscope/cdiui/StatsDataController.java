@@ -7,7 +7,6 @@ import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
 import com.github.endoscope.util.JsonUtil;
-import org.slf4j.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -17,12 +16,8 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 import java.util.Date;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
 @Path("/endoscope")
 public class StatsDataController {
-    private static final Logger log = getLogger(StatsDataController.class);
-
     private JsonUtil jsonUtil = new JsonUtil();
 
     protected Response noCacheResponse( Object entity ) {
@@ -37,18 +32,11 @@ public class StatsDataController {
     @GET
     @Path("/data/top")
     @Produces("application/json")
-    public Response top(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("past") String past) {
-        Stats stats = topLevel(toLong(from), toLong(to), toLong(past));
-        return noCacheResponse(jsonUtil.toJson(stats.getMap()));
-    }
+    public Response top(@QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS) {
+        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
 
-    @GET
-    @Path("/data/details")
-    @Produces("application/json")
-    public Response details(@QueryParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
-                           @QueryParam("past") String past){
-        StatDetails child = stat(id, toLong(from), toLong(to), toLong(past));
-        return noCacheResponse(jsonUtil.toJson(child));
+        Stats stats = topLevelForRange(new Range(from, to, past));
+        return noCacheResponse(jsonUtil.toJson(stats.getMap()));
     }
 
     private Long toLong(String value){
@@ -58,57 +46,78 @@ public class StatsDataController {
         return Long.valueOf(value);
     }
 
-    private boolean isRange(Long from, Long to){
-        return from != null && to != null;
+    @GET
+    @Path("/data/details")
+    @Produces("application/json")
+    public Response details(@QueryParam("id") String id,
+                            @QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS){
+        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
+        StatDetails child = detailsForRange(id, new Range(from, to, past));
+        return noCacheResponse(jsonUtil.toJson(child));
     }
 
-    private Stats topLevel(Long from, Long to, Long past){
-        boolean includeCurrent = false;
-        if( past != null ){
-            to = System.currentTimeMillis();
-            from = to - past;
-            includeCurrent = true;
-        }
-        if( !isRange(from, to) ){
-            return topLevelInMemory();
-        }
-        return topLevelForRange(from, to, includeCurrent);
-    }
+    private static class Range {
+        public Range(Long from, Long to, Long past){
+            if( past != null ){
+                if( past > 0 ){
+                    toDate = new Date();
+                    fromDate = new Date(toDate.getTime() - past);
+                }
+            } else {
+                if( from != null ){
+                    fromDate = new Date(from);
 
-    private StatDetails stat(String id, Long from, Long to, Long past){
-        boolean includeCurrent = false;
-        if( past != null ){
-            to = System.currentTimeMillis();
-            from = to - past;
-            includeCurrent = true;
-        }
-        if( !isRange(from, to) ){
-            StatDetails result = detailsInMemory(id);
-            return (result != null) ? result : new StatDetails(id, Stat.EMPTY_STAT);
-        }
-        return detailsForRange(id, from, to, includeCurrent);
-    }
-
-    private Stats topLevelForRange(Long from, Long to, boolean includeCurrent) {
-        Stats result = getSearchableStatsStorage().topLevel(new Date(from), new Date(to));
-        if( includeCurrent ){
-            Stats current = topLevelInMemory();
-            result.merge(current, false);
-        }
-        return result;
-    }
-
-    private StatDetails detailsForRange(String id, Long from, Long to, boolean includeCurrent) {
-        StatDetails result = getSearchableStatsStorage().stat(id, new Date(from), new Date(to));
-        if( includeCurrent ){
-            StatDetails current = detailsInMemory(id);
-            if( current != null ){
-                //we don't want to merge not set stats as it would reset min value to 0
-                result.getMerged().merge(current.getMerged(), true);
-                result.getHistogram().addAll(current.getHistogram());
+                    //to requires from
+                    if( to != null ){
+                        toDate = new Date(to);
+                        includeCurrent = false;
+                    } else {
+                        toDate = new Date();
+                    }
+                }
             }
         }
+
+        Date fromDate = null;
+        Date toDate = null;
+        boolean includeCurrent = true;
+    }
+
+    private Stats topLevelForRange(Range range) {
+        Stats result;
+        if( canSearch(range) ){
+            result = getSearchableStatsStorage().topLevel(range.fromDate, range.toDate);
+            if( range.includeCurrent ){
+                Stats current = topLevelInMemory();
+                result.merge(current, false);
+            }
+        } else{
+            result = topLevelInMemory();
+        }
         return result;
+    }
+
+    private StatDetails detailsForRange(String id, Range range) {
+        StatDetails result;
+        if( canSearch(range) ){
+            result = getSearchableStatsStorage().stat(id, range.fromDate, range.toDate);
+            if( range.includeCurrent ){
+                StatDetails current = detailsInMemory(id);
+                if( current != null ){
+                    //we don't want to merge not set stats as it would reset min value to 0
+                    result.getMerged().merge(current.getMerged(), true);
+                    result.getHistogram().addAll(current.getHistogram());
+                }
+            }
+        } else {
+            result = detailsInMemory(id);
+        }
+        return (result != null) ? result : new StatDetails(id, Stat.EMPTY_STAT);
+    }
+
+    private boolean canSearch(Range range){
+        return range.fromDate != null && range.toDate != null
+                && Endoscope.getStatsStorage() != null;
     }
 
     private Stats topLevelInMemory() {
