@@ -5,7 +5,7 @@
 	<groupId>com.github.endoscope</groupId>
 	<artifactId>endoscope</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.3-SNAPSHOT</version>
+	<version>1.0.3</version>
 
     <name>Endoscope</name>
     <description>Interceptor based Java application monitoring.</description>
@@ -33,7 +33,7 @@
         <connection>scm:git:git@github.com:endoscope/endoscope.git</connection>
         <developerConnection>scm:git:git@github.com:endoscope/endoscope.git</developerConnection>
         <url>git@github.com:endoscope/endoscope.git</url>
-      <tag>HEAD</tag>
+      <tag>endoscope-1.0.3</tag>
   </scm>
 
 	<modules>
