@@ -77,7 +77,9 @@
                     <select class="form-control" id="es-past" title="Select data range">
                         <option value="3600000" selected="selected">1 hour</option>
                         <option value="86400000">1 day</option>
+                        <option value="172800000">2 days</option>
                         <option value="604800000">1 week</option>
+                        <option value="1209600000">2 weeks</option>
                         <option value="2592000000">30 days</option>
                         <option value="0">In-memory</option>
                         <option value="-1">Start from now</option>
@@ -85,7 +87,9 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <button id="es-refresh" class="form-control glyphicon glyphicon-refresh" title="Reload data"/>
+                    <button id="es-refresh" class="form-control" title="Reload data">
+                        <span class="glyphicon glyphicon-refresh" />
+                    </button>
                 </div>
             </form>
         </div>
