@@ -375,13 +375,13 @@
         }
         if(level == 0){
             row.attr("data-id", id);
-            row.attr("title", id);
             row.addClass("es-parent");
             row.find(".es-count").append(obj.hits);
         } else {
             row.addClass("es-child");
             row.find(".es-count").append(obj.ah10/10);
         }
+        row.attr("title", id);
 
         row.find(".es-id").append(indent(level)).append(id);
         addNumberValue( row.find(".es-max"), obj.max);
