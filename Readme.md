@@ -5,7 +5,7 @@ Stats UI
 --------
 Deploy example WAR to Wildfy and open stats UI page:
 
-    http://localhost:8080/example-war/rest/endoscope/storage/ui
+    http://localhost:8080/example-war/rest/endoscope/
 
 You may run some additional processing in order to change statistics by entering:
              
@@ -16,7 +16,7 @@ In example application those values are hardcoded in:
     
     com.github.endoscope.CustomPropertyProvider
 
-Development
+UI Development
 --------------
 You may serve static files from disk insterad from JAR resource by settings following property:
  

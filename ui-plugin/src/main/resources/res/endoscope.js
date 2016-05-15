@@ -2,8 +2,8 @@
     var options = {
         valueBadLevel:  3000,
         valueWarnLevel: 1000,
-        statUrl: "ui/data/details",
-        topUrl: "ui/data/top",
+        statUrl: "data/details",
+        topUrl: "data/top",
         from: null,
         to: null,
         past: 3600000, //1 hour,

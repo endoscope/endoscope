@@ -15,8 +15,9 @@ import java.io.InputStream;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public abstract class StaticResourceController {
-    private static final Logger log = getLogger(StaticResourceController.class);
+@Path("/endoscope")
+public class ResourcesController {
+    private static final Logger log = getLogger(ResourcesController.class);
 
     private static final String DEV_DIR;
     private static final boolean ENABLED;
@@ -29,13 +30,13 @@ public abstract class StaticResourceController {
     }
 
     @GET
-    @Path("/ui")// this path is referenced in PopulateUiDataFilter
+    @Path("/")// this path is referenced in PopulateUiDataFilter
     public Response ui() throws FileNotFoundException {
         return uiResource("index.html");
     }
 
     @GET
-    @Path("/ui/res/{path:.*}")
+    @Path("/res/{path:.*}")
     public Response uiResource(@PathParam("path") String path) throws FileNotFoundException {
         if( !ENABLED ){
             return Response.status(401).build();

@@ -19,9 +19,9 @@ import java.util.Date;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Path("/endoscope/storage")
-public class StorageStatsUiController extends StaticResourceController{
-    private static final Logger log = getLogger(StorageStatsUiController.class);
+@Path("/endoscope")
+public class StatsDataController {
+    private static final Logger log = getLogger(StatsDataController.class);
 
     private JsonUtil jsonUtil = new JsonUtil();
 
@@ -35,7 +35,7 @@ public class StorageStatsUiController extends StaticResourceController{
     }
 
     @GET
-    @Path("ui/data/top")
+    @Path("/data/top")
     @Produces("application/json")
     public Response top(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("past") String past) {
         Stats stats = topLevel(toLong(from), toLong(to), toLong(past));
@@ -43,7 +43,7 @@ public class StorageStatsUiController extends StaticResourceController{
     }
 
     @GET
-    @Path("ui/data/details")
+    @Path("/data/details")
     @Produces("application/json")
     public Response details(@QueryParam("id") String id, @QueryParam("from") String from, @QueryParam("to") String to,
                            @QueryParam("past") String past){

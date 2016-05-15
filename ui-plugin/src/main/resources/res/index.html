@@ -4,21 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Endoscope</title>
-    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="ui/res/lib/flot/excanvas.min.js"></script><![endif]-->
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="res/lib/flot/excanvas.min.js"></script><![endif]-->
 
-    <script language="javascript" type="text/javascript" src="ui/res/lib/flot/jquery.min.js"></script>
-    <script language="javascript" type="text/javascript" src="ui/res/lib/flot/jquery.flot.min.js"></script>
-    <script language="javascript" type="text/javascript" src="ui/res/lib/flot/jquery.flot.time.min.js"></script>
-    <script language="javascript" type="text/javascript" src="ui/res/lib/flot/jquery.flot.fillbetween.min.js"></script>
-    <script language="javascript" type="text/javascript" src="ui/res/lib/bootstrap/js/bootstrap.min.js"></script>
-    <script language="javascript" type="text/javascript" src="ui/res/lib/jquery.typewatch.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.flot.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.flot.time.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.flot.fillbetween.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/jquery.typewatch.js"></script>
 
 
-    <script src="ui/res/endoscope.js"></script>
+    <script src="res/endoscope.js"></script>
 
-    <link href="ui/res/lib/bootstrap/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link href="ui/res/endoscope-layout.css" rel="stylesheet" type="text/css">
-    <link href="ui/res/endoscope.css" rel="stylesheet" type="text/css">
+    <link href="res/lib/bootstrap/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="res/endoscope-layout.css" rel="stylesheet" type="text/css">
+    <link href="res/endoscope.css" rel="stylesheet" type="text/css">
 
     <script id="es-table-template" type="text/x-custom-template">
         <table class="es-table table table-hover">
@@ -65,7 +65,7 @@
         <div class="navbar-header">
             <a class="navbar-brand" href="#">Endoscope</a>
             <span class="es-loading" style="display:none">
-                <img src="ui/res/loader.gif"/>
+                <img src="res/loader.gif"/>
             </span>
         </div>
         <div>
@@ -103,6 +103,10 @@
 </div>
 
 <script>
+    //add necessary ending / for relative resources
+    if( !window.location.pathname.endsWith("/") ){
+        window.location.pathname = window.location.pathname + "/";
+    }
     $( document ).ready(function() {
         $.endoscope(".es-placeholder");
     });
