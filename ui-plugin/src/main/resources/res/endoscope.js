@@ -1,5 +1,5 @@
 (function($) {
-    var options = {
+    options = $.extend(true, {}, {
         valueBadLevel:  3000,
         valueWarnLevel: 1000,
         statUrl: "data/details",
@@ -9,7 +9,10 @@
         past: 3600000, //1 hour,
         sortField: 'id',
         sortDirection: 1
-    };
+    }, $.localStorage.get("endoscope"));
+
+    //debug
+    window.endoscope = options;
 
     var placeholder;
     var loadingTim;
@@ -21,6 +24,7 @@
 
         $("#es-refresh").click(onRefreshClick);
 
+        setupPeriod();
         $("#es-past").change(onPeriodChange);
 
         $("#es-search").typeWatch({ //https://github.com/dennyferra/TypeWatch
@@ -40,25 +44,56 @@
         });
     }
 
+    var saveOptions = function(){
+        $.localStorage.set("endoscope", options);
+    };
+
+    var setupPeriod = function(){//based on saved values select proper option - or reset to defaults
+        if( options.past != null ){
+            //if there is such option select it
+            if( $("#es-past option[value=" + options.past + "]").length != 0 ){
+                $("#es-past").val(options.past);
+            }
+        } else if( options.from != null ) {
+            $("#es-past").val("-2"); //custom period
+        } //else reset to default value
+        applyPeriodChange();
+    };
+
     var onPeriodChange = function(){
-        if( $(this).val() == "-1" ){
-            //reset and switch to custom
-            var now = new Date();
+        var reset = applyPeriodChange();
+        saveOptions();
+        loadTopLevel(reset);
+    };
+
+    var applyPeriodChange = function(){
+        var reset = false;
+        var element = $("#es-past");
+        if( element.val() == -1 ){//reset and switch to custom
             options.past = null;
-            options.from = now.getTime();
+            options.from = new Date().getTime();
             options.to = null;
+            element.val("-2");
+            reset = true;
+        }
+        if( element.val() == -2 ){//custom
             var customOption = getCustomPeriodOption();
-            customOption.text(now.toISOString() + " - now" );
+            var label = new Date(options.from).toISOString() + " - ";
+            if( options.to != null ){
+                label += new Date(options.to).toISOString();
+            } else {
+                label += "now";
+            }
+            customOption.text(label);
             customOption.show();
-            $(this).val("-2");
-            loadTopLevel(true);
-        } else {
-            options.past = $(this).val();
+        }
+        if( element.val() >= 0 ){//past in ms
+            options.past = element.val();
             options.from = null;
             options.to = null;
             getCustomPeriodOption().hide();
-            loadTopLevel();
         }
+        return reset;
     };
 
     var getCustomPeriodOption = function(){
@@ -167,6 +202,7 @@
             options.sortDirection = colId == "id" ? 1 : -1;
         }
         loadTopLevel();
+        saveOptions();
     };
 
     var onSortTopLevel = function(a, b){
