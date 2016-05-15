@@ -126,7 +126,7 @@
         placeholder.find("tbody tr.es-expanded").each(function(index, row){
             removeChildStats($(row));
         });
-        $(".es-selected").removeClass("es-selected");
+        $(".es-sel").removeClass("es-sel");
     };
 
     var loadTopLevel = function(reset){
@@ -223,6 +223,9 @@
 
     var onRowClick = function() {
         var row = $(this);
+        if( row.hasClass("es-sel") ){
+            return;
+        }
         closeAllRows();
         if( !row.hasClass('es-loading') ){
             loadChildStats(row);
@@ -235,7 +238,7 @@
     };
 
     var loadChildStats = function(row) {
-        row.addClass('es-loading es-selected');
+        row.addClass('es-loading es-sel');
         var statId = row.data('id');
         hideDetails();
         $.ajax(options.statUrl, {
@@ -263,9 +266,21 @@
         buildDetails(details, parentRow);
     };
 
+    var onExpandToggle = function(){
+        var row = $(this).closest("tr");
+        var level = row.data("level");
+        if( row.hasClass("es-expanded") ){
+            row.nextUntil('tr.es-parent,tr[data-level='+level+']').hide();
+        } else {
+            row.nextUntil('tr.es-parent,tr[data-level='+level+']').show();
+        }
+        row.toggleClass("es-expanded");
+    };
+
     var processChildStats = function(parentStat, parentRow, level) {
         forEachStat(parentStat.children, function(id, childStat){
             var row = $(buildRow(id, childStat, level));
+            row.find(".es-btn").click(onExpandToggle);
             parentRow.after(row);
             processChildStats(childStat, row, level+1)
         });
@@ -373,14 +388,15 @@
         var row = $($("#es-row-template").html());
 
         if( obj.children ){
-            row.addClass("es-has-children");
+            row.addClass("es-has-children es-expanded");
         }
         if(level == 0){
             row.attr("data-id", id);
             row.addClass("es-parent");
             row.find(".es-count").append(obj.hits);
         } else {
-            row.addClass("es-child");
+            row.attr("data-level", level);
+            row.addClass("es-child es-sel");
             row.find(".es-count").append(obj.ah10/10);
         }
         row.attr("title", id);
