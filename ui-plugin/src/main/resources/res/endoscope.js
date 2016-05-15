@@ -125,6 +125,7 @@
         placeholder.find("tbody tr.es-expanded").each(function(index, row){
             removeChildStats($(row));
         });
+        $(".es-selected").removeClass("es-selected");
     };
 
     var loadTopLevel = function(reset){
@@ -233,7 +234,7 @@
     };
 
     var loadChildStats = function(row) {
-        row.addClass('es-loading');
+        row.addClass('es-loading es-selected');
         var statId = row.data('id');
         hideDetails();
         $.ajax(options.statUrl, {
