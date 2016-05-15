@@ -272,7 +272,10 @@
         if( row.hasClass("es-expanded") ){
             row.nextUntil('tr.es-parent,tr[data-level='+level+']').hide();
         } else {
-            row.nextUntil('tr.es-parent,tr[data-level='+level+']').show();
+            row.nextUntil('tr.es-parent,tr[data-level='+level+']')
+                .show()
+                .filter('.es-has-children')
+                .addClass('es-expanded');
         }
         row.toggleClass("es-expanded");
     };
@@ -388,7 +391,10 @@
         var row = $($("#es-row-template").html());
 
         if( obj.children ){
-            row.addClass("es-has-children es-expanded");
+            row.addClass("es-has-children");
+            if( level < 2 ){//autoexpand up to 2-nd level
+                row.addClass("es-expanded");
+            }
         }
         if(level == 0){
             row.attr("data-id", id);
@@ -398,6 +404,9 @@
             row.attr("data-level", level);
             row.addClass("es-child es-sel");
             row.find(".es-count").append(obj.ah10/10);
+            if( level > 2 ){
+                row.hide();//no autoexpand at higher levels
+            }
         }
         row.attr("title", id);
 
