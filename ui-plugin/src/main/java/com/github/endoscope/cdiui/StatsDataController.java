@@ -7,6 +7,7 @@ import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
 import com.github.endoscope.util.JsonUtil;
+import org.slf4j.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,8 +17,12 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
 import java.util.Date;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 @Path("/endoscope")
 public class StatsDataController {
+    private static final Logger log = getLogger(StatsDataController.class);
+
     private JsonUtil jsonUtil = new JsonUtil();
 
     protected Response noCacheResponse( Object entity ) {
@@ -32,8 +37,14 @@ public class StatsDataController {
     @GET
     @Path("/data/top")
     @Produces("application/json")
-    public Response top(@QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS) {
+    public Response top(@QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS,
+                        @QueryParam("reset") boolean reset) {
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
+
+        if( reset ){
+            log.info("Reseting current stats");
+            Endoscope.resetStats();
+        }
 
         Stats stats = topLevelForRange(new Range(from, to, past));
         return noCacheResponse(jsonUtil.toJson(stats.getMap()));

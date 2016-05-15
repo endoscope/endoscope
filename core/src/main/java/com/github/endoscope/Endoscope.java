@@ -70,4 +70,11 @@ public class Endoscope {
     public static void stopStatsProcessorThread(){
         ENGINE.getStatsProcessor().stopStatsProcessorThread();
     }
+
+    /**
+     * Clears current stats.
+     */
+    public static void resetStats(){
+        ENGINE.getStatsProcessor().resetStats();
+    }
 }

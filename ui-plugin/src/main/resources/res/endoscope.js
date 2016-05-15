@@ -19,6 +19,8 @@
 
         loadTopLevel();
 
+        $("#es-refresh").click(onRefreshClick);
+
         $("#es-past").change(onPeriodChange);
 
         $("#es-search").typeWatch({ //https://github.com/dennyferra/TypeWatch
@@ -39,11 +41,33 @@
     }
 
     var onPeriodChange = function(){
-        options.past = $(this).val();
-        options.from = null;
-        options.to = null;
+        if( $(this).val() == "-1" ){
+            //reset and switch to custom
+            var now = new Date();
+            options.past = null;
+            options.from = now.getTime();
+            options.to = null;
+            var customOption = getCustomPeriodOption();
+            customOption.text(now.toISOString() + " - now" );
+            customOption.show();
+            $(this).val("-2");
+            loadTopLevel(true);
+        } else {
+            options.past = $(this).val();
+            options.from = null;
+            options.to = null;
+            getCustomPeriodOption().hide();
+            loadTopLevel();
+        }
+    };
 
+    var getCustomPeriodOption = function(){
+        return $("#es-past option[value=-2]");
+    };
+
+    var onRefreshClick = function(){
         loadTopLevel();
+        return false;
     };
 
     var onSearch = function(value){
@@ -68,14 +92,15 @@
         });
     };
 
-    var loadTopLevel = function(){
+    var loadTopLevel = function(reset){
         clearTopLevel();
         $.ajax(options.topUrl, {
             dataType: "json",
             data: {
                 from: options.from,
                 to: options.to,
-                past: options.past
+                past: options.past,
+                reset: reset ? "true" : "false"
             }
         })
         .done($.proxy(onTopLevelStatsLoad, this))

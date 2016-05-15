@@ -38,9 +38,6 @@ public class StatsProcessor {
         }
 
         stats = new Stats();
-        if( stats == null ){
-            stats = new Stats();
-        }
 
         queue = new LinkedBlockingDeque<>(Properties.getMaxQueueSize());
         this.statsCyclicWriter = statsCyclicWriter;
@@ -122,5 +119,9 @@ public class StatsProcessor {
     public void stopStatsProcessorThread(){
         log.info("Requested endoscope-stats-collector shutdown");
         collector.shutdownNow();
+    }
+
+    public void resetStats(){
+        stats = new Stats();
     }
 }

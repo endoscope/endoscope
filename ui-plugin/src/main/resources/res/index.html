@@ -71,16 +71,21 @@
         <div>
             <form class="navbar-form navbar-right form-inline" role="search">
                 <div class="form-group">
-                    <select class="form-control" id="es-past">
-                        <option value="-1">In-memory</option>
+                    <input type="text" id="es-search" class="form-control" placeholder="Type to search">
+                </div>
+                <div class="form-group">
+                    <select class="form-control" id="es-past" title="Select data range">
                         <option value="3600000" selected="selected">1 hour</option>
                         <option value="86400000">1 day</option>
                         <option value="604800000">1 week</option>
                         <option value="2592000000">30 days</option>
+                        <option value="0">In-memory</option>
+                        <option value="-1">Start from now</option>
+                        <option value="-2" style="display: none">Custom</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <input type="text" id="es-search" class="form-control" placeholder="Type to search">
+                    <button id="es-refresh" class="form-control glyphicon glyphicon-refresh" title="Reload data"/>
                 </div>
             </form>
         </div>
