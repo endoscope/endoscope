@@ -1,5 +1,6 @@
 package com.github.endoscope.core;
 
+import com.github.endoscope.util.DebugUtil;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayOutputStream;
@@ -21,17 +22,17 @@ public class StatsCollector implements Runnable {
 
     @Override
     public void run() {
-        log.info("started stats collector thread");
+        log.info("started {}", StatsProcessor.COLLECTOR_THREAD_NAME);
         try{
-            while(!Thread.interrupted()){
+            while(!Thread.interrupted() && sp.isEnabled() ){
                 sp.processAllFromQueue();
                 safeSleep();
             }
         }catch(Exception e){
-            log.info("stats collector thread interrupted - won't collect any more stats");
+            log.info("stats {} - won't collect any more stats", StatsProcessor.COLLECTOR_THREAD_NAME);
             sp.setFatalError(getStacktrace(e));
         }
-        log.info("stopped stats collector thread");
+        log.info("stopped {}. Count: {}", StatsProcessor.COLLECTOR_THREAD_NAME, DebugUtil.decrementThreadCount());
     }
 
     private void safeSleep() {
