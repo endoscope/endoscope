@@ -18,7 +18,9 @@ public class Schema {
                             "  endDate TIMESTAMP, " +
                             "  statsLeft INT, " +
                             "  lost INT, " +
-                            "  fatalError VARCHAR(255)" +
+                            "  fatalError VARCHAR(255), " +
+                            "  appGroup VARCHAR(100), " +
+                            "  appType VARCHAR(100)" +
                             ")");
 
             run.update(

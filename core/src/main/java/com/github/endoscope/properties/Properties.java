@@ -1,5 +1,7 @@
 package com.github.endoscope.properties;
 
+import com.github.endoscope.util.AppIdentificationUtil;
+
 public class Properties {
     public static String MAX_STAT_COUNT = "endoscope.max.stat.count";
     public static String QUEUE_MAX_SIZE = "endoscope.max.queue.size";
@@ -12,6 +14,8 @@ public class Properties {
     public static String STATS_STORAGE_CLASS_INIT_PARAM = "endoscope.storage.class.init.param";
     public static String MAX_ID_LENGTH = "endoscope.max.id.length";
     public static String DEV_RESOURCES_DIR = "endoscope.dev.res.dir";
+    public static String APP_TYPE = "endoscope.app.type";
+    public static String APP_GROUP = "endoscope.app.group";
 
     public static String DEFAULT_MAX_STAT_COUNT = "300000";
     public static String DEFAULT_SUPPORTED_NAMES = ".*(Bean|Service|Controller|Ejb|EJB)";
@@ -100,5 +104,13 @@ public class Properties {
 
     public static String getDevResourcesDir(){
         return safeGetProperty(DEV_RESOURCES_DIR, null);
+    }
+
+    public static String getAppGroup(){
+        return safeGetProperty(APP_GROUP, AppIdentificationUtil.calculateHost());
+    }
+
+    public static String getAppType(){
+        return safeGetProperty(APP_TYPE, AppIdentificationUtil.calculateType());
     }
 }

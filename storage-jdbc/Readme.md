@@ -7,7 +7,9 @@ H2 schema
         endDate TIMESTAMP, 
         statsLeft INT, 
         lost INT, 
-        fatalError VARCHAR(255)
+        fatalError VARCHAR(255),
+        appGroup VARCHAR(100),
+        appType VARCHAR(100)
     );
                     
     CREATE TABLE IF NOT EXISTS endoscopeStat(
@@ -33,10 +35,14 @@ Oracle schema
          endDate TIMESTAMP, 
          statsLeft NUMBER, 
          lost NUMBER, 
-         fatalError VARCHAR(255)
+         fatalError VARCHAR(255),
+         appGroup VARCHAR(100),
+         appType VARCHAR(100)
      );
      CREATE INDEX test_endo_startDate ON SMARTRDS.endoscopeGroup(startDate);
-     CREATE INDEX test_endo_endDate ON SMARTRDS.endoscopeGroup(endDate);     
+     CREATE INDEX test_endo_endDate ON SMARTRDS.endoscopeGroup(endDate);
+     CREATE INDEX test_endo_appGroup ON SMARTRDS.endoscopeGroup(appGroup);
+     CREATE INDEX test_endo_appType ON SMARTRDS.endoscopeGroup(appType);
                      
      CREATE TABLE endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 

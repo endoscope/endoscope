@@ -2,6 +2,7 @@ package com.github.endoscope.storage.jdbc;
 
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
+import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.StatsStorage;
 import org.slf4j.Logger;
 
@@ -12,12 +13,15 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static org.apache.commons.lang3.StringUtils.abbreviate;
 import static org.slf4j.LoggerFactory.getLogger;
 
 
 public class JdbcStorage extends StatsStorage {
     private static final Logger log = getLogger(JdbcStorage.class);
     protected QueryRunnerExt run;
+    private String appGroup;
+    private String appType;
 
     public JdbcStorage(String initParam){
         super(initParam);
@@ -25,6 +29,10 @@ public class JdbcStorage extends StatsStorage {
         //initParam = "java:jboss/datasources/ExampleDS"
         DataSource ds = DataSourceHelper.findDatasource(initParam);
         run = new QueryRunnerExt(ds);
+
+        appGroup = abbreviate(Properties.getAppGroup(), 100);
+        appType = abbreviate(Properties.getAppType(), 100);
+        log.info("Using app group: {}, type: {}", appGroup, appType);
     }
 
     @Override
@@ -64,14 +72,16 @@ public class JdbcStorage extends StatsStorage {
 
     private void insertGroup(Stats stats, Connection conn, String groupId) throws SQLException {
         int u = run.update(conn,
-                "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError) " +
-                "                    values( ?,         ?,       ?,         ?,    ?,          ?)",
+                "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError, appGroup, appType) " +
+                "                    values( ?,         ?,       ?,         ?,    ?,          ?,        ?,       ?)",
                 groupId,
                 new Timestamp(stats.getStartDate().getTime()),
                 new Timestamp(stats.getEndDate().getTime()),
                 stats.getStatsLeft(),
                 stats.getLost(),
-                stats.getFatalError()
+                stats.getFatalError(),
+                appGroup,
+                appType
         );
         if( u != 1 ){
             throw new RuntimeException("Failed to insert stats group. Expected 1 result but got: " + u);
