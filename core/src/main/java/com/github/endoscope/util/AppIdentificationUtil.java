@@ -16,7 +16,14 @@ public class AppIdentificationUtil {
         try{
             String resource = AppIdentificationUtil.class.getName().replaceAll("\\.", "/") + ".class";
             URL url = ClassLoader.getSystemClassLoader().getResource(resource);
-            String group = url.getFile().replace("/" + resource, "");
+            if( url == null ){
+                url = AppIdentificationUtil.class.getClassLoader().getResource(resource);
+            }
+            String group = url.getFile()
+                    .replace("/" + resource, "")
+                    //JBoss WAR stuff
+                    .replace("/content/", "")
+                    .replaceFirst("/WEB-INF/lib/.*", "");
             return group;
         } catch(Exception e){
             return "unknown_group";
