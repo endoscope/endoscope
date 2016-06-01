@@ -26,7 +26,7 @@ public class AppIdentificationUtil {
                     .replaceFirst("/WEB-INF/lib/.*", "");
             return group;
         } catch(Exception e){
-            return "unknown_group";
+            return "unknown_type";
         }
     }
 }
