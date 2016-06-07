@@ -2,6 +2,7 @@ package com.github.endoscope.storage.gzip;
 
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
+import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
     }
 
     @Override
-    public Stats topLevel(Date from, Date to) {
+    public Stats topLevel(Date from, Date to, String appGroup, String appType) {
         log.debug("Searching for top level stats from {} to {}", getDateFormat().format(from), getDateFormat().format(to));
         Stats merged = new Stats();
         listParts().stream()
@@ -35,7 +36,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
     }
 
     @Override
-    public StatDetails stat(String id, Date from, Date to) {
+    public StatDetails stat(String id, Date from, Date to, String appGroup, String appType) {
         log.debug("Searching for stat {} from {} to {}", id, getDateFormat().format(from), getDateFormat().format(to));
         StatDetails result = new StatDetails(id, null);
 
@@ -52,5 +53,10 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
             result.setMerged(Stat.EMPTY_STAT);
         }
         return result;
+    }
+
+    @Override
+    public Filters filters(Date from, Date to) {
+        return new Filters();
     }
 }

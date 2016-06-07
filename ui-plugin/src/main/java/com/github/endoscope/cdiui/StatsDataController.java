@@ -3,6 +3,7 @@ package com.github.endoscope.cdiui;
 import com.github.endoscope.Endoscope;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
+import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
@@ -37,16 +38,20 @@ public class StatsDataController {
     @GET
     @Path("/data/top")
     @Produces("application/json")
-    public Response top(@QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS,
+    public Response top(@QueryParam("from") String fromS,
+                        @QueryParam("to") String toS,
+                        @QueryParam("past") String pastS,
+                        @QueryParam("group") String group,
+                        @QueryParam("type") String type,
                         @QueryParam("reset") boolean reset) {
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
 
         if( reset ){
-            log.info("Reseting current stats");
+            log.info("Resetting current stats");
             Endoscope.resetStats();
         }
 
-        Stats stats = topLevelForRange(new Range(from, to, past));
+        Stats stats = topLevelForRange(new Range(from, to, past, group, type));
         return noCacheResponse(jsonUtil.toJson(stats.getMap()));
     }
 
@@ -61,14 +66,20 @@ public class StatsDataController {
     @Path("/data/details")
     @Produces("application/json")
     public Response details(@QueryParam("id") String id,
-                            @QueryParam("from") String fromS, @QueryParam("to") String toS, @QueryParam("past") String pastS){
+                            @QueryParam("from") String fromS,
+                            @QueryParam("to") String toS,
+                            @QueryParam("past") String pastS,
+                            @QueryParam("group") String group,
+                            @QueryParam("type") String type){
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        StatDetails child = detailsForRange(id, new Range(from, to, past));
+        StatDetails child = detailsForRange(id, new Range(from, to, past, group, type));
         return noCacheResponse(jsonUtil.toJson(child));
     }
 
     private static class Range {
-        public Range(Long from, Long to, Long past){
+        public Range(Long from, Long to, Long past, String group, String type){
+            this.group = group;
+            this.type = type;
             if( past != null ){
                 if( past > 0 ){
                     toDate = new Date();
@@ -91,13 +102,15 @@ public class StatsDataController {
 
         Date fromDate = null;
         Date toDate = null;
+        String group;
+        String type;
         boolean includeCurrent = true;
     }
 
     private Stats topLevelForRange(Range range) {
         Stats result;
         if( canSearch(range) ){
-            result = getSearchableStatsStorage().topLevel(range.fromDate, range.toDate);
+            result = getSearchableStatsStorage().topLevel(range.fromDate, range.toDate, range.group, range.type);
             if( range.includeCurrent ){
                 Stats current = topLevelInMemory();
                 result.merge(current, false);
@@ -111,7 +124,7 @@ public class StatsDataController {
     private StatDetails detailsForRange(String id, Range range) {
         StatDetails result;
         if( canSearch(range) ){
-            result = getSearchableStatsStorage().stat(id, range.fromDate, range.toDate);
+            result = getSearchableStatsStorage().stat(id, range.fromDate, range.toDate, range.group, range.type);
             if( range.includeCurrent ){
                 StatDetails current = detailsInMemory(id);
                 if( current != null ){
@@ -162,5 +175,32 @@ public class StatsDataController {
             throw new RuntimeException("Range search is not supported");
         }
         return storage;
+    }
+
+
+    @GET
+    @Path("/data/filters")
+    @Produces("application/json")
+    public Response filters(@QueryParam("from") String fromS,
+                            @QueryParam("to") String toS,
+                            @QueryParam("past") String pastS){
+        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
+        Range range = new Range(from, to, past, null, null);
+        Filters filters = null;
+        if( canSearch(range) ){
+            filters = getSearchableStatsStorage().filters(range.fromDate, range.toDate);
+        }
+        if( filters == null){
+            filters = Filters.EMPTY;
+        }
+        return noCacheResponse(jsonUtil.toJson(filters));
+    }
+
+    private Filters filtersForRange(Range range) {
+        Filters result = null;
+        if( canSearch(range) ){
+            result = getSearchableStatsStorage().filters(range.fromDate, range.toDate);
+        }
+        return (result != null) ? result : Filters.EMPTY;
     }
 }

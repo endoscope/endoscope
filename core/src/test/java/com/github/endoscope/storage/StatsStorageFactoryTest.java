@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static com.github.endoscope.core.PropertyTestUtil.withProperty;
+import static com.github.endoscope.util.PropertyTestUtil.withProperty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

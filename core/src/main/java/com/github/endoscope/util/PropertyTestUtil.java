@@ -1,4 +1,4 @@
-package com.github.endoscope.core;
+package com.github.endoscope.util;
 
 public class PropertyTestUtil {
 

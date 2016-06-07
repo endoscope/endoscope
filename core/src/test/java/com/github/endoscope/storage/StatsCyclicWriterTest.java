@@ -9,7 +9,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Date;
 
-import static com.github.endoscope.core.PropertyTestUtil.withProperty;
+import static com.github.endoscope.util.PropertyTestUtil.withProperty;
 import static com.github.endoscope.properties.Properties.SAVE_FREQ_MINUTES;
 import static org.junit.Assert.*;
 import static org.mockito.BDDMockito.given;

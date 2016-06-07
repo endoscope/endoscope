@@ -19,11 +19,14 @@ public class AppIdentificationUtil {
             if( url == null ){
                 url = AppIdentificationUtil.class.getClassLoader().getResource(resource);
             }
-            String group = url.getFile()
+            String group = url.getFile().replace("\\", "/")
                     .replace("/" + resource, "")
                     //JBoss WAR stuff
                     .replace("/content/", "")
-                    .replaceFirst("/WEB-INF/lib/.*", "");
+                    .replaceFirst("/WEB-INF/lib/.*", "")
+                    //IntelliJ support
+                    .replaceFirst(".*/exploded/", "");
+
             return group;
         } catch(Exception e){
             return "unknown_type";

@@ -15,16 +15,28 @@ public interface SearchableStatsStorage {
      * For simplicity it might include children of root stats - they should be ignored during serialization.
      * @param from required
      * @param to required
+     * @param to appGroup
+     * @param to appType
      * @return
      */
-    Stats topLevel(Date from, Date to);
+    Stats topLevel(Date from, Date to, String appGroup, String appType);
 
     /**
      * Complete root stats.
      * @param id required
      * @param from required
      * @param to required
+     * @param to appGroup
+     * @param to appType
      * @return
      */
-    StatDetails stat(String id, Date from, Date to);
+    StatDetails stat(String id, Date from, Date to, String appGroup, String appType);
+
+    /**
+     * Optional - groups and types in given time period.
+     * @param from
+     * @param to
+     * @return not null filters - lists might be empty
+     */
+    Filters filters(Date from, Date to);
 }

@@ -9,7 +9,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.github.endoscope.core.PropertyTestUtil.withProperty;
+import static com.github.endoscope.util.PropertyTestUtil.withProperty;
 
 public class StatsTest {
     final JsonUtil jsonUtil = new JsonUtil(true);

@@ -59,6 +59,10 @@ public class ResourcesController {
         if( path.endsWith(".js") )return "application/javascript";
         if( path.endsWith(".css") )return "text/css";
         if( path.endsWith(".html"))return "text/html";
+        if( path.endsWith(".gif"))return "image/gif";
+        if( path.endsWith(".png"))return "image/png";
+        if( path.endsWith(".jpeg"))return "image/jpeg";
+        if( path.endsWith(".woff2"))return "application/font-woff2";
 
         log.warn("can't find media type for path: {}", path);
         return null;

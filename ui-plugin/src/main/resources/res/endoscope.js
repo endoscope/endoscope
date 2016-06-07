@@ -1,11 +1,22 @@
 (function($) {
-    options = $.extend(true, {}, {
-        valueBadLevel:  3000,
-        valueWarnLevel: 1000,
+    var labels = {
+        groupLabelAll: "all groups",
+        typeLabelAll: "all types"
+    };
+
+    var api = {
         statUrl: "data/details",
         topUrl: "data/top",
+        filtersUrl: "data/filters"
+    };
+
+    var options = $.extend(true, {}, {
+        valueBadLevel:  3000,
+        valueWarnLevel: 1000,
         from: null,
         to: null,
+        group: null,
+        type: null,
         past: 3600000, //1 hour,
         sortField: 'id',
         sortDirection: 1
@@ -19,6 +30,9 @@
 
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
+
+        labels.groupLabelAll = $("#es-filter").data("group-label");
+        labels.typeLabelAll  = $("#es-filter").data("type-label");
 
         loadTopLevel();
 
@@ -34,6 +48,8 @@
             captureLength: 2
         });
 
+        setupFilters();
+
         $(document).bind("ajaxSend", function(){
             clearTimeout(loadingTim);
             $('.es-loading').show();
@@ -43,6 +59,95 @@
             }, 500);
         });
     }
+
+    var setupFilters = function(){
+        refreshFilterLabels();
+        initAutocomplete($("#es-group"), labels.groupLabelAll);
+        initAutocomplete($("#es-type"), labels.typeLabelAll);
+        loadFilters();
+        $("#es-filter").click(function(){
+            $('#es-filter-modal').modal({
+                keyboard: false
+            }).on('hidden.bs.modal', function (e) {
+                refreshFilterLabels();
+            });
+            return false;
+        });
+        $("#es-filter-save").click(onFiltersSave)
+    };
+
+    var onFiltersSave = function(){
+        var g = $("#es-group").val();
+        options.group = ( g == labels.groupLabelAll ) ? null : g;
+        var t = $("#es-type").val();
+        options.type = ( t == labels.typeLabelAll ) ? null : t;
+
+        saveOptions();
+        loadTopLevel();
+        $('#es-filter-modal').modal('hide');
+    };
+
+    var initAutocomplete = function(jqElement, value){
+        jqElement.autocomplete({
+            minLength: 0,
+            source: [ value ],
+            appendTo: "#es-filter-modal",
+            autoSelect: true
+        }).on("focus", function () {
+            $(this).autocomplete("search", "");
+            this.setSelectionRange(0, this.value.length)
+        });
+    };
+
+    var prepareFilterValues = function(arr, current, none){
+        arr = arr || [];
+
+        //make sure current value is in the list
+        if( current && current != none && arr.indexOf(current) == -1 ){
+            arr.unshift(current);
+        }
+
+        //get rid of null and put appropriate "none" label
+        var nullPos = arr.indexOf(null);
+        if( nullPos >= 0 ){
+            arr.splice(nullPos, 1);
+        }
+        arr.unshift(none);
+
+        return arr;
+    };
+
+    var onFiltersLoad = function(filters) {
+        filters.groups = prepareFilterValues(filters.groups, options.group, labels.groupLabelAll);
+        filters.types  = prepareFilterValues(filters.types,  options.type,  labels.typeLabelAll);
+
+        $("#es-group").autocomplete( "option", "source", filters.groups );
+        $("#es-type").autocomplete( "option", "source", filters.types );
+    };
+
+    var refreshFilterLabels = function(){
+        var gl = !options.group ? labels.groupLabelAll : options.group;
+        var tl = !options.type ? labels.typeLabelAll : options.type;
+        $("#es-group").val(gl);
+        $("#es-type").val(tl);
+        $("#es-filter").text( gl + "/" + tl );
+    };
+
+    var loadFilters = function(){
+        //by default keep current options
+         onFiltersLoad({});
+
+         $.ajax(api.filtersUrl, {
+             dataType: "json",
+             data: {
+                 from: options.from,
+                 to: options.to,
+                 past: options.past
+             }
+         })
+         .done($.proxy(onFiltersLoad, this))
+         .fail(function(){showError("Failed to load filters")});
+    };
 
     var saveOptions = function(){
         $.localStorage.set("endoscope", options);
@@ -64,6 +169,7 @@
         var reset = applyPeriodChange();
         saveOptions();
         loadTopLevel(reset);
+        loadFilters();
     };
 
     var applyPeriodChange = function(){
@@ -131,13 +237,15 @@
 
     var loadTopLevel = function(reset){
         clearTopLevel();
-        $.ajax(options.topUrl, {
+        $.ajax(api.topUrl, {
             dataType: "json",
             data: {
                 from: options.from,
                 to: options.to,
                 past: options.past,
-                reset: reset ? "true" : "false"
+                reset: reset ? "true" : "false",
+                group: options.group,
+                type: options.type
             }
         })
         .done($.proxy(onTopLevelStatsLoad, this))
@@ -241,13 +349,15 @@
         row.addClass('es-loading es-sel');
         var statId = row.data('id');
         hideDetails();
-        $.ajax(options.statUrl, {
+        $.ajax(api.statUrl, {
             dataType: "json",
             data: {
                 id: statId,
                 from: options.from,
                 to: options.to,
-                past: options.past
+                past: options.past,
+                group: options.group,
+                type: options.type
             }
         })
         .done(function(stats){

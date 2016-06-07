@@ -1,6 +1,7 @@
 package com.github.endoscope.core;
 
 import com.github.endoscope.properties.Properties;
+import com.github.endoscope.util.PropertyTestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
