@@ -31,7 +31,7 @@ public class TypeChecker {
             classes.add(classStatefull);
             classes.add(classStateless);
         }catch(Exception e){
-            log.info("Didn't load EJB classes");
+            log.debug("Didn't load EJB classes");
         }
         SUPPORTED_ANNOTATIONS = Collections.unmodifiableList(classes);
     }
@@ -117,7 +117,7 @@ public class TypeChecker {
 
     public boolean isNotSupported(AnnotatedType annotatedType) {
         if( isAlreadyAnnotated(annotatedType) ){
-            log.info("SUPPORTED: is already annotated: {}", annotatedType.getJavaClass());
+            log.debug("SUPPORTED: is already annotated: {}", annotatedType.getJavaClass());
             return true;
         }
 
@@ -141,7 +141,7 @@ public class TypeChecker {
             return true;
         }
 
-        log.info("SUPPORTED: {}", annotatedType.getJavaClass());
+        log.debug("SUPPORTED: {}", annotatedType.getJavaClass());
         return false;
     }
 }

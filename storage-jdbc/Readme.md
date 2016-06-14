@@ -29,7 +29,7 @@ H2 schema
 Oracle schema
 -------------
      
-     CREATE TABLE endoscopeGroup(
+     CREATE TABLE public.endoscopeGroup(
          id VARCHAR(36) PRIMARY KEY, 
          startDate TIMESTAMP, 
          endDate TIMESTAMP, 
@@ -39,12 +39,12 @@ Oracle schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX test_endo_startDate ON SMARTRDS.endoscopeGroup(startDate);
-     CREATE INDEX test_endo_endDate ON SMARTRDS.endoscopeGroup(endDate);
-     CREATE INDEX test_endo_appGroup ON SMARTRDS.endoscopeGroup(appGroup);
-     CREATE INDEX test_endo_appType ON SMARTRDS.endoscopeGroup(appType);
+     CREATE INDEX test_endo_startDate ON public.endoscopeGroup(startDate);
+     CREATE INDEX test_endo_endDate ON public.endoscopeGroup(endDate);
+     CREATE INDEX test_endo_appGroup ON public.endoscopeGroup(appGroup);
+     CREATE INDEX test_endo_appType ON public.endoscopeGroup(appType);
                      
-     CREATE TABLE endoscopeStat(
+     CREATE TABLE public.endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
          groupId VARCHAR(36), 
          parentId VARCHAR(36), 
@@ -57,7 +57,42 @@ Oracle schema
          ah10 NUMBER, 
          hasChildren NUMBER 
      );
-     CREATE INDEX test_endo_parentId ON SMARTRDS.endoscopeStat(parentId);
-     CREATE INDEX test_endo_groupId ON SMARTRDS.endoscopeStat(groupId);
-     CREATE INDEX test_endo_name ON SMARTRDS.endoscopeStat(name);
-     CREATE INDEX test_endo_rootId ON SMARTRDS.endoscopeStat(rootId);
+     CREATE INDEX test_endo_parentId ON public.endoscopeStat(parentId);
+     CREATE INDEX test_endo_groupId ON public.endoscopeStat(groupId);
+     CREATE INDEX test_endo_name ON public.endoscopeStat(name);
+     CREATE INDEX test_endo_rootId ON public.endoscopeStat(rootId);
+
+PostgreSQL schema
+-----------------
+     CREATE TABLE public.endoscopeGroup(
+         id VARCHAR(36) PRIMARY KEY, 
+         startDate TIMESTAMP, 
+         endDate TIMESTAMP, 
+         statsLeft numeric, 
+         lost numeric, 
+         fatalError VARCHAR(255),
+         appGroup VARCHAR(100),
+         appType VARCHAR(100)
+     );
+     CREATE INDEX test_endo_startDate ON public.endoscopeGroup(startDate);
+     CREATE INDEX test_endo_endDate ON public.endoscopeGroup(endDate);
+     CREATE INDEX test_endo_appGroup ON public.endoscopeGroup(appGroup);
+     CREATE INDEX test_endo_appType ON public.endoscopeGroup(appType);
+                     
+     CREATE TABLE public.endoscopeStat(
+         id VARCHAR(36) PRIMARY KEY, 
+         groupId VARCHAR(36), 
+         parentId VARCHAR(36), 
+         rootId VARCHAR(36), 
+         name VARCHAR(255), 
+         hits numeric, 
+         max numeric, 
+         min numeric, 
+         avg numeric, 
+         ah10 numeric, 
+         hasChildren numeric 
+     );
+     CREATE INDEX test_endo_parentId ON public.endoscopeStat(parentId);
+     CREATE INDEX test_endo_groupId ON public.endoscopeStat(groupId);
+     CREATE INDEX test_endo_name ON public.endoscopeStat(name);
+     CREATE INDEX test_endo_rootId ON public.endoscopeStat(rootId);

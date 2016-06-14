@@ -56,8 +56,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appGroup, appType)
             );
 
-            log.info("Loaded {} groups for range: {} to {} in {}ms",
-                    list.size(), from, to, System.currentTimeMillis() - start);
+            log.debug("Loaded {} groups for range: {} to {} in {}ms", list.size(), from, to, System.currentTimeMillis() - start);
             return list;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -80,8 +79,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     " )",
                     statHandler, filterBlank(fromTs, toTs, appGroup, appType)
             );
-            log.info("Loaded {} top level stats for partition size: {} in {}ms",
-                    stats.size(), groups.size(), System.currentTimeMillis() - start);
+            log.debug("Loaded {} top level stats for partition size: {} in {}ms", stats.size(), groups.size(), System.currentTimeMillis() - start);
             stats.forEach( se -> {
                 GroupEntity g = groupMap.get(se.getGroupId());
                 g.getMap().put(se.getName(), se.getStat());
@@ -129,8 +127,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     " )",
                     statHandler, filterBlank(rootName, fromTs, toTs, appGroup, appType)
             );
-            log.info("Loaded {} stats for partition of size {} in {}ms",
-                    stats.size(), partition.size(), System.currentTimeMillis() - start);
+            log.debug("Loaded {} stats for partition of size {} in {}ms", stats.size(), partition.size(), System.currentTimeMillis() - start);
 
             Map<String, StatEntity> statsById = stats.stream().collect(toMap( se -> se.getId(), se -> se));
             stats.forEach( se -> {
@@ -168,7 +165,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                             " WHERE startDate >= ? AND endDate <= ? "
                             , stringHandler, fromTs, toTs);
 
-            log.info("Loaded {} groups and {} types in {}ms", groups.size(), types.size(), System.currentTimeMillis() - start);
+            log.debug("Loaded {} groups and {} types in {}ms", groups.size(), types.size(), System.currentTimeMillis() - start);
             Filters filters = new Filters(groups, types);
             return filters;
         } catch (SQLException e) {

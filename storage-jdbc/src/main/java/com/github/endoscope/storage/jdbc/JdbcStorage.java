@@ -28,6 +28,9 @@ public class JdbcStorage extends StatsStorage {
 
         //initParam = "java:jboss/datasources/ExampleDS"
         DataSource ds = DataSourceHelper.findDatasource(initParam);
+        if( ds == null ){
+            throw new IllegalStateException("Cannot setup storage without DataSource");
+        }
         run = new QueryRunnerExt(ds);
 
         appGroup = abbreviate(Properties.getAppGroup(), 100);

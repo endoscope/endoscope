@@ -20,13 +20,13 @@ public class StatsStorageFactory {
             try {
                 Class<? extends StatsStorage> clazz = (Class<? extends StatsStorage>)Class.forName(className);
                 StatsStorage storage = clazz.getConstructor(String.class).newInstance(classInitParam);
-                log.info("Successfully created StatsStorage instance: {}, with params: {}", className, classInitParam);
+                log.debug("Successfully created StatsStorage instance: {}, with params: {}", className, classInitParam);
                 return storage;
             } catch (Exception e) {
                 log.warn("Failed to create new StatsStorage: {}, with params: {}.", className, classInitParam, e);
             }
         } else {
-            log.warn("Storage class not specified");
+            log.debug("Storage class not specified");
         }
         return null;
     }
