@@ -35,7 +35,7 @@ public class JdbcStorage extends StatsStorage {
 
         appGroup = abbreviate(Properties.getAppGroup(), 100);
         appType = abbreviate(Properties.getAppType(), 100);
-        log.info("Using app group: {}, type: {}", appGroup, appType);
+        log.info("Endoscope JDBC storage will use app group: {}, type: {}", appGroup, appType);
     }
 
     @Override
