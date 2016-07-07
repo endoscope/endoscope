@@ -379,10 +379,15 @@
     var onExpandToggle = function(){
         var row = $(this).closest("tr");
         var level = row.data("level");
+
+        var lteLevelSelector = "tr[data-level=0]";
+        for(var l=1; l<=level; l++){
+            lteLevelSelector += ",tr[data-level='+level+']";
+        }
         if( row.hasClass("es-expanded") ){
-            row.nextUntil('tr.es-parent,tr[data-level='+level+']').hide();
+            row.nextUntil(lteLevelSelector).hide();
         } else {
-            row.nextUntil('tr.es-parent,tr[data-level='+level+']')
+            row.nextUntil(lteLevelSelector)
                 .show()
                 .filter('.es-has-children')
                 .addClass('es-expanded');
@@ -506,12 +511,12 @@
                 row.addClass("es-expanded");
             }
         }
+        row.attr("data-level", level);
         if(level == 0){
             row.attr("data-id", id);
             row.addClass("es-parent");
             row.find(".es-count").append(obj.hits);
         } else {
-            row.attr("data-level", level);
             row.addClass("es-child es-sel");
             row.find(".es-count").append(obj.ah10/10);
             if( level > 2 ){
