@@ -19,7 +19,7 @@ public class PopulateUiDataFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String url = ((HttpServletRequest)servletRequest).getRequestURL().toString();
-        if( url.endsWith("endoscope/") ){//main page only
+        if( url.endsWith("endoscope/") || url.endsWith("data/top") ){//main page only
             controller.process(null);
         }
         filterChain.doFilter(servletRequest, servletResponse);

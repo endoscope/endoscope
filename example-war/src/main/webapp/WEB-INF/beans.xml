@@ -1,6 +1,24 @@
+<!-- Wildfly version
 <beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
 		http://xmlns.jcp.org/xml/ns/javaee/beans_1_1.xsd"
        bean-discovery-mode="all" version="1.1">
+    <!- - It required for CDI 1.0 in JBoss (Wildfly scans beans.xml from Endoscope plugin jar) - ->
+    <interceptors>
+        <class>com.github.endoscope.cdi.CdiInterceptor</class>
+    </interceptors>
+</beans>
+-->
+
+<!-- JBoss version -->
+<beans xmlns="http://java.sun.com/xml/ns/javaee"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+      http://java.sun.com/xml/ns/javaee
+      http://java.sun.com/xml/ns/javaee/beans_1_0.xsd"
+>
+    <interceptors>
+        <class>com.github.endoscope.cdi.CdiInterceptor</class>
+    </interceptors>
 </beans>

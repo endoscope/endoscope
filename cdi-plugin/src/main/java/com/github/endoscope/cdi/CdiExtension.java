@@ -26,10 +26,12 @@ public class CdiExtension implements Extension {
         AnnotatedType<T> annotatedType = processAnnotatedType.getAnnotatedType();
 
         if( AppLifecycleManager.class.equals(annotatedType.getJavaClass()) ){
-
+            return;
         }
 
-        if (typeChecker.isNotSupported(annotatedType)) return;
+        if (typeChecker.isNotSupported(annotatedType)){
+            return;
+        }
 
         AnnotatedTypeWrapper<T> wrapper = new AnnotatedTypeWrapper<>(annotatedType, annotatedType.getAnnotations());
         wrapper.addAnnotation(new Annotation() {
