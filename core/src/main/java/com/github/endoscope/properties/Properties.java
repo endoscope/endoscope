@@ -17,6 +17,13 @@ public class Properties {
     public static String APP_TYPE = "endoscope.app.type";
     public static String APP_GROUP = "endoscope.app.group";
 
+    /*
+     Credentials format is: "username:password"
+     By default it works with endoscope exposed at /endoscope/* path.
+     If you use different path configure com.github.endoscope.cdiui.SecurityFilter in web.xml with your own settings.
+    */
+    public static String AUTH_CREDENTIALS = "endoscope.auth.credentials";
+
     public static String DEFAULT_MAX_STAT_COUNT = "300000";
     public static String DEFAULT_SUPPORTED_NAMES = ".*(Bean|Service|Controller|Ejb|EJB)";
     public static String DEFAULT_QUEUE_MAX_SIZE = "1000000";
@@ -112,5 +119,9 @@ public class Properties {
 
     public static String getAppType(){
         return safeGetProperty(APP_TYPE, AppIdentificationUtil.calculateType());
+    }
+
+    public static String getAuthCredentials() {
+        return safeGetProperty(AUTH_CREDENTIALS, null);
     }
 }

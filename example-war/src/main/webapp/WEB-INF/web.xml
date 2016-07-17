@@ -3,4 +3,14 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
         version="3.0">
+    <!-- by default filter get's binded to /endoscope/* so if you need different path uncomment following:
+    <filter>
+        <filter-name>securityFilter</filter-name>
+        <filter-class>com.github.endoscope.cdiui.SecurityFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>securityFilter</filter-name>
+        <url-pattern>/rest/endoscope/*</url-pattern>
+    </filter-mapping>
+    -->
 </web-app>

@@ -15,6 +15,7 @@ public class CustomPropertyProvider extends AbstractCustomPropertyProvider {
     public CustomPropertyProvider() {
         try {
             override.put(Properties.ENABLED, "true");
+//            override.put(Properties.AUTH_CREDENTIALS, "x:y");
             override.put(Properties.STATS_STORAGE_CLASS, SearchableGzipFileStorage.class.getName());
             if( get(Properties.STATS_STORAGE_CLASS_INIT_PARAM, null) == null ){
                 String dir = Files.createTempDirectory("endoscope").toFile().getAbsolutePath();
