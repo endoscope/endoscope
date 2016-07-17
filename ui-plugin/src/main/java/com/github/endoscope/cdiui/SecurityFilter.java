@@ -14,16 +14,16 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
- By default filters /endoscope/* so if you need different path configure it in web.xml:
+ By default filters /endoscope/* so if you need different path configure it in web.xml
 
- <filter>
-   <filter-name>endoscopeSecurityFilter</filter-name>
-   <filter-class>com.github.endoscope.cdiui.SecurityFilter</filter-class>
- </filter>
- <filter-mapping>
-   <filter-name>endoscopeSecurityFilter</filter-name>
-   <url-pattern>/rest/endoscope/*</url-pattern>
- </filter-mapping>
+ $lt;filter$gt;
+   $lt;filter-name$gt;endoscopeSecurityFilter$lt;/filter-name$gt;
+   $lt;filter-class$gt;com.github.endoscope.cdiui.SecurityFilter$lt;/filter-class$gt;
+ $lt;/filter$gt;
+ $lt;filter-mapping$gt;
+   $lt;filter-name$gt;endoscopeSecurityFilter$lt;/filter-name$gt;
+   $lt;url-pattern$gt;/rest/endoscope/*$lt;/url-pattern$gt;
+ $lt;/filter-mapping$gt;
 
  */
 @WebFilter("/endoscope/*")
