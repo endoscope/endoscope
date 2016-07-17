@@ -5,7 +5,7 @@
 	<groupId>com.github.endoscope</groupId>
 	<artifactId>endoscope</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.14-SNAPSHOT</version>
+	<version>1.0.13-SNAPSHOT</version>
 
     <name>Endoscope</name>
     <description>Interceptor based Java application monitoring.</description>
