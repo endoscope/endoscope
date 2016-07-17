@@ -6,13 +6,6 @@ import java.util.Map;
 
 @com.fasterxml.jackson.annotation.JsonPropertyOrder({ "hits", "max", "min", "avg", "ah10", "children" })
 public class Stat {
-    public static final Stat EMPTY_STAT;
-
-    static {
-        EMPTY_STAT = new Stat();
-        EMPTY_STAT.setMax(0);
-    }
-
     private long hits = 0;
     private long max = -1;//-1 means it's not set
     private long min = 0;
@@ -226,6 +219,12 @@ public class Stat {
         long l1 = Math.round(d1 * 1000);
         long l2 = Math.round(d2 * 1000);
         return Long.compare(l1, l2);
+    }
+
+    public static Stat emptyStat(){
+        Stat s = new Stat();
+        s.setMax(0);
+        return s;
     }
 
     @Override

@@ -50,7 +50,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
                     result.add(details, stats.getStartDate(), stats.getEndDate());
                 });
         if( result.getMerged() == null ){
-            result.setMerged(Stat.EMPTY_STAT);
+            result.setMerged(Stat.emptyStat());
         }
         return result;
     }

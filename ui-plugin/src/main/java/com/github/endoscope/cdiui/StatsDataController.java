@@ -136,7 +136,7 @@ public class StatsDataController {
         } else {
             result = detailsInMemory(id);
         }
-        return (result != null) ? result : new StatDetails(id, Stat.EMPTY_STAT);
+        return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
     }
 
     private boolean canSearch(Range range){

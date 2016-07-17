@@ -101,7 +101,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
             result.add(details, g.getStartDate(),g.getEndDate());
         });
         if( result.getMerged() == null ){
-            result.setMerged(Stat.EMPTY_STAT);
+            result.setMerged(Stat.emptyStat());
         }
         return result;
     }
