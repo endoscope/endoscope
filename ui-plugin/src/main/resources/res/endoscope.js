@@ -10,17 +10,19 @@
         filtersUrl: "data/filters"
     };
 
-    var options = $.extend(true, {}, {
+    //add host specific part so we can keep different settings for different apps
+    var settingsKey = "endoscope-" + window.location.href.replace(/[^\w]/g, '');
+    var options = $.extend(true, {
         valueBadLevel:  3000,
         valueWarnLevel: 1000,
         from: null,
         to: null,
         group: null,
-        type: null,
+        type: window.endoscopeAppType,
         past: 3600000, //1 hour,
         sortField: 'id',
         sortDirection: 1
-    }, $.localStorage.get("endoscope"));
+    }, $.localStorage.get(settingsKey));
 
     //debug
     window.endoscope = options;
@@ -150,7 +152,7 @@
     };
 
     var saveOptions = function(){
-        $.localStorage.set("endoscope", options);
+        $.localStorage.set(settingsKey, options);
     };
 
     var setupPeriod = function(){//based on saved values select proper option - or reset to defaults

@@ -3,6 +3,7 @@ package com.github.endoscope.cdiui;
 import com.github.endoscope.Endoscope;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
+import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
@@ -16,6 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -193,6 +195,14 @@ public class StatsDataController {
         if( filters == null){
             filters = Filters.EMPTY;
         }
+        if( !filters.getGroups().contains(Properties.getAppGroup()) ){
+            filters.getGroups().add(Properties.getAppGroup());
+        }
+        if( !filters.getTypes().contains(Properties.getAppType()) ){
+            filters.getTypes().add(Properties.getAppType());
+        }
+        Collections.sort(filters.getGroups());
+        Collections.sort(filters.getTypes());
         return noCacheResponse(jsonUtil.toJson(filters));
     }
 
@@ -202,5 +212,15 @@ public class StatsDataController {
             result = getSearchableStatsStorage().filters(range.fromDate, range.toDate);
         }
         return (result != null) ? result : Filters.EMPTY;
+    }
+
+    @GET
+    @Path("/res-dynamic/endoscopeAppType.js")
+    @Produces("application/javascript")
+    public Response defaultSettings() {
+        return noCacheResponse(
+                "window.endoscopeAppType = \"" + Properties.getAppType() + "\";\n" +
+                "window.endoscopeAppGroup = \"" + Properties.getAppGroup() + "\";\n"
+        );
     }
 }

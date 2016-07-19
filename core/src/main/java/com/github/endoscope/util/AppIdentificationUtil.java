@@ -25,7 +25,10 @@ public class AppIdentificationUtil {
                     .replace("/content/", "")
                     .replaceFirst("/WEB-INF/lib/.*", "")
                     //IntelliJ support
-                    .replaceFirst(".*/exploded/", "");
+                    .replaceFirst(".*/exploded/", "")
+                    //example app (dev mode) support
+                    .replaceFirst(".*/target/", "")
+                    ;
 
             return group;
         } catch(Exception e){
