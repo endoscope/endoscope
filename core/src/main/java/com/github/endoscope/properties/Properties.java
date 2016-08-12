@@ -16,6 +16,7 @@ public class Properties {
     public static String DEV_RESOURCES_DIR = "endoscope.dev.res.dir";
     public static String APP_TYPE = "endoscope.app.type";
     public static String APP_GROUP = "endoscope.app.group";
+    public static String AGGREGATE_SUB_CALLS = "endoscope.aggregate.sub.calls";
 
     /*
      Credentials format is: "username:password"
@@ -29,6 +30,7 @@ public class Properties {
     public static String DEFAULT_QUEUE_MAX_SIZE = "1000000";
     public static String DEFAULT_SAVE_FREQ_MINUTES = "5";
     public static String DEFAULT_MAX_ID_LENGTH = "100";
+    public static String DEFAULT_AGGREGATE_SUB_CALLS = "true";
 
 
 
@@ -123,5 +125,11 @@ public class Properties {
 
     public static String getAuthCredentials() {
         return safeGetProperty(AUTH_CREDENTIALS, null);
+    }
+
+    public static boolean getAggregateSubCalls(){
+        //notice that: "true".equalsIgnoreCase behaves in different way in case of incorrect value
+        //we wan't it disabled when set to "false" (whatever character case) only.
+        return !"false".equalsIgnoreCase(safeGetProperty(AGGREGATE_SUB_CALLS, DEFAULT_AGGREGATE_SUB_CALLS));
     }
 }

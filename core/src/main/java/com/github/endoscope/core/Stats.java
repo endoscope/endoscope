@@ -16,7 +16,22 @@ public class Stats {
     private Date startDate;
     private Date endDate;
 
+    //do not get it from Properties here as we could loose data by accident by calculating Stats on machine with Property turned off
+    private boolean aggregateSubCalls = true;
+
     public Stats(){
+        startDate = new Date();
+    }
+
+    /**
+     * Set aggregateSubCalls to false to collect entry point's only.
+     * It limits Endoscope functionality a bit but significantly reduces amount of data and might be really
+     * handy in case of bigger applications.
+     *
+     * @param aggregateSubCalls
+     */
+    public Stats(boolean aggregateSubCalls){
+        this.aggregateSubCalls = aggregateSubCalls;
         startDate = new Date();
     }
 
@@ -35,6 +50,10 @@ public class Stats {
     }
 
     private void store(Context context, boolean firstPass){
+        if( !firstPass && !aggregateSubCalls ){
+            return;
+        }
+
         Stat root = getOrAddParent(context);
         if( root != null ){
             root.update(context.getTime());

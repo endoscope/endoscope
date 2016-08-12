@@ -38,7 +38,7 @@ public class StatsProcessor {
             throw new IllegalArgumentException("stats cyclic writer cannot be null");
         }
 
-        stats = new Stats();
+        stats = createEmptyStats();
 
         queue = new LinkedBlockingDeque<>(Properties.getMaxQueueSize());
         this.statsCyclicWriter = statsCyclicWriter;
@@ -53,6 +53,10 @@ public class StatsProcessor {
         collector.submit(new StatsCollector(this));
 
         log.info("Created new {} thread. Current count: {}", COLLECTOR_THREAD_NAME, DebugUtil.incrementThreadCount());
+    }
+
+    private Stats createEmptyStats() {
+        return new Stats(Properties.getAggregateSubCalls());
     }
 
     public void store(Context context){
@@ -79,7 +83,7 @@ public class StatsProcessor {
         if( statsCyclicWriter.shouldSave() ){
             synchronized(stats){
                 statsCyclicWriter.safeSave(stats);
-                stats = new Stats();
+                stats = createEmptyStats();
             }
         }
     }
@@ -112,6 +116,6 @@ public class StatsProcessor {
     }
 
     public void resetStats(){
-        stats = new Stats();
+        stats = createEmptyStats();
     }
 }
