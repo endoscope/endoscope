@@ -8,5 +8,6 @@ import javax.sql.DataSource;
  */
 public interface DataSourceProvider {
     String IMPLEMENTATION_CLASS_NAME = "com.github.endoscope.storage.jdbc.CustomDataSourceProvider";
+    String BASIC_DS_PROVIDER = "com.github.endoscope.basic.ds.BasicDataSourceProvider";
     DataSource create();
 }

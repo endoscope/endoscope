@@ -33,6 +33,14 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>storage-jdbc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>endoscope-basic-ds</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
