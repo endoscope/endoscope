@@ -11,4 +11,13 @@ public class AbstractCustomPropertyProvider extends SystemPropertyProvider {
         String value = override.get(name);
         return value != null ? value : super.get(name, defaultValue);
     }
+
+    protected String setNx(String name, String value){
+        String current = get(name, null);
+        if( current == null ){
+            override.put(name, value);
+            current = value;
+        }
+        return current;
+    }
 }
