@@ -159,13 +159,17 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                             " WHERE startDate >= ? AND endDate <= ? ",
                     stringHandler, fromTs, toTs);
 
+            log.debug("Loaded {} groups in {}ms", groups.size(), System.currentTimeMillis() - start);
+            start = System.currentTimeMillis();
+
             List<String> types = run.queryExt(20,
                     " SELECT distinct(appType) " +
                             " FROM endoscopeGroup " +
                             " WHERE startDate >= ? AND endDate <= ? "
                             , stringHandler, fromTs, toTs);
 
-            log.debug("Loaded {} groups and {} types in {}ms", groups.size(), types.size(), System.currentTimeMillis() - start);
+            log.debug("Loaded {} types in {}ms", types.size(), System.currentTimeMillis() - start);
+
             Filters filters = new Filters(groups, types);
             return filters;
         } catch (SQLException e) {
