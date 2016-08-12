@@ -39,10 +39,10 @@ Oracle schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX test_endo_startDate ON public.endoscopeGroup(startDate);
-     CREATE INDEX test_endo_endDate ON public.endoscopeGroup(endDate);
-     CREATE INDEX test_endo_appGroup ON public.endoscopeGroup(appGroup);
-     CREATE INDEX test_endo_appType ON public.endoscopeGroup(appType);
+     CREATE INDEX endo_gr_startDate ON public.endoscopeGroup(startDate);
+     CREATE INDEX endo_gr_endDate ON public.endoscopeGroup(endDate);
+     CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
+     CREATE INDEX endo_gr_appType ON public.endoscopeGroup(appType);
                      
      CREATE TABLE public.endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -57,10 +57,10 @@ Oracle schema
          ah10 NUMBER, 
          hasChildren NUMBER 
      );
-     CREATE INDEX test_endo_parentId ON public.endoscopeStat(parentId);
-     CREATE INDEX test_endo_groupId ON public.endoscopeStat(groupId);
-     CREATE INDEX test_endo_name ON public.endoscopeStat(name);
-     CREATE INDEX test_endo_rootId ON public.endoscopeStat(rootId);
+     CREATE INDEX endo_st_parentId ON public.endoscopeStat(parentId);
+     CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
+     CREATE INDEX endo_st_name ON public.endoscopeStat(name);
+     CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
 
 PostgreSQL schema
 -----------------
@@ -74,10 +74,10 @@ PostgreSQL schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX test_endo_startDate ON public.endoscopeGroup(startDate);
-     CREATE INDEX test_endo_endDate ON public.endoscopeGroup(endDate);
-     CREATE INDEX test_endo_appGroup ON public.endoscopeGroup(appGroup);
-     CREATE INDEX test_endo_appType ON public.endoscopeGroup(appType);
+     CREATE INDEX endo_gr_startDate ON public.endoscopeGroup(startDate);
+     CREATE INDEX endo_gr_endDate ON public.endoscopeGroup(endDate);
+     CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
+     CREATE INDEX endo_gr_appType ON public.endoscopeGroup(appType);
                      
      CREATE TABLE public.endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -92,7 +92,7 @@ PostgreSQL schema
          ah10 numeric, 
          hasChildren numeric 
      );
-     CREATE INDEX test_endo_parentId ON public.endoscopeStat(parentId);
-     CREATE INDEX test_endo_groupId ON public.endoscopeStat(groupId);
-     CREATE INDEX test_endo_name ON public.endoscopeStat(name);
-     CREATE INDEX test_endo_rootId ON public.endoscopeStat(rootId);
+     CREATE INDEX endo_st_parentId ON public.endoscopeStat(parentId);
+     CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
+     CREATE INDEX endo_st_name ON public.endoscopeStat(name);
+     CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
