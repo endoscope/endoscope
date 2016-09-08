@@ -29,12 +29,15 @@
 
     var placeholder;
     var loadingTim;
+    var ajaxCount=0;
 
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
 
         labels.groupLabelAll = $("#es-filter").data("group-label");
         labels.typeLabelAll  = $("#es-filter").data("type-label");
+
+        setupAjaxLoaderImage();
 
         loadTopLevel();
 
@@ -51,16 +54,26 @@
         });
 
         setupFilters();
+    }
 
+    var setupAjaxLoaderImage = function(){
         $(document).bind("ajaxSend", function(){
             clearTimeout(loadingTim);
             $('.es-loading').show();
+            ajaxCount++;
+            console.log("incremented ajaxCount to: " + ajaxCount);
         }).bind("ajaxComplete", function(){
+            ajaxCount--;
+            console.log("decremented ajaxCount to: " + ajaxCount);
+            if( ajaxCount > 0 ){ //do not hide loader if other/parallel calls are still running
+                return;
+            }
+            console.log("about to hide loader image");
             loadingTim = setTimeout(function(){
                 $('.es-loading').hide();
             }, 500);
         });
-    }
+    };
 
     var setupFilters = function(){
         refreshFilterLabels();
