@@ -195,8 +195,8 @@ public class StatsDataController {
         if( filters == null){
             filters = Filters.EMPTY;
         }
-        if( !filters.getGroups().contains(Properties.getAppGroup()) ){
-            filters.getGroups().add(Properties.getAppGroup());
+        if( !filters.getGroups().contains(Properties.getAppInstance()) ){
+            filters.getGroups().add(Properties.getAppInstance());
         }
         if( !filters.getTypes().contains(Properties.getAppType()) ){
             filters.getTypes().add(Properties.getAppType());
@@ -220,7 +220,7 @@ public class StatsDataController {
     public Response defaultSettings() {
         return noCacheResponse(
                 "window.endoscopeAppType = \"" + Properties.getAppType() + "\";\n" +
-                "window.endoscopeAppGroup = \"" + Properties.getAppGroup() + "\";\n"
+                "window.endoscopeAppGroup = \"" + Properties.getAppInstance() + "\";\n"
         );
     }
 }

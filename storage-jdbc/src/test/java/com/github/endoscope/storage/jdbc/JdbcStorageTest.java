@@ -251,14 +251,14 @@ public class JdbcStorageTest {
     public void should_read_filters() throws SQLException {
         DateFactory df = new DateFactory(40000);
 
-        PropertyTestUtil.withProperty(Properties.APP_GROUP, "g1", ()->{
+        PropertyTestUtil.withProperty(Properties.APP_INSTANCE, "g1", ()->{
             PropertyTestUtil.withProperty(Properties.APP_TYPE,  "t9", ()->{
                 SearchableJdbcStorage storage = new SearchableJdbcStorage("jdbc/dsName");
                 storage.save(buildStats(df.date(1000), df.date(2000), 1));
             });
         });
 
-        PropertyTestUtil.withProperty(Properties.APP_GROUP, "g2", ()->{
+        PropertyTestUtil.withProperty(Properties.APP_INSTANCE, "g2", ()->{
             PropertyTestUtil.withProperty(Properties.APP_TYPE,  "t8", ()->{
                 SearchableJdbcStorage storage = new SearchableJdbcStorage("jdbc/dsName");
                 storage.save(buildStats(df.date(3000), df.date(4000), 2, 20));

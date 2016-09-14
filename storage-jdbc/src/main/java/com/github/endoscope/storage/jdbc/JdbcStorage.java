@@ -14,14 +14,15 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.abbreviate;
+import static org.apache.commons.lang3.time.DateUtils.setMilliseconds;
 import static org.slf4j.LoggerFactory.getLogger;
 
 
 public class JdbcStorage extends StatsStorage {
     private static final Logger log = getLogger(JdbcStorage.class);
     protected QueryRunnerExt run;
-    private String appGroup;
-    private String appType;
+    protected String appInstance;
+    protected String appType;
 
     public JdbcStorage(String initParam){
         super(initParam);
@@ -33,9 +34,9 @@ public class JdbcStorage extends StatsStorage {
         }
         run = new QueryRunnerExt(ds);
 
-        appGroup = abbreviate(Properties.getAppGroup(), 100);
+        appInstance = abbreviate(Properties.getAppInstance(), 100);
         appType = abbreviate(Properties.getAppType(), 100);
-        log.info("Endoscope JDBC storage will use app group: {}, type: {}", appGroup, appType);
+        log.info("Endoscope JDBC storage will use app instance: {}, type: {}", appInstance, appType);
     }
 
     @Override
@@ -47,6 +48,7 @@ public class JdbcStorage extends StatsStorage {
                     String groupId = UUID.randomUUID().toString();
                     insertGroup(stats, conn, groupId);
                     insertStats(stats, conn, groupId);
+                    beforeSaveCommit(stats, conn, groupId);
                     conn.commit();
                     return groupId;
                 }catch(Exception e){
@@ -59,11 +61,19 @@ public class JdbcStorage extends StatsStorage {
         }
     }
 
+    protected void beforeSaveCommit(Stats stats, Connection conn, String groupId) throws SQLException{
+    }
+
     private void insertStats(Stats stats, Connection conn, String groupId) throws SQLException {
+        insertStats("endoscopeStat", stats, conn, groupId);
+    }
+
+    protected void insertStats(String tableName, Stats stats, Connection conn, String groupId) throws SQLException {
         Object[][] data = prepareStatsData(groupId, stats);
         int[] result = run.batch(conn,
-                "INSERT INTO endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
-                "                   values( ?,       ?,        ?,      ?,    ?,    ?,   ?,   ?,   ?,    ?,           ?)",
+                //endoscopeStat OR endoscopeDailyStat
+                "INSERT INTO " + tableName + "(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
+                "                       values( ?,       ?,        ?,      ?,    ?,    ?,   ?,   ?,   ?,    ?,           ?)",
                 data);
         long errors = Arrays.stream(result)
                 .filter( i -> i < 0 && i != Statement.SUCCESS_NO_INFO )
@@ -78,12 +88,12 @@ public class JdbcStorage extends StatsStorage {
                 "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError, appGroup, appType) " +
                 "                    values( ?,         ?,       ?,         ?,    ?,          ?,        ?,       ?)",
                 groupId,
-                new Timestamp(stats.getStartDate().getTime()),
-                new Timestamp(stats.getEndDate().getTime()),
+                new Timestamp(setMilliseconds(stats.getStartDate(), 0).getTime()),
+                new Timestamp(setMilliseconds(stats.getEndDate(), 0).getTime()),
                 stats.getStatsLeft(),
                 stats.getLost(),
                 stats.getFatalError(),
-                appGroup,
+                appInstance,
                 appType
         );
         if( u != 1 ){

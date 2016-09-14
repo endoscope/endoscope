@@ -15,7 +15,8 @@ public class Properties {
     public static String MAX_ID_LENGTH = "endoscope.max.id.length";
     public static String DEV_RESOURCES_DIR = "endoscope.dev.res.dir";
     public static String APP_TYPE = "endoscope.app.type";
-    public static String APP_GROUP = "endoscope.app.group";
+    public static String APP_INSTANCE = "endoscope.app.instance";
+    public static String DEPRECATED_APP_GROUP = "endoscope.app.group";//now it's instance
     public static String AGGREGATE_SUB_CALLS = "endoscope.aggregate.sub.calls";
 
     /*
@@ -115,8 +116,14 @@ public class Properties {
         return safeGetProperty(DEV_RESOURCES_DIR, null);
     }
 
-    public static String getAppGroup(){
-        return safeGetProperty(APP_GROUP, AppIdentificationUtil.calculateHost());
+    public static String getAppInstance(){
+        //backward compatibility
+        String value = safeGetProperty(DEPRECATED_APP_GROUP, null);
+        if( value != null){
+            return value;
+        }
+
+        return safeGetProperty(APP_INSTANCE, AppIdentificationUtil.calculateHost());
     }
 
     public static String getAppType(){

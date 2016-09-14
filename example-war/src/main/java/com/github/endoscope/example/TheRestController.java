@@ -21,7 +21,7 @@ public class TheRestController {
     @Path("/process")
     @Produces({ "application/json" })
     public String process(@QueryParam("sleepMs") String sleepMs){
-        log.info("Processing");
+        log.info("Performing beans processing in order to generate some stats...");
         int level = 3;
         for( int i=0; i<level; i++){
             theService.process(level);
@@ -29,6 +29,7 @@ public class TheRestController {
         if( sleepMs != null ){
             sleep(Long.parseLong(sleepMs));
         }
+        log.info("...finished processing beans");
         return "{\"result\":\"OK\"}";
     }
 

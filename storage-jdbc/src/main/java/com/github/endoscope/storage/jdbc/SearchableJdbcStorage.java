@@ -10,8 +10,10 @@ import com.github.endoscope.storage.jdbc.dto.StatEntity;
 import com.github.endoscope.storage.jdbc.handler.GroupEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StatEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StringHandler;
+import com.github.endoscope.util.AggregateStatsUtil;
 import org.slf4j.Logger;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
@@ -45,6 +47,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     private List<GroupEntity> findGroupsInRange(Date from, Date to, String appGroup, String appType) {
         try {
+            log.debug("Loading groups");
             long start = System.currentTimeMillis();
 
             Timestamp fromTs = new Timestamp(from.getTime());
@@ -65,6 +68,8 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
 
     private void loadTopLevel(List<GroupEntity> groups, Date from, Date to, String appGroup, String appType) {
         try {
+            log.debug("Loading stats");
+
             Map<String, GroupEntity> groupMap = groups.stream().collect(toMap(g -> g.getId(), g -> g));
             long start = System.currentTimeMillis();
             Timestamp fromTs = new Timestamp(from.getTime());
@@ -84,6 +89,27 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                 GroupEntity g = groupMap.get(se.getGroupId());
                 g.getMap().put(se.getName(), se.getStat());
             });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Stats loadDailyStats(String dailyGroupId) {
+        try {
+            Stats dailyStats = new Stats();
+
+            log.debug("Loading daily stats");
+            long start = System.currentTimeMillis();
+            List<StatEntity> stats = run.queryExt(200,
+                    " SELECT " + StatEntityHandler.STAT_FIELDS +
+                    " FROM endoscopeDailyStat " +
+                    " WHERE parentId is null AND groupId = ?",
+                    statHandler, filterBlank(dailyGroupId)
+            );
+            log.debug("Loaded daily stats {} in {}ms", stats.size(), System.currentTimeMillis() - start);
+
+            stats.forEach( se -> dailyStats.getMap().put(se.getName(), se.getStat()) );
+            return dailyStats;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -201,5 +227,18 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                 })
                 .collect(Collectors.toList())
                 .toArray();
+    }
+
+    protected void beforeSaveCommit(Stats stats, Connection conn, String groupId) throws SQLException {
+        Stats daily = AggregateStatsUtil.buildDailyStats(stats);
+        String dailyGroupId = AggregateStatsUtil.buildDailyGroupId(appType, daily);
+
+        Stats merged = loadDailyStats(dailyGroupId);
+        merged.merge(daily, false);
+
+        //keep in mind we are in transaction here
+        delete existing
+        insertStats("endoscopeDailyStat", merged, conn, groupId);
+
     }
 }
