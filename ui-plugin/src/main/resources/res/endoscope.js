@@ -394,18 +394,23 @@
         buildDetails(details, parentRow);
     };
 
-    var onExpandToggle = function(){
-        var row = $(this).closest("tr");
+    var findChildNodes = function(row){
+        row = $(row);
         var level = row.data("level");
 
         var lteLevelSelector = "tr[data-level=0]";
         for(var l=1; l<=level; l++){
             lteLevelSelector += ",tr[data-level="+l+"]";
         }
+        return row.nextUntil(lteLevelSelector);
+    };
+
+    var onExpandToggle = function(){
+        var row = $(this).closest("tr");
         if( row.hasClass("es-expanded") ){
-            row.nextUntil(lteLevelSelector).hide();
+            findChildNodes(row).hide();
         } else {
-            row.nextUntil(lteLevelSelector)
+            findChildNodes(row)
                 .show()
                 .filter('.es-has-children')
                 .addClass('es-expanded');
@@ -413,10 +418,21 @@
         row.toggleClass("es-expanded");
     };
 
+    var onChildRowHoverIn = function(){
+        var row = $(this).closest("tr");
+        findChildNodes(row).addClass('es-highlight');
+    };
+
+    var onChildRowHoverOut = function(){
+        var row = $(this).closest("tr");
+        findChildNodes(row).removeClass('es-highlight');
+    };
+
     var processChildStats = function(parentStat, parentRow, level) {
         forEachStat(parentStat.children, function(id, childStat){
             var row = $(buildRow(id, childStat, level));
             row.find(".es-btn").click(onExpandToggle);
+            row.hover(onChildRowHoverIn, onChildRowHoverOut);
             parentRow.after(row);
             processChildStats(childStat, row, level+1)
         });

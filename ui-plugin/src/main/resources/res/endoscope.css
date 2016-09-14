@@ -52,3 +52,7 @@ tr.es-has-children.es-expanded span.es-btn{
 tr.es-sel {
     background-color: #353535;
 }
+
+tr.es-highlight {
+    background-color: #522222;
+}
