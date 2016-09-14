@@ -346,11 +346,14 @@
 
     var onRowClick = function() {
         var row = $(this);
-        if( row.hasClass("es-sel") ){
+        var isLoading = row.hasClass('es-loading');
+        var isExpanded = row.hasClass("es-sel");
+
+        closeAllRows();
+        if( isExpanded ){
             return;
         }
-        closeAllRows();
-        if( !row.hasClass('es-loading') ){
+        if( !isLoading ){
             loadChildStats(row);
         }
     };
