@@ -28,14 +28,14 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>/res/version.js</include>
+                    <include>res/version.js</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>/res/version.js</exclude>
+                    <exclude>res/version.js</exclude>
                 </excludes>
                 <filtering>false</filtering>
             </resource>
