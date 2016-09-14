@@ -400,7 +400,7 @@
 
         var lteLevelSelector = "tr[data-level=0]";
         for(var l=1; l<=level; l++){
-            lteLevelSelector += ",tr[data-level='+level+']";
+            lteLevelSelector += ",tr[data-level="+l+"]";
         }
         if( row.hasClass("es-expanded") ){
             row.nextUntil(lteLevelSelector).hide();
