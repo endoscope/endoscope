@@ -42,7 +42,7 @@ public class StatsCyclicWriter {
         if( statsStorage != null && saveFreqMinutes > 0 ){
             Date now = dateUtil.now();
 
-            //do not try to save for some time if error occured
+            //do not try to save for some time if error occurred
             if( lastError != null ){
                 long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - lastError.getTime());
                 if( minutes < 5 ){

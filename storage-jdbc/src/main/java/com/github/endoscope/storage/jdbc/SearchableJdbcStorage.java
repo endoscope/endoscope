@@ -34,18 +34,18 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
     }
 
     @Override
-    public Stats topLevel(Date from, Date to, String appGroup, String appType) {
+    public Stats topLevel(Date from, Date to, String appInstance, String appType) {
         Stats result = new Stats();
 
-        List<GroupEntity> groups = findGroupsInRange(from, to, appGroup, appType);
+        List<GroupEntity> groups = findGroupsInRange(from, to, appInstance, appType);
         if( !groups.isEmpty() ){
-            loadTopLevel(groups, from, to, appGroup, appType);
+            loadTopLevel(groups, from, to, appInstance, appType);
             groups.forEach(g -> result.merge(g, false));
         }
         return result;
     }
 
-    private List<GroupEntity> findGroupsInRange(Date from, Date to, String appGroup, String appType) {
+    private List<GroupEntity> findGroupsInRange(Date from, Date to, String appInstance, String appType) {
         try {
             log.debug("Loading groups");
             long start = System.currentTimeMillis();
@@ -55,8 +55,8 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
             List<GroupEntity> list = run.queryExt(200,
                     " SELECT " + GroupEntityHandler.GROUP_FIELDS +
                     " FROM endoscopeGroup " +
-                    " WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appGroup, appType) +
-                    " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appGroup, appType)
+                    " WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appInstance, appType) +
+                    " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appInstance, appType)
             );
 
             log.debug("Loaded {} groups for range: {} to {} in {}ms", list.size(), from, to, System.currentTimeMillis() - start);
@@ -66,7 +66,16 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         }
     }
 
-    private void loadTopLevel(List<GroupEntity> groups, Date from, Date to, String appGroup, String appType) {
+    private void loadTopLevel(List<GroupEntity> groups, Date from, Date to, String appInstance, String appType) {
+        //TODO temporary solution until we permanently switch to this version
+        if( "#daily#".equals(appInstance) ){
+            loadTopLevelDaily(groups, from, to, appType);
+        } else {
+            loadTopLevelDetailed(groups, from, to, appInstance, appType);
+        }
+    }
+
+    private void loadTopLevelDetailed(List<GroupEntity> groups, Date from, Date to, String appInstance, String appType) {
         try {
             log.debug("Loading stats");
 
@@ -80,9 +89,9 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     " WHERE parentId is null AND groupId in(" +
                     "   SELECT id " +
                     "   FROM endoscopeGroup " +
-                    "   WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appGroup, appType) +
+                    "   WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appInstance, appType) +
                     " )",
-                    statHandler, filterBlank(fromTs, toTs, appGroup, appType)
+                    statHandler, filterBlank(fromTs, toTs, appInstance, appType)
             );
             log.debug("Loaded {} top level stats for partition size: {} in {}ms", stats.size(), groups.size(), System.currentTimeMillis() - start);
             stats.forEach( se -> {
@@ -94,7 +103,32 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         }
     }
 
-    private Stats loadDailyStats(String dailyGroupId) {
+    private void loadTopLevelDaily(List<GroupEntity> groups, Date from, Date to, String appType) {
+        try {
+            log.debug("Loading top level daily stats");
+
+            String dailyGroupIdFrom = AggregateStatsUtil.buildDailyGroupId(appType, from);
+            String dailyGroupIdTo = AggregateStatsUtil.buildDailyGroupId(appType, to);
+
+            Map<String, GroupEntity> groupMap = groups.stream().collect(toMap(g -> g.getId(), g -> g));
+            long start = System.currentTimeMillis();
+            List<StatEntity> stats = run.queryExt(200,
+                    " SELECT " + StatEntityHandler.STAT_FIELDS +
+                    " FROM endoscopeDailyStat " +
+                    " WHERE parentId is null AND groupId >= ? AND groupId <= ?",
+                    statHandler, filterBlank(dailyGroupIdFrom, dailyGroupIdTo)
+            );
+            log.debug("Loaded {} top level daily stats for partition size: {} in {}ms", stats.size(), groups.size(), System.currentTimeMillis() - start);
+            stats.forEach( se -> {
+                GroupEntity g = groupMap.get(se.getGroupId());
+                g.getMap().put(se.getName(), se.getStat());
+            });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Stats loadDailyStatsForUpdate(String dailyGroupId) {
         try {
             Stats dailyStats = new Stats();
 
@@ -103,6 +137,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
             List<StatEntity> stats = run.queryExt(200,
                     " SELECT " + StatEntityHandler.STAT_FIELDS +
                     " FROM endoscopeDailyStat " +
+                    " FOR UPDATE " +
                     " WHERE parentId is null AND groupId = ?",
                     statHandler, filterBlank(dailyGroupId)
             );
@@ -115,13 +150,24 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         }
     }
 
+    private void deleteDailyStats(String dailyGroupId){
+        try{
+            log.debug("Deleting daily stats");
+            long start = System.currentTimeMillis();
+            run.update(" DELETE FROM endoscopeDailyStat WHERE groupId = ?", dailyGroupId);
+            log.debug("Deleted daily stats {} in {}ms", System.currentTimeMillis() - start);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
-    public StatDetails stat(String rootName, Date from, Date to, String appGroup, String appType) {
+    public StatDetails stat(String rootName, Date from, Date to, String appInstance, String appType) {
         StatDetails result = new StatDetails(rootName, null);
 
-        List<GroupEntity> groups = findGroupsInRange(from, to, appGroup, appType);
+        List<GroupEntity> groups = findGroupsInRange(from, to, appInstance, appType);
 
-        loadTree(groups, rootName, from, to, appGroup, appType);
+        loadTree(groups, rootName, from, to, appInstance, appType);
         groups.forEach(g -> {
             Stat details = g.getMap().get(rootName);
             result.add(details, g.getStartDate(),g.getEndDate());
@@ -132,7 +178,7 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         return result;
     }
 
-    private void loadTree(List<GroupEntity> partition, String rootName, Date from, Date to, String appGroup, String appType) {
+    private void loadTree(List<GroupEntity> partition, String rootName, Date from, Date to, String appInstance, String appType) {
         Map<String, GroupEntity> groupById = partition.stream().collect(toMap(g -> g.getId(), g -> g));
         try {
             long start = System.currentTimeMillis();
@@ -148,10 +194,10 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
                     "     WHERE parentId is null AND name = ? AND groupId IN(" +
                     "         SELECT id " +
                     "         FROM endoscopeGroup " +
-                    "         WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appGroup, appType) +
+                    "         WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appInstance, appType) +
                     "     ) " +
                     " )",
-                    statHandler, filterBlank(rootName, fromTs, toTs, appGroup, appType)
+                    statHandler, filterBlank(rootName, fromTs, toTs, appInstance, appType)
             );
             log.debug("Loaded {} stats for partition of size {} in {}ms", stats.size(), partition.size(), System.currentTimeMillis() - start);
 
@@ -203,9 +249,9 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         }
     }
 
-    private String optAppFilterQuery(String appGroup, String appType){
+    private String optAppFilterQuery(String appInstance, String appType){
         StringBuilder q = new StringBuilder();
-        if( isNotBlank(appGroup) ){
+        if( isNotBlank(appInstance) ){
             q.append(" and appGroup = ? ");
         }
         if( isNotBlank(appType) ){
@@ -233,12 +279,11 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
         Stats daily = AggregateStatsUtil.buildDailyStats(stats);
         String dailyGroupId = AggregateStatsUtil.buildDailyGroupId(appType, daily);
 
-        Stats merged = loadDailyStats(dailyGroupId);
+        //keep in mind we are in transaction here and this is shared data that may
+        //be modified from different threads - if it fail we'll repeat in 5 minutes
+        Stats merged = loadDailyStatsForUpdate(dailyGroupId);
         merged.merge(daily, false);
-
-        //keep in mind we are in transaction here
-        delete existing
+        deleteDailyStats(dailyGroupId);
         insertStats("endoscopeDailyStat", merged, conn, groupId);
-
     }
 }

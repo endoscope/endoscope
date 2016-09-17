@@ -23,7 +23,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
     }
 
     @Override
-    public Stats topLevel(Date from, Date to, String appGroup, String appType) {
+    public Stats topLevel(Date from, Date to, String appInstance, String appType) {
         log.debug("Searching for top level stats from {} to {}", getDateFormat().format(from), getDateFormat().format(to));
         Stats merged = new Stats();
         listParts().stream()
@@ -36,7 +36,7 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
     }
 
     @Override
-    public StatDetails stat(String id, Date from, Date to, String appGroup, String appType) {
+    public StatDetails stat(String id, Date from, Date to, String appInstance, String appType) {
         log.debug("Searching for stat {} from {} to {}", id, getDateFormat().format(from), getDateFormat().format(to));
         StatDetails result = new StatDetails(id, null);
 

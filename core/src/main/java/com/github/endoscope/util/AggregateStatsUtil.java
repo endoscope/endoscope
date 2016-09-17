@@ -4,6 +4,8 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import org.apache.commons.lang3.time.DateUtils;
 
+import java.util.Date;
+
 /**
  * Date: 11/09/16
  * Time: 09:35
@@ -29,6 +31,10 @@ public class AggregateStatsUtil {
     }
 
     public static String buildDailyGroupId(String appType, Stats dailyStats){
-        return appType + "-" + DateUtil.DATE_ONLY_GMT.format(dailyStats.getStartDate());
+        return buildDailyGroupId(appType, dailyStats.getStartDate());
+    }
+
+    public static String buildDailyGroupId(String appType, Date startDate){
+        return appType + "-" + DateUtil.DATE_ONLY_GMT.format(startDate);
     }
 }
