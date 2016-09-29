@@ -29,7 +29,6 @@ public class GzipStorage implements Storage {
     private JsonUtil jsonUtil = new JsonUtil();
 
     public void setup(String dirName){
-
         this.dir = toFile(dirName);
         if( dir.exists() && dir.isFile() ){
             throw new RuntimeException("location exists and is a file - cannot use it as storage directory: " + dir.getAbsolutePath());

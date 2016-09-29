@@ -7,12 +7,6 @@ import java.util.Date;
 
 import static org.junit.Assert.*;
 
-/**
- * Date: 25/09/16
- * Time: 11:01
- *
- * @author p.halicz
- */
 public class GzipFileInfoTest {
     private Date dt(String date){
         try {

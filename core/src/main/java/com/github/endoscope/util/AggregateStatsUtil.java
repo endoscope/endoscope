@@ -6,12 +6,6 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import java.util.Date;
 
-/**
- * Date: 11/09/16
- * Time: 09:35
- *
- * @author p.halicz
- */
 public class AggregateStatsUtil {
     public static Stats buildDailyStats(Stats stats){
         Stats daily = new Stats();

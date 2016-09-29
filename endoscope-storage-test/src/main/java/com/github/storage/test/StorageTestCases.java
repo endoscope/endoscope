@@ -56,7 +56,7 @@ public abstract class StorageTestCases {
     }
 
     @Before
-    public void setup(){
+    public void before(){
         //stats share the same storage so we must ensure that each test works on it's own
         year++;
     }
