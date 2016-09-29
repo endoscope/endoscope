@@ -28,7 +28,7 @@ public class GzipFileStorage extends StatsStorage {
     public static final String PREFIX = "stats";
     public static final String SEPARATOR = "_";
     public static final String EXTENSION = "gz";
-    public static final Pattern NAME_PATTERN = Pattern.compile("stats_....-..-..-..-..-.._....-..-..-..-..-..\\.gz");
+    public static final Pattern NAME_PATTERN = Pattern.compile("stats_....-..-..-..-..-.._....-..-..-..-..-.._null_null\\.gz");
     public static final String DATE_PATTERN = "yyyy-MM-dd-HH-mm-ss";
     public static final String DATE_TIMEZONE = "GMT";
     private File dir;
@@ -92,7 +92,7 @@ public class GzipFileStorage extends StatsStorage {
         String[] arr = dir.list((dir, name) -> {
             if( NAME_PATTERN.matcher(name).matches() ){
                 GzipFileInfo info = safeParseName(name);
-                return info != null && info.inRange(from, to);
+                return info != null && info.match(from, to, null, null);
             }
             return false;
         });
@@ -109,7 +109,7 @@ public class GzipFileStorage extends StatsStorage {
 
     private String buildPartName(Date dateStart, Date dateEnd) {
         DateFormat sdf = getDateFormat();
-        return PREFIX + SEPARATOR + sdf.format(dateStart) + SEPARATOR + sdf.format(dateEnd) + "." + EXTENSION;
+        return PREFIX + SEPARATOR + sdf.format(dateStart) + SEPARATOR + sdf.format(dateEnd) + "_null_null." + EXTENSION;
     }
 
     protected DateFormat getDateFormat() {
@@ -119,20 +119,14 @@ public class GzipFileStorage extends StatsStorage {
     }
 
     private GzipFileInfo safeParseName(String name) {
-        GzipFileInfo gzipFileInfo = new GzipFileInfo();
-        gzipFileInfo.setName(name);
-        DateFormat sdf = getDateFormat();
         try{
-            String noExtension = name.substring(0, name.length() - EXTENSION.length());
-            String[] parts = noExtension.split(SEPARATOR);
-            if( parts.length == 3 ){
-                gzipFileInfo.setFromDate(sdf.parse(parts[1]));
-                gzipFileInfo.setToDate(sdf.parse(parts[2]));
-            }
+            GzipFileInfo gzipFileInfo = new GzipFileInfo();
+            gzipFileInfo.load(name);
+            return gzipFileInfo;
         }catch(Exception e){
             log.warn("Problem parsing stats file name: {}", name, e);
         }
-        return gzipFileInfo;
+        return null;
     }
 
     private File buildFile(String fileName){

@@ -37,6 +37,21 @@ public class Schema {
                             "  ah10 INT, " +
                             "  hasChildren INT " +
                             ")");
+
+            run.update(
+                    "CREATE TABLE IF NOT EXISTS endoscopeDailyStat(" +
+                            "  id VARCHAR(36) PRIMARY KEY, " +
+                            "  groupId VARCHAR(36), " +
+                            "  parentId VARCHAR(36), " +
+                            "  rootId VARCHAR(36), " +
+                            "  name VARCHAR(255), " +
+                            "  hits INT, " +
+                            "  max INT, " +
+                            "  min INT, " +
+                            "  avg INT, " +
+                            "  ah10 INT, " +
+                            "  hasChildren INT " +
+                            ")");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

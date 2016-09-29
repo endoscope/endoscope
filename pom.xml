@@ -44,6 +44,7 @@
 		<module>storage-gzip</module>
 		<module>storage-jdbc</module>
 		<module>endoscope-basic-ds</module>
+		<module>endoscope-storage-test</module>
 	</modules>
 
 	<distributionManagement>
@@ -175,6 +176,11 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>endoscope-basic-ds</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>endoscope-storage-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

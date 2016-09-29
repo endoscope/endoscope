@@ -137,8 +137,8 @@ public class SearchableJdbcStorage extends JdbcStorage implements SearchableStat
             List<StatEntity> stats = run.queryExt(200,
                     " SELECT " + StatEntityHandler.STAT_FIELDS +
                     " FROM endoscopeDailyStat " +
-                    " FOR UPDATE " +
-                    " WHERE parentId is null AND groupId = ?",
+                    " WHERE parentId is null AND groupId = ?" +
+                    " FOR UPDATE ",
                     statHandler, filterBlank(dailyGroupId)
             );
             log.debug("Loaded daily stats {} in {}ms", stats.size(), System.currentTimeMillis() - start);

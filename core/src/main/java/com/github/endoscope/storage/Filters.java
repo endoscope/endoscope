@@ -7,25 +7,25 @@ import java.util.List;
 public class Filters {
     public static Filters EMPTY = new Filters(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
     
-    List<String> groups;
+    List<String> instances;
     List<String> types;
 
     public Filters(){
-        this.groups = new ArrayList<>();
+        this.instances = new ArrayList<>();
         this.types = new ArrayList<>();
     }
 
-    public Filters(List<String> groups, List<String> types){
-        this.groups = groups;
+    public Filters(List<String> instances, List<String> types){
+        this.instances = instances;
         this.types = types;
     }
 
-    public List<String> getGroups() {
-        return groups;
+    public List<String> getInstances() {
+        return instances;
     }
 
-    public void setGroups(List<String> groups) {
-        this.groups = groups;
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
     }
 
     public List<String> getTypes() {

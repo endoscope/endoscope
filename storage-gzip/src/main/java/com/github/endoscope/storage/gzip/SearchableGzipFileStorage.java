@@ -27,10 +27,10 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
         log.debug("Searching for top level stats from {} to {}", getDateFormat().format(from), getDateFormat().format(to));
         Stats merged = new Stats();
         listParts().stream()
-                .peek( statsInfo -> log.debug("Checking {}", statsInfo.getName()))
-                .filter(statsInfo -> statsInfo.inRange(from, to))
-                .peek( statsInfo -> log.debug("Matches: {}", statsInfo.getName()))
-                .map( statsInfo -> load(statsInfo.getName()))
+                .peek( statsInfo -> log.debug("Checking {}", statsInfo.build()))
+                .filter(statsInfo -> statsInfo.match(from, to, null, null))
+                .peek( statsInfo -> log.debug("Matches: {}", statsInfo.build()))
+                .map( statsInfo -> load(statsInfo.build()))
                 .forEach(stats -> merged.merge(stats, false));
         return merged;
     }
@@ -41,11 +41,11 @@ public class SearchableGzipFileStorage extends GzipFileStorage implements Search
         StatDetails result = new StatDetails(id, null);
 
         listParts().stream()
-                .peek( fileInfo -> log.debug("Checking {}", fileInfo.getName()))
-                .filter(fileInfo -> fileInfo.inRange(from, to))
-                .peek( fileInfo -> log.debug("Matches: {}", fileInfo.getName()))
+                .peek( fileInfo -> log.debug("Checking {}", fileInfo.build()))
+                .filter(fileInfo -> fileInfo.match(from, to, null, null))
+                .peek( fileInfo -> log.debug("Matches: {}", fileInfo.build()))
                 .forEach( fileInfo -> {
-                    Stats stats = load(fileInfo.getName());
+                    Stats stats = load(fileInfo.build());
                     Stat details = stats.getMap().get(id);
                     result.add(details, stats.getStartDate(), stats.getEndDate());
                 });

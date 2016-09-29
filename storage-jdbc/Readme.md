@@ -61,7 +61,25 @@ Oracle schema
      CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
      CREATE INDEX endo_st_name ON public.endoscopeStat(name);
      CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
-
+     
+     CREATE TABLE public.endoscopeDailyStat(
+         id VARCHAR(36) PRIMARY KEY, 
+         groupId VARCHAR(36), 
+         parentId VARCHAR(36), 
+         rootId VARCHAR(36), 
+         name VARCHAR(255), 
+         hits NUMBER, 
+         max NUMBER, 
+         min NUMBER, 
+         avg NUMBER, 
+         ah10 NUMBER, 
+         hasChildren NUMBER 
+     );
+     CREATE INDEX endo_st_parentId ON public.endoscopeDailyStat(parentId);
+     CREATE INDEX endo_st_groupId ON public.endoscopeDailyStat(groupId);
+     CREATE INDEX endo_st_name ON public.endoscopeDailyStat(name);
+     CREATE INDEX endo_st_rootId ON public.endoscopeDailyStat(rootId);
+     
 PostgreSQL schema
 -----------------
      CREATE TABLE public.endoscopeGroup(
@@ -96,3 +114,22 @@ PostgreSQL schema
      CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
      CREATE INDEX endo_st_name ON public.endoscopeStat(name);
      CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
+     
+                     
+     CREATE TABLE public.endoscopeDailyStat(
+         id VARCHAR(36) PRIMARY KEY, 
+         groupId VARCHAR(36), 
+         parentId VARCHAR(36), 
+         rootId VARCHAR(36), 
+         name VARCHAR(255), 
+         hits numeric, 
+         max numeric, 
+         min numeric, 
+         avg numeric, 
+         ah10 numeric, 
+         hasChildren numeric 
+     );
+     CREATE INDEX endo_st_parentId ON public.endoscopeDailyStat(parentId);
+     CREATE INDEX endo_st_groupId ON public.endoscopeDailyStat(groupId);
+     CREATE INDEX endo_st_name ON public.endoscopeDailyStat(name);
+     CREATE INDEX endo_st_rootId ON public.endoscopeDailyStat(rootId);

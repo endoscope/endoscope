@@ -216,13 +216,13 @@ public class StatsDataController {
         if( filters == null){
             filters = Filters.EMPTY;
         }
-        if( !filters.getGroups().contains(Properties.getAppInstance()) ){
-            filters.getGroups().add(Properties.getAppInstance());
+        if( !filters.getInstances().contains(Properties.getAppInstance()) ){
+            filters.getInstances().add(Properties.getAppInstance());
         }
         if( !filters.getTypes().contains(Properties.getAppType()) ){
             filters.getTypes().add(Properties.getAppType());
         }
-        Collections.sort(filters.getGroups());
+        Collections.sort(filters.getInstances());
         Collections.sort(filters.getTypes());
         return noCacheResponse(jsonUtil.toJson(filters));
     }

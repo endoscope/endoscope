@@ -53,7 +53,7 @@ public class GzipFileStorageTest {
     public void should_save_and_load_part_file() throws IOException{
         String identifier = ds.save(stats);
 
-        assertEquals( "stats_2001-09-09-01-46-40_2011-03-13-07-06-40.gz", identifier );
+        assertEquals( "stats_2001-09-09-01-46-40_2011-03-13-07-06-40_null_null.gz", identifier );
 
         Stats loaded = ds.load(identifier);
 
@@ -67,9 +67,9 @@ public class GzipFileStorageTest {
         String part2 = ds.save(shiftDates(buildCommonStats(), 2000000L));
 
         List<GzipFileInfo> info = ds.listParts();
-        List<String> names = info.stream().map(i -> i.getName()).collect(toList());
+        List<String> names = info.stream().map(i -> i.build()).collect(toList());
 
-        assertTrue(names.size() >= 2 );//may be more du to different tests
+        assertTrue(names.size() >= 2 );//may be more due to different tests
         assertTrue(names.contains(part1));
         assertTrue(names.contains(part2));
     }
@@ -87,7 +87,7 @@ public class GzipFileStorageTest {
 
         String part2 = ds.save(shiftDates(s, 2000000L));
         Date fromDate = s.getStartDate();
-        Date toDate = s.getStartDate();
+        Date toDate = s.getEndDate();
 
         String part3 = ds.save(shiftDates(s, 3000000L));
 
@@ -95,7 +95,7 @@ public class GzipFileStorageTest {
         List<GzipFileInfo> info = ds.findParts(new Date(fromDate.getTime()- 1100L), new Date(toDate.getTime()+1100L));
 
         assertEquals(1, info.size() );
-        assertEquals(part2, info.get(0).getName() );
+        assertEquals(part2, info.get(0).build() );
     }
 
     @Test
@@ -105,7 +105,7 @@ public class GzipFileStorageTest {
         Date fromDate = s.getStartDate();
 
         String part2 = ds.save(shiftDates(s, 2000000L));
-        Date toDate = s.getStartDate();
+        Date toDate = s.getEndDate();
 
         String part3 = ds.save(shiftDates(s, 3000000L));
 
@@ -113,8 +113,8 @@ public class GzipFileStorageTest {
         List<GzipFileInfo> info = ds.findParts(new Date(fromDate.getTime()- 1100L), new Date(toDate.getTime()+1100L));
 
         assertEquals(2, info.size() );
-        assertEquals(part1, info.get(0).getName() );
-        assertEquals(part2, info.get(1).getName() );
+        assertEquals(part1, info.get(0).build() );
+        assertEquals(part2, info.get(1).build() );
     }
 
 
@@ -127,14 +127,14 @@ public class GzipFileStorageTest {
         String part2 = ds.save(shiftDates(s, 2000000L));
 
         String part3 = ds.save(shiftDates(s, 3000000L));
-        Date toDate = s.getStartDate();
+        Date toDate = s.getEndDate();
 
         //there might be small time difference due to second precision
         List<GzipFileInfo> info = ds.findParts(new Date(fromDate.getTime()- 1100L), new Date(toDate.getTime()+1100L));
 
         assertEquals(3, info.size() );
-        assertEquals(part1, info.get(0).getName() );
-        assertEquals(part2, info.get(1).getName() );
-        assertEquals(part3, info.get(2).getName() );
+        assertEquals(part1, info.get(0).build() );
+        assertEquals(part2, info.get(1).build() );
+        assertEquals(part3, info.get(2).build() );
     }
 }

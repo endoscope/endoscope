@@ -267,15 +267,15 @@ public class JdbcStorageTest {
         SearchableJdbcStorage storage = new SearchableJdbcStorage("jdbc/dsName");
 
         Filters filters = storage.filters(df.date(0), df.date(9000));
-        assertArrayEquals(new Object[]{"g1", "g2"}, filters.getGroups().toArray());
+        assertArrayEquals(new Object[]{"g1", "g2"}, filters.getInstances().toArray());
         assertArrayEquals(new Object[]{"t8", "t9"}, filters.getTypes().toArray());
 
         filters = storage.filters(df.date(0), df.date(2500));
-        assertArrayEquals(new Object[]{"g1"}, filters.getGroups().toArray());
+        assertArrayEquals(new Object[]{"g1"}, filters.getInstances().toArray());
         assertArrayEquals(new Object[]{"t9"}, filters.getTypes().toArray());
 
         filters = storage.filters(df.date(2500), df.date(9000));
-        assertArrayEquals(new Object[]{"g2"}, filters.getGroups().toArray());
+        assertArrayEquals(new Object[]{"g2"}, filters.getInstances().toArray());
         assertArrayEquals(new Object[]{"t8"}, filters.getTypes().toArray());
     }
 }
