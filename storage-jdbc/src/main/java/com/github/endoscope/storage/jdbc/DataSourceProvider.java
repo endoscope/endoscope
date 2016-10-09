@@ -3,11 +3,9 @@ package com.github.endoscope.storage.jdbc;
 import javax.sql.DataSource;
 
 /**
- * Implement com.github.endoscope.storage.jdbc.CustomDataSourceFactory in order to provide your own
- * implementation of DataSource. It has priority over JNDI DS.
+ * Provide implementation class name in storage init parameter property in order
+ * pass DataSource of your choice to JDBC storage.
  */
 public interface DataSourceProvider {
-    String IMPLEMENTATION_CLASS_NAME = "com.github.endoscope.storage.jdbc.CustomDataSourceProvider";
-    String BASIC_DS_PROVIDER = "com.github.endoscope.basic.ds.BasicDataSourceProvider";
-    DataSource create();
+    DataSource create(String initParam);
 }

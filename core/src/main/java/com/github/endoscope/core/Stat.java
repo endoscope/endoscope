@@ -140,11 +140,25 @@ public class Stat {
         parentCount++;
     }
 
+    /**
+     * Warning:
+     * If you merge to empty stats you will most likely skip min value - it will stay 0.
+     * You may need to handle it manually.
+     *
+     * Alternatively consider using {@link #deepCopy()}
+     */
     @Transient
     public void merge(Stat inc){
         merge(inc, true);
     }
 
+    /**
+     * Warning:
+     * If you merge to empty stats you will most likely skip min value - it will stay 0.
+     * You may need to handle it manually.
+     *
+     * Alternatively consider using {@link #deepCopy(boolean)}
+     */
     @Transient
     public void merge(Stat inc, boolean withChildren){
         max = Math.max(max, inc.max);

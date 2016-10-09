@@ -33,5 +33,10 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>endoscope-storage-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

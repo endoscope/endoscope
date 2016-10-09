@@ -221,8 +221,7 @@ public abstract class StorageTestCases {
         StatDetails details = storage.loadDetails(STAT_NAME, Arrays.asList(id1, id2));
 
         //then
-        Stat expected = Stat.emptyStat();
-        expected.merge(stats1.getMap().get(STAT_NAME));
+        Stat expected = stats1.getMap().get(STAT_NAME).deepCopy();
         expected.merge(stats2.getMap().get(STAT_NAME));
 
         assertEquals(STAT_NAME, details.getId() );

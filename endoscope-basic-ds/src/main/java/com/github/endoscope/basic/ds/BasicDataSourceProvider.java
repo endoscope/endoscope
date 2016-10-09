@@ -11,13 +11,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class BasicDataSourceProvider implements DataSourceProvider {
     private static final Logger log = getLogger(BasicDataSourceProvider.class);
-    private String initParam;
 
-    public BasicDataSourceProvider(String initParam){
-        this.initParam = initParam;
-    }
-
-    public DataSource create(){
+    public DataSource create(String initParam){
         if( StringUtils.isNotBlank(initParam) && initParam.startsWith("jdbc:postgresql") ){
             log.info("Detected jdbc:postgresql storage param for Endoscope - initializing BasicDataSource");
             try{

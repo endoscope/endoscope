@@ -1,6 +1,5 @@
 package com.github.endoscope.util;
 
-import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -17,9 +16,8 @@ public class AggregateStatsUtil {
 
         //rewrite root stats only
         stats.getMap().forEach( (id, stat) -> {
-            Stat root = Stat.emptyStat();
-            root.merge(stat, false);//skip nested stats
-            daily.getMap().put(id, root);
+            //skip nested stats
+            daily.getMap().put(id, stat.deepCopy(false));
         });
         return daily;
     }

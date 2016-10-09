@@ -4,18 +4,27 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.StatDetails;
-import com.github.endoscope.storage.StatHistory;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -96,32 +105,23 @@ public class GzipStorage implements Storage {
 
     @Override
     public StatDetails loadDetails(String detailsId, List<String> statsIds){
-        Stat merged = new Stat();
-        List<StatHistory> histogram = statsIds.stream()
+        StatDetails result = new StatDetails(detailsId, null);
+        statsIds.stream()
                 .map( statsId -> load(statsId) )
-                .map( stats -> {
+                .filter( stats -> stats != null && stats.getStartDate() != null )
+                .sorted( (stats1, stats2) -> stats1.getStartDate().compareTo(stats2.getStartDate()) )
+                .forEach( stats -> {
                     Map<String, Stat> map = stats.getMap();
                     if( map == null ){
-                        return null;
+                        return;
                     }
                     Stat stat = map.get(detailsId);
                     if( stat == null ){
-                        return null;
+                        return;
                     }
-                    merged.merge(stat);
-                    return new StatHistory(stat, stats.getStartDate(), stats.getEndDate());
-                })
-                .filter( sh -> sh != null && sh.getStartDate() != null )
-                .sorted( (sh1, sh2) -> sh1.getStartDate().compareTo(sh2.getStartDate()) )
-                .collect(toList());
-
-        if( histogram.isEmpty() ){
-            return new StatDetails(detailsId, Stat.emptyStat());
-        } else {
-            StatDetails result = new StatDetails(detailsId, merged);
-            result.setHistogram(histogram);
-            return result;
-        }
+                    result.add(stat, stats.getStartDate(),stats.getEndDate());
+                });
+        return result;
     }
 
     @Override

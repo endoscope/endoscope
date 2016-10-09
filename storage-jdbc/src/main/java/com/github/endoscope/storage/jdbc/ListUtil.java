@@ -3,6 +3,8 @@ package com.github.endoscope.storage.jdbc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+
 public class ListUtil {
     public static <T> List<List<T>> partition(List<T> list, int partitionSize) {
         List<List<T>> result = new ArrayList<List<T>>();
@@ -16,5 +18,9 @@ public class ListUtil {
             result.add(list.subList(i, offset));
         }
         return result;
+    }
+
+    public static <T> List<T> emptyIfNull(List<T> in){
+        return in == null ? emptyList() : in;
     }
 }
