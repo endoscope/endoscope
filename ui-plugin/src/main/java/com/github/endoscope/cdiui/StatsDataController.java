@@ -5,9 +5,9 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.Filters;
-import com.github.endoscope.storage.SearchableStatsStorage;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
+import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
 import org.slf4j.Logger;
 
@@ -17,6 +17,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
@@ -43,7 +44,7 @@ public class StatsDataController {
     public Response top(@QueryParam("from") String fromS,
                         @QueryParam("to") String toS,
                         @QueryParam("past") String pastS,
-                        @QueryParam("group") String group,
+                        @QueryParam("instance") String instance,
                         @QueryParam("type") String type,
                         @QueryParam("reset") boolean reset) {
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
@@ -53,7 +54,7 @@ public class StatsDataController {
             Endoscope.resetStats();
         }
 
-        Stats stats = topLevelForRange(new Range(from, to, past, group, type));
+        Stats stats = topLevelForRange(new Range(from, to, past, instance, type));
         return noCacheResponse(jsonUtil.toJson(stats.getMap()));
     }
 
@@ -63,7 +64,7 @@ public class StatsDataController {
     public Response topDaily(@QueryParam("from") String fromS,
                         @QueryParam("to") String toS,
                         @QueryParam("past") String pastS,
-                        @QueryParam("group") String group,
+                        @QueryParam("instance") String instance,
                         @QueryParam("type") String type,
                         @QueryParam("reset") boolean reset) {
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
@@ -92,16 +93,16 @@ public class StatsDataController {
                             @QueryParam("from") String fromS,
                             @QueryParam("to") String toS,
                             @QueryParam("past") String pastS,
-                            @QueryParam("group") String group,
+                            @QueryParam("instance") String instance,
                             @QueryParam("type") String type){
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        StatDetails child = detailsForRange(id, new Range(from, to, past, group, type));
+        StatDetails child = detailsForRange(id, new Range(from, to, past, instance, type));
         return noCacheResponse(jsonUtil.toJson(child));
     }
 
     private static class Range {
-        public Range(Long from, Long to, Long past, String group, String type){
-            this.group = group;
+        public Range(Long from, Long to, Long past, String instance, String type){
+            this.instance = instance;
             this.type = type;
             if( past != null ){
                 if( past > 0 ){
@@ -125,7 +126,7 @@ public class StatsDataController {
 
         Date fromDate = null;
         Date toDate = null;
-        String group;
+        String instance;
         String type;
         boolean includeCurrent = true;
     }
@@ -133,7 +134,7 @@ public class StatsDataController {
     private Stats topLevelForRange(Range range) {
         Stats result;
         if( canSearch(range) ){
-            result = getSearchableStatsStorage().topLevel(range.fromDate, range.toDate, range.group, range.type);
+            result = getStorage().loadAggregated(true, range.fromDate, range.toDate, range.instance, range.type);
             if( range.includeCurrent ){
                 Stats current = topLevelInMemory();
                 result.merge(current, false);
@@ -147,7 +148,7 @@ public class StatsDataController {
     private StatDetails detailsForRange(String id, Range range) {
         StatDetails result;
         if( canSearch(range) ){
-            result = getSearchableStatsStorage().stat(id, range.fromDate, range.toDate, range.group, range.type);
+            result = getStorage().loadDetails(id, range.fromDate, range.toDate, range.instance, range.type);
             if( range.includeCurrent ){
                 StatDetails current = detailsInMemory(id);
                 if( current != null ){
@@ -187,10 +188,10 @@ public class StatsDataController {
         });
     }
 
-    private SearchableStatsStorage getSearchableStatsStorage() {
-        SearchableStatsStorage storage;
+    private Storage getStorage() {
+        Storage storage;
         try{
-            storage = (SearchableStatsStorage) Endoscope.getStatsStorage();
+            storage = Endoscope.getStatsStorage();
             if( storage == null ){
                 throw new RuntimeException("Storage not supported");
             }
@@ -211,28 +212,22 @@ public class StatsDataController {
         Range range = new Range(from, to, past, null, null);
         Filters filters = null;
         if( canSearch(range) ){
-            filters = getSearchableStatsStorage().filters(range.fromDate, range.toDate);
+            filters = getStorage().findFilters(range.fromDate, range.toDate, null);
         }
         if( filters == null){
             filters = Filters.EMPTY;
         }
         if( !filters.getInstances().contains(Properties.getAppInstance()) ){
+            filters.setInstances(new ArrayList(filters.getInstances()));
             filters.getInstances().add(Properties.getAppInstance());
         }
         if( !filters.getTypes().contains(Properties.getAppType()) ){
+            filters.setTypes(new ArrayList(filters.getTypes()));
             filters.getTypes().add(Properties.getAppType());
         }
         Collections.sort(filters.getInstances());
         Collections.sort(filters.getTypes());
         return noCacheResponse(jsonUtil.toJson(filters));
-    }
-
-    private Filters filtersForRange(Range range) {
-        Filters result = null;
-        if( canSearch(range) ){
-            result = getSearchableStatsStorage().filters(range.fromDate, range.toDate);
-        }
-        return (result != null) ? result : Filters.EMPTY;
     }
 
     @GET
@@ -241,7 +236,7 @@ public class StatsDataController {
     public Response defaultSettings() {
         return noCacheResponse(
                 "window.endoscopeAppType = \"" + Properties.getAppType() + "\";\n" +
-                "window.endoscopeAppGroup = \"" + Properties.getAppInstance() + "\";\n"
+                "window.endoscopeAppInstance = \"" + Properties.getAppInstance() + "\";\n"
         );
     }
 }

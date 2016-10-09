@@ -10,8 +10,8 @@ public class Properties {
     public static String ENABLED = "endoscope.enabled";
     public static String SCANNED_PACKAGES = "endoscope.scanned-packages";
     public static String SAVE_FREQ_MINUTES = "endoscope.save.feq.minutes";//set to <= 0 in order to disable
-    public static String STATS_STORAGE_CLASS = "endoscope.storage.class";
-    public static String STATS_STORAGE_CLASS_INIT_PARAM = "endoscope.storage.class.init.param";
+    public static String STORAGE_CLASS = "endoscope.storage.class";
+    public static String STORAGE_CLASS_INIT_PARAM = "endoscope.storage.class.init.param";
     public static String MAX_ID_LENGTH = "endoscope.max.id.length";
     public static String DEV_RESOURCES_DIR = "endoscope.dev.res.dir";
     public static String APP_TYPE = "endoscope.app.type";
@@ -100,12 +100,12 @@ public class Properties {
         return Integer.valueOf(safeGetProperty(SAVE_FREQ_MINUTES, DEFAULT_SAVE_FREQ_MINUTES));
     }
 
-    public static String getStatsStorageClassInitParam(){
-        return safeGetProperty(STATS_STORAGE_CLASS_INIT_PARAM, null);
+    public static String getStorageClassInitParam(){
+        return safeGetProperty(STORAGE_CLASS_INIT_PARAM, null);
     }
 
-    public static String getStatsStorageClass(){
-        return safeGetProperty(STATS_STORAGE_CLASS, null);
+    public static String getStorageClass(){
+        return safeGetProperty(STORAGE_CLASS, null);
     }
 
     public static int getMaxIdLength(){

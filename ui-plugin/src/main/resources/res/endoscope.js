@@ -1,6 +1,6 @@
 (function($) {
     var labels = {
-        groupLabelAll: "all groups",
+        instanceLabelAll: "all instances",
         typeLabelAll: "all types"
     };
 
@@ -17,7 +17,7 @@
         valueWarnLevel: 1000,
         from: null,
         to: null,
-        group: null,
+        instance: null,
         type: window.endoscopeAppType,
         past: 3600000, //1 hour,
         sortField: 'id',
@@ -34,7 +34,7 @@
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
 
-        labels.groupLabelAll = $("#es-filter").data("group-label");
+        labels.instanceLabelAll = $("#es-filter").data("instance-label");
         labels.typeLabelAll  = $("#es-filter").data("type-label");
 
         setupAjaxLoaderImage();
@@ -77,7 +77,7 @@
 
     var setupFilters = function(){
         refreshFilterLabels();
-        initAutocomplete($("#es-group"), labels.groupLabelAll);
+        initAutocomplete($("#es-instance"), labels.instanceLabelAll);
         initAutocomplete($("#es-type"), labels.typeLabelAll);
         loadFilters();
         $("#es-filter").click(function(){
@@ -92,8 +92,8 @@
     };
 
     var onFiltersSave = function(){
-        var g = $("#es-group").val();
-        options.group = ( g == labels.groupLabelAll ) ? null : g;
+        var g = $("#es-instance").val();
+        options.instance = ( g == labels.instanceLabelAll ) ? null : g;
         var t = $("#es-type").val();
         options.type = ( t == labels.typeLabelAll ) ? null : t;
 
@@ -133,17 +133,17 @@
     };
 
     var onFiltersLoad = function(filters) {
-        filters.groups = prepareFilterValues(filters.groups, options.group, labels.groupLabelAll);
+        filters.instances = prepareFilterValues(filters.instances, options.instance, labels.instanceLabelAll);
         filters.types  = prepareFilterValues(filters.types,  options.type,  labels.typeLabelAll);
 
-        $("#es-group").autocomplete( "option", "source", filters.groups );
+        $("#es-instance").autocomplete( "option", "source", filters.instances );
         $("#es-type").autocomplete( "option", "source", filters.types );
     };
 
     var refreshFilterLabels = function(){
-        var gl = !options.group ? labels.groupLabelAll : options.group;
+        var gl = !options.instance ? labels.instanceLabelAll : options.instance;
         var tl = !options.type ? labels.typeLabelAll : options.type;
-        $("#es-group").val(gl);
+        $("#es-instance").val(gl);
         $("#es-type").val(tl);
         $("#es-filter").text( gl + "/" + tl );
     };
@@ -259,7 +259,7 @@
                 to: options.to,
                 past: options.past,
                 reset: reset ? "true" : "false",
-                group: options.group,
+                instance: options.instance,
                 type: options.type
             }
         })
@@ -371,7 +371,7 @@
                 from: options.from,
                 to: options.to,
                 past: options.past,
-                group: options.group,
+                instance: options.instance,
                 type: options.type
             }
         })

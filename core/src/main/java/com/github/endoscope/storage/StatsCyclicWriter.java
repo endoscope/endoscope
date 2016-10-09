@@ -13,33 +13,43 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StatsCyclicWriter {
     private static final Logger log = getLogger(StatsCyclicWriter.class);
 
-    private int saveFreqMinutes = Properties.getSaveFreqMinutes();
-    private StatsStorage statsStorage = null;
+    private String appType;
+    private String appInstance;
+    private int saveFreqMinutes;
+    private Storage storage = null;
     private DateUtil dateUtil;
     private Date lastSave;
     private Date lastError;
 
     /**
      *
-     * @param statsStorage if null then save is disabled
+     * @param storage if null then save is disabled
      */
-    public StatsCyclicWriter(StatsStorage statsStorage){
-        this(statsStorage, new DateUtil());
+    public StatsCyclicWriter(Storage storage){
+        this(storage,
+                new DateUtil(),
+                Properties.getAppInstance(),
+                Properties.getAppType(),
+                Properties.getSaveFreqMinutes());
     }
 
     /**
      *
-     * @param statsStorage if null then save is disabled
+     * @param storage if null then save is disabled
      * @param dateUtil
      */
-    public StatsCyclicWriter(StatsStorage statsStorage, DateUtil dateUtil){
-        this.statsStorage = statsStorage;
+    public StatsCyclicWriter(Storage storage, DateUtil dateUtil, String appInstance,
+                             String appType, int saveFreqMinutes){
+        this.storage = storage;
         this.dateUtil = dateUtil;
         lastSave = dateUtil.now();
+        this.appType = appType;
+        this.appInstance = appInstance;
+        this.saveFreqMinutes = saveFreqMinutes;
     }
 
     public boolean shouldSave(){
-        if( statsStorage != null && saveFreqMinutes > 0 ){
+        if( storage != null && saveFreqMinutes > 0 ){
             Date now = dateUtil.now();
 
             //do not try to save for some time if error occurred
@@ -59,10 +69,10 @@ public class StatsCyclicWriter {
 
     public void safeSave(Stats stats){
         try{
-            if( statsStorage != null ){
+            if( storage != null ){
                 ensureDatesAreSet(stats);
                 long start = System.currentTimeMillis();
-                statsStorage.save(stats);
+                storage.save(stats, appInstance, appType);
                 lastSave = dateUtil.now();
                 lastError = null;
                 log.info("Saved stats in {}ms", System.currentTimeMillis() - start);

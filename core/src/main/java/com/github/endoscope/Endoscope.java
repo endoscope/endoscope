@@ -2,7 +2,7 @@ package com.github.endoscope;
 
 import com.github.endoscope.core.Engine;
 import com.github.endoscope.core.Stats;
-import com.github.endoscope.storage.StatsStorage;
+import com.github.endoscope.storage.Storage;
 
 import java.util.function.Function;
 
@@ -65,7 +65,7 @@ public class Endoscope {
      * Access to stored stats.
      * @return null if not supported
      */
-    public static StatsStorage getStatsStorage(){ return ENGINE.getStatsStorage(); }
+    public static Storage getStatsStorage(){ return ENGINE.getStorage(); }
 
     public static void stopStatsProcessorThread(){
         ENGINE.getStatsProcessor().stopStatsProcessorThread();

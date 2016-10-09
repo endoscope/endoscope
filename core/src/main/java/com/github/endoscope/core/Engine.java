@@ -2,23 +2,23 @@ package com.github.endoscope.core;
 
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.StatsCyclicWriter;
-import com.github.endoscope.storage.StatsStorage;
-import com.github.endoscope.storage.StatsStorageFactory;
+import com.github.endoscope.storage.StorageFactory;
+import com.github.endoscope.storage.Storage;
 
 import java.util.LinkedList;
 
 public class Engine {
     private ThreadLocal<LinkedList<Context>> contextStack = new ThreadLocal<>();
     private Boolean enabled = null;
-    private StatsStorage statsStorage = null;//may stay null if disabled or cannot setup it
+    private Storage storage = null;//may stay null if disabled or cannot setup it
     private StatsCyclicWriter statsCyclicWriter;
     private StatsProcessor statsProcessor;
     private int maxIdLength = Properties.getMaxIdLength();
 
     public Engine(){
         if( isEnabled()) {
-            statsStorage = new StatsStorageFactory().safeCreate();//may return null
-            statsCyclicWriter = new StatsCyclicWriter(statsStorage);
+            storage = new StorageFactory().safeCreate();//may return null
+            statsCyclicWriter = new StatsCyclicWriter(storage);
             statsProcessor = new StatsProcessor(statsCyclicWriter);
         }
     }
@@ -112,8 +112,8 @@ public class Engine {
         return statsProcessor;
     }
 
-    public StatsStorage getStatsStorage(){
+    public Storage getStorage(){
         checkEnabled();
-        return statsStorage;
+        return storage;
     }
 }

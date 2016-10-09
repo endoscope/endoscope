@@ -24,7 +24,7 @@ public class JdbcStorageTest extends StorageTestCases {
     }
 
     public JdbcStorageTest(){
-        super(new JdbcStorage2());
+        super(new JdbcStorage());
 
         try{
             server = Server.createTcpServer().start();
