@@ -5,7 +5,7 @@
 	<groupId>com.github.endoscope</groupId>
 	<artifactId>endoscope</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.19-SNAPSHOT</version>
+	<version>2.0.0-SNAPSHOT</version>
 
     <name>Endoscope</name>
     <description>Interceptor based Java application monitoring.</description>
@@ -37,13 +37,14 @@
   </scm>
 
 	<modules>
-		<module>core</module>
-		<module>cdi-plugin</module>
-		<module>ui-plugin</module>
-		<module>example-war</module>
-		<module>storage-gzip</module>
-		<module>storage-jdbc</module>
+		<module>endoscope-core</module>
+		<module>endoscope-cdi-plugin</module>
+		<module>endoscope-ui-plugin</module>
+		<module>endoscope-example-war</module>
+		<module>endoscope-storage-gzip</module>
+		<module>endoscope-storage-jdbc</module>
 		<module>endoscope-basic-ds</module>
+		<module>endoscope-storage-test</module>
 	</modules>
 
 	<distributionManagement>
@@ -149,32 +150,37 @@
 		<dependencies>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>core</artifactId>
+				<artifactId>endoscope-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>cdi-plugin</artifactId>
+				<artifactId>endoscope-cdi-plugin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>ui-plugin</artifactId>
+				<artifactId>endoscope-ui-plugin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>storage-gzip</artifactId>
+				<artifactId>endoscope-storage-gzip</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>storage-jdbc</artifactId>
+				<artifactId>endoscope-storage-jdbc</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>endoscope-basic-ds</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>endoscope-storage-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

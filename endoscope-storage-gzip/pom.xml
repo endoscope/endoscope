@@ -9,17 +9,27 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>endoscope-basic-ds</artifactId>
+    <artifactId>endoscope-storage-gzip</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>endoscope-storage-jdbc</artifactId>
+            <artifactId>endoscope-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-dbcp2</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>endoscope-storage-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>
