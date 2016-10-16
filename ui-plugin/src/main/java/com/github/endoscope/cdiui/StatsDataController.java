@@ -58,27 +58,6 @@ public class StatsDataController {
         return noCacheResponse(jsonUtil.toJson(stats.getMap()));
     }
 
-    @GET
-    @Path("/data/top/daily")
-    @Produces("application/json")
-    public Response topDaily(@QueryParam("from") String fromS,
-                        @QueryParam("to") String toS,
-                        @QueryParam("past") String pastS,
-                        @QueryParam("instance") String instance,
-                        @QueryParam("type") String type,
-                        @QueryParam("reset") boolean reset) {
-        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-
-        if( reset ){
-            log.info("Resetting current stats");
-            Endoscope.resetStats();
-        }
-
-        //TODO "#daily#" is a temporary solution for debug purposes - before we permanently switch to this version
-        Stats stats = topLevelForRange(new Range(from, to, past, "#daily#", type));
-        return noCacheResponse(jsonUtil.toJson(stats.getMap()));
-    }
-
     private Long toLong(String value){
         if( value == null || value.trim().length() == 0 ){
             return null;
