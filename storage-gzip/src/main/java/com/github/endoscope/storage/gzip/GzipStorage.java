@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -63,6 +65,17 @@ public class GzipStorage implements Storage {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String replace(String statsId, Stats stats, String instance, String type) {
+        if( isNotBlank(statsId) ){
+            File file = buildFile(statsId);
+            if( file.exists() ){
+                file.delete();
+            }
+        }
+        return save(stats, instance, type);
     }
 
     @Override
@@ -160,10 +173,13 @@ public class GzipStorage implements Storage {
 
     private Stats readFromGzipFile(String fileName) throws IOException {
         File file = buildFile(fileName);
+
         InputStream in = null;
         try {
             in = new GZIPInputStream(new FileInputStream(file));
             return jsonUtil.fromJson(Stats.class, in);
+        } catch (FileNotFoundException fnf){
+            return null;
         } finally {
             IOUtils.closeQuietly(in);
         }

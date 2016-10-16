@@ -39,6 +39,12 @@ public class JdbcStorage implements Storage {
     private GroupEntityHandler groupHandler = new GroupEntityHandler();
     private StatEntityHandler statHandler = new StatEntityHandler();
     private StringHandler stringHandler = new StringHandler();
+    private String tablePrefix = "";
+
+    public JdbcStorage setTablePrefix(String tablePrefix){
+        this.tablePrefix = tablePrefix;
+        return this;
+    }
 
     /**
      * Accepts following input parameters:
@@ -59,10 +65,19 @@ public class JdbcStorage implements Storage {
 
     @Override
     public String save(Stats stats, String instance, String type) {
+        return replace(null, stats, instance, type);
+    }
+
+    @Override
+    public String replace(String statsId, Stats stats, String instance, String type) {
         try{
             try(Connection conn = run.getDataSource().getConnection()){
                 conn.setAutoCommit(false);
                 try{
+                    if( isNotBlank(statsId) ){
+                        run.update(conn, "DELETE FROM "+tablePrefix+"endoscopeStat WHERE groupId = ? ", statsId);
+                        run.update(conn, "DELETE FROM "+tablePrefix+"endoscopeGroup WHERE id = ? ", statsId);
+                    }
                     String groupId = UUID.randomUUID().toString();
                     insertGroup(stats, conn, groupId, instance, type);
                     insertStats(stats, conn, groupId);
@@ -80,7 +95,7 @@ public class JdbcStorage implements Storage {
 
     private void insertGroup(Stats stats, Connection conn, String groupId, String instance, String type) throws SQLException {
         int u = run.update(conn,
-                "INSERT INTO endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError, appGroup, appType) " +
+                "INSERT INTO "+tablePrefix+"endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError, appGroup, appType) " +
                 "                    values( ?,         ?,       ?,         ?,    ?,          ?,        ?,       ?)",
                 groupId,
                 new Timestamp(setMilliseconds(stats.getStartDate(), 0).getTime()),
@@ -96,15 +111,11 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private void insertStats(Stats stats, Connection conn, String groupId) throws SQLException {
-        insertStats("endoscopeStat", stats, conn, groupId);
-    }
-
-    protected void insertStats(String tableName, Stats stats, Connection conn, String groupId) throws SQLException {
+    protected void insertStats( Stats stats, Connection conn, String groupId) throws SQLException {
         Object[][] data = prepareStatsData(groupId, stats);
         int[] result = run.batch(conn,
                 //endoscopeStat OR endoscopeDailyStat
-                "INSERT INTO " + tableName + "(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
+                "INSERT INTO "+tablePrefix+"endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
                 "                       values( ?,       ?,        ?,      ?,    ?,    ?,   ?,   ?,   ?,    ?,           ?)",
                 data);
         long errors = Arrays.stream(result)
@@ -194,7 +205,7 @@ public class JdbcStorage implements Storage {
 
                 List args = new ArrayList<>();
                 String query = " SELECT " + StatEntityHandler.STAT_FIELDS +
-                        " FROM endoscopeStat " +
+                        " FROM "+tablePrefix+"endoscopeStat " +
                         " WHERE groupId IN (" + listOfArgs(partition.size()) + ")";
                 args.addAll(partition);
 
@@ -223,7 +234,7 @@ public class JdbcStorage implements Storage {
         log.debug("Loading group for id: {}", id);
         List<GroupEntity> groups = run.queryExt(200,
             " SELECT " + GroupEntityHandler.GROUP_FIELDS +
-            " FROM endoscopeGroup " +
+            " FROM "+tablePrefix+"endoscopeGroup " +
             " WHERE id = ? ", groupHandler, id );
         log.debug("Loaded group for id {} in {}ms", id, System.currentTimeMillis() - start);
         if( groups.isEmpty() ){
@@ -247,7 +258,7 @@ public class JdbcStorage implements Storage {
             Timestamp toTs = new Timestamp(to.getTime());
             List<GroupEntity> list = run.queryExt(200,
                     " SELECT " + GroupEntityHandler.GROUP_FIELDS +
-                    " FROM endoscopeGroup " +
+                    " FROM "+tablePrefix+"endoscopeGroup " +
                     " WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appInstance, appType) +
                     " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appInstance, appType)
             );
@@ -273,7 +284,7 @@ public class JdbcStorage implements Storage {
 
                 List<GroupEntity> partitionResult = run.queryExt(50,
                         " SELECT " + GroupEntityHandler.GROUP_FIELDS +
-                        " FROM endoscopeGroup " +
+                        " FROM "+tablePrefix+"endoscopeGroup " +
                         " WHERE id IN (" + listOfArgs(partition.size()) + ") " +
                         " ORDER BY startDate " ,
                         groupHandler, partition.toArray()
@@ -336,7 +347,7 @@ public class JdbcStorage implements Storage {
                 log.debug("Finding instances for filters");
                 instances = run.queryExt(20,
                         " SELECT distinct(appGroup) " +
-                                " FROM endoscopeGroup " +
+                                " FROM "+tablePrefix+"endoscopeGroup " +
                                 " WHERE startDate >= ? AND endDate <= ? AND appType = ?",
                         stringHandler, fromTs, toTs, type);
                 log.debug("Loaded {} instances for filters in {}ms", instances.size(), System.currentTimeMillis() - start);
@@ -345,7 +356,7 @@ public class JdbcStorage implements Storage {
                 log.debug("Finding instances for filters");
                 instances = run.queryExt(20,
                                 " SELECT distinct(appGroup) " +
-                                " FROM endoscopeGroup " +
+                                " FROM "+tablePrefix+"endoscopeGroup " +
                                 " WHERE startDate >= ? AND endDate <= ? ",
                         stringHandler, fromTs, toTs);
                 log.debug("Loaded {} instances for filters in {}ms", instances.size(), System.currentTimeMillis() - start);
@@ -354,7 +365,7 @@ public class JdbcStorage implements Storage {
                 log.debug("Finding types for filters");
                 types = run.queryExt(20,
                                 " SELECT distinct(appType) " +
-                                " FROM endoscopeGroup " +
+                                " FROM "+tablePrefix+"endoscopeGroup " +
                                 " WHERE startDate >= ? AND endDate <= ? "
                         , stringHandler, fromTs, toTs);
                 log.debug("Loaded {} types for filters in {}ms", types.size(), System.currentTimeMillis() - start);

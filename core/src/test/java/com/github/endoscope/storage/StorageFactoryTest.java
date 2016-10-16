@@ -40,6 +40,11 @@ public class StorageFactoryTest {
         }
 
         @Override
+        public String replace(String id, Stats stats, String instance, String type) {
+            return null;
+        }
+
+        @Override
         public Stats load(String id) {
             return null;
         }
