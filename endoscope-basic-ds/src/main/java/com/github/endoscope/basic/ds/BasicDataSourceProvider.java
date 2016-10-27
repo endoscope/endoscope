@@ -20,7 +20,9 @@ public class BasicDataSourceProvider implements DataSourceProvider {
                 dataSource.setDriverClassName("org.postgresql.Driver");
                 //DEBUG: loglevel=2
                 //INFO: loglevel=1
-                dataSource.setUrl(initParam + "&loglevel=1");
+                //dataSource.setUrl(initParam + "&loglevel=1");
+
+                dataSource.setUrl(initParam);
 
                 return dataSource;
             }catch(Exception e){
