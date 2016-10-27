@@ -64,6 +64,7 @@ public class AggregatedJdbcStorage implements Storage {
         monthlyStorage  = new JdbcStorage().setTablePrefix("month_");
 
         all = asList(defaultStorage, dailyStorage, weeklyStorage, monthlyStorage);
+        log.info("Initializing {} sub-DS for {}", all.size(), this.getClass().getSimpleName());
         all.forEach( s -> s.setup(initParam) );
     }
 
