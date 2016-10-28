@@ -2,7 +2,6 @@ package com.github.endoscope.storage.jdbc;
 
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
-import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.DateUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,16 +26,16 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class AggregatedJdbcStorageTest {
     @Mock
-    Storage defaultStorage;
+    JdbcStorage defaultStorage;
 
     @Mock
-    Storage dailyStorage;
+    JdbcStorage dailyStorage;
 
     @Mock
-    Storage weeklyStorage;
+    JdbcStorage weeklyStorage;
 
     @Mock
-    Storage monthlyStorage;
+    JdbcStorage monthlyStorage;
 
     AggregatedJdbcStorage storage;
 

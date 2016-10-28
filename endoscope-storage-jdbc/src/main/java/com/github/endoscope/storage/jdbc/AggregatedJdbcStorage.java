@@ -26,17 +26,16 @@ public class AggregatedJdbcStorage implements Storage {
     private static final long WEEK_LENGTH_MS = 7 * DAY_LENGTH_MS;
     private static final long MONTH_LENGTH_MS = 30 * DAY_LENGTH_MS;
 
-    private Storage defaultStorage;
-    private Storage dailyStorage;
-    private Storage weeklyStorage;
-    private Storage monthlyStorage;
+    private JdbcStorage defaultStorage;
+    private JdbcStorage dailyStorage;
+    private JdbcStorage weeklyStorage;
+    private JdbcStorage monthlyStorage;
 
-    private List<Storage> all;
     private boolean aggregateOnly = false;
 
     public AggregatedJdbcStorage(){}
 
-    public AggregatedJdbcStorage(Storage defaultStorage, Storage dailyStorage, Storage weeklyStorage, Storage monthlyStorage) {
+    public AggregatedJdbcStorage(JdbcStorage defaultStorage, JdbcStorage dailyStorage, JdbcStorage weeklyStorage, JdbcStorage monthlyStorage) {
         this.defaultStorage = defaultStorage;
         this.dailyStorage = dailyStorage;
         this.weeklyStorage = weeklyStorage;
@@ -59,13 +58,15 @@ public class AggregatedJdbcStorage implements Storage {
     @Override
     public void setup(String initParam) {
         defaultStorage  = new JdbcStorage().setTablePrefix("");
+        defaultStorage.setup(initParam);
+
         dailyStorage    = new JdbcStorage().setTablePrefix("day_");
         weeklyStorage   = new JdbcStorage().setTablePrefix("week_");
         monthlyStorage  = new JdbcStorage().setTablePrefix("month_");
 
-        all = asList(defaultStorage, dailyStorage, weeklyStorage, monthlyStorage);
-        log.info("Initializing {} sub-DS for {}", all.size(), this.getClass().getSimpleName());
-        all.forEach( s -> s.setup(initParam) );
+        //save DB connection resources and re-use the same DS for aggregated storages
+        asList( dailyStorage, weeklyStorage, monthlyStorage)
+                .forEach( s -> s.setRun( defaultStorage.getRun() ) );
     }
 
     @Override

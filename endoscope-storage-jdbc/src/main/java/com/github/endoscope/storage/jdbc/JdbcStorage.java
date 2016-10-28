@@ -63,6 +63,14 @@ public class JdbcStorage implements Storage {
         run = new QueryRunnerExt(ds);
     }
 
+    public QueryRunnerExt getRun() {
+        return run;
+    }
+
+    public void setRun(QueryRunnerExt run) {
+        this.run = run;
+    }
+
     @Override
     public String save(Stats stats, String instance, String type) {
         return replace(null, stats, instance, type);
