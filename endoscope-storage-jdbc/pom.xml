@@ -35,6 +35,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>endoscope-storage-aggr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>endoscope-storage-test</artifactId>
             <scope>test</scope>
         </dependency>

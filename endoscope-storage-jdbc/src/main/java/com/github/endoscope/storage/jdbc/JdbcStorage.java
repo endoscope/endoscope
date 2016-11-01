@@ -83,8 +83,12 @@ public class JdbcStorage implements Storage {
                 conn.setAutoCommit(false);
                 try{
                     if( isNotBlank(statsId) ){
-                        run.update(conn, "DELETE FROM "+tablePrefix+"endoscopeStat WHERE groupId = ? ", statsId);
+                        List<String> groups = run.query(conn, "SELECT id FROM "+tablePrefix+"endoscopeGroup WHERE id = ? FOR UPDATE", stringHandler, statsId);
+                        if( groups.size() != 1 ){
+                            throw new RuntimeException("Failed to lock group with ID: " + statsId + " - ABORTING");
+                        }
                         run.update(conn, "DELETE FROM "+tablePrefix+"endoscopeGroup WHERE id = ? ", statsId);
+                        run.update(conn, "DELETE FROM "+tablePrefix+"endoscopeStat WHERE groupId = ? ", statsId);
                     }
                     String groupId = UUID.randomUUID().toString();
                     insertGroup(stats, conn, groupId, instance, type);

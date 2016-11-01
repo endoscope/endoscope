@@ -45,6 +45,8 @@
 		<module>endoscope-storage-jdbc</module>
 		<module>endoscope-basic-ds</module>
 		<module>endoscope-storage-test</module>
+		<module>endoscope-migration</module>
+		<module>endoscope-storage-aggr</module>
 	</modules>
 
 	<distributionManagement>
@@ -181,6 +183,16 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>endoscope-storage-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>endoscope-migration</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>endoscope-storage-aggr</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

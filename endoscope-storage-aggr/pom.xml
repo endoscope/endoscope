@@ -9,7 +9,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>endoscope-storage-gzip</artifactId>
+    <artifactId>endoscope-storage-aggr</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -27,13 +27,8 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>endoscope-storage-aggr</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>endoscope-storage-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
