@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.Storage;
+import com.github.endoscope.storage.aggr.AggregatedStorage;
 import com.github.endoscope.storage.gzip.AggregatedGzipStorage;
+import com.github.endoscope.storage.jdbc.AggregatedJdbcStorage;
 import com.github.endoscope.storage.jdbc.JdbcStorage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -19,44 +21,96 @@ import java.util.Map;
 
 import static com.github.endoscope.util.DateUtil.DATE_TIME_GMT;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class AggregateDBToGzip {
+public class Migrate {
     private static final Logger log = getLogger("MIGRATE");
 
     public static void main(String[] args) throws Exception {
-        if( !"UTC".equals(System.getProperty("user.timezone", "")) ){
-            log.error( "Please set VM argument with proper timezone: -Duser.timezone=UTC" );
-            System.exit(1);
-        }
-        if( args.length < 1 || !args[0].startsWith("jdbc:") ){
-            log.error( "Expected at least one argument: GZIP files storage directory" );
-            System.exit(1);
-        }
-        if( args.length < 2 || !new File(args[1]).exists() || !new File(args[1]).isDirectory() ){
-            log.error( "Expected GZIP files storage directory as second argument" );
-            System.exit(1);
-        }
+        Map<String, String> config = loadConfiguration(args[0]);
+        String operation = config.get("@operation");
 
-        String fileName = "migration.cfg.json";
-        if( args.length > 2 ){
-            fileName = args[2];
+        if( "aggrDBtoGzip".equals(operation) ){
+            migrateDBtoGzip(config);
+        } else if( "aggrDBtoDB".equals(operation) ){
+            migrateDBtoDB(config);
+        } else {
+            log.error("Unknown operation name: {}", operation);
+            System.exit(1);
         }
-        Map<String, String> config = loadConfiguration(fileName);
-        Date from = DATE_TIME_GMT.parse(defaultIfBlank(config.get("@from"), "@from date not set in config"));
-        Date to   = DATE_TIME_GMT.parse(defaultIfBlank(config.get("@to"), "@to date not set in config"));
-        log.info("Processing stats in range: {} to {}", formatDate(from), formatDate(to));
+    }
+
+    public static void migrateDBtoDB(Map<String, String> config) throws Exception {
+        checkUtcTimeZone();
+
+        String jdbcSrc = config.get("@jdbcSrc");
+        checkJdbcConnectionString(jdbcSrc, "@jdbcSrc");
+
+        String jdbcDst = config.get("@jdbcDst");
+        checkJdbcConnectionString(jdbcDst, "@jdbcDst");
 
         log.info("Initializing existing data storage - input DS");
-        JdbcStorage existing = new JdbcStorage().setTablePrefix("");
-        existing.setup(args[0]);
+        JdbcStorage existing = new JdbcStorage();
+        existing.setup(jdbcSrc);
+
+        log.info("Initializing output aggregated data storage - runs in aggregation mode only and doesn't store original stats again");
+        AggregatedJdbcStorage aggregated = new AggregatedJdbcStorage();
+        aggregated.setup(jdbcDst);
+        aggregated.setAggregateOnly(true);
+
+        migrateAll(config, existing, aggregated);
+    }
+
+    public static void migrateDBtoGzip(Map<String, String> config) throws Exception {
+        checkUtcTimeZone();
+
+        String jdbcSrc = config.get("@jdbcSrc");
+        checkJdbcConnectionString(jdbcSrc, "@jdbcSrc");
+
+        String gzipDst = config.get("@gzipDst");
+        checkExistingDirectory(gzipDst, "@gzipDst");
+
+        log.info("Initializing existing data storage - input DS");
+        JdbcStorage existing = new JdbcStorage();
+        existing.setup(jdbcSrc);
 
         log.info("Initializing output aggregated data storage - runs in aggregation mode only and doesn't store original stats again");
         AggregatedGzipStorage aggregated = new AggregatedGzipStorage();
-
+        aggregated.setup(gzipDst);
         aggregated.setAggregateOnly(true);
-        aggregated.setup(args[1]);
+
+        migrateAll(config, existing, aggregated);
+    }
+
+    private static void checkJdbcConnectionString(String value, String cfgKey) {
+        if ( isBlank(value) || !value.startsWith("jdbc:")) {
+            log.error("Configuration property {} is not valid JDBC connection string", cfgKey);
+            System.exit(1);
+        }
+    }
+
+    private static void checkExistingDirectory(String dir, String cfgKey) {
+        if( isBlank(dir) || !new File(dir).exists() || !new File(dir).isDirectory() ){
+            log.error( "Configuration property {} is not valid existing directory", cfgKey );
+            System.exit(1);
+        }
+    }
+
+    private static void checkUtcTimeZone() {
+        if( !"UTC".equals(System.getProperty("user.timezone", "")) ){
+            log.error( "Please set VM argument with proper timezone: -Duser.timezone=UTC. DB operations might work incorrectly without it.");
+            System.exit(1);
+        }
+    }
+
+    private static void migrateAll(Map<String, String> config, JdbcStorage existing, AggregatedStorage aggregated) throws Exception {
+
+        Date from = DATE_TIME_GMT.parse(defaultIfBlank(config.get("@from"), "@from date not set in config"));
+        Date to   = DATE_TIME_GMT.parse(defaultIfBlank(config.get("@to"), "@to date not set in config"));
+
+        log.info("Processing stats in range: {} to {}", formatDate(from), formatDate(to));
 
         Filters filters = existing.findFilters(from, to, null);
         log.info("Found {} types to migrate: {}", filters.getTypes().size(), filters.getTypes());
@@ -124,12 +178,17 @@ public class AggregateDBToGzip {
                 "Example config: {\n" +
                 "  \"<type1>\": \"<empty or last processed stat ID of type1>\",\n" +
                 "  \"<typeN>\": \"<empty or last processed stat ID of typeN>\",\n" +
+                "  \"@operation\": \"aggrDBtoGzip | aggrDBtoDB\",\n" +
+                "  \"@jdbcSrc\": \"jdbc connection string\",\n" +
+                "  \"@jdbcDst\": \"jdbc connection string\",\n" +
+                "  \"@gzipDst\": \"storage directory\",\n" +
+                "  \"@operation\": \"DBtoGzip | DBtoDB\",\n" +
                 "  \"@from\": \"lower bound of start date in format: yyyy-MM-dd HH:mm:ss\",\n" +
                 "  \"@to\": \"upper bound of end date in format: yyyy-MM-dd HH:mm:ss\"\n" +
                 "}\n\n" +
                 "Please remember that both: start and end date must match given range.\n" +
-                "Stats are processed in start order starting with next ID after <last stat ID> for given type.\n" +
-                "If <type> key is not in configuration then such stats are ignored.",
+                "Stats are processed in start date order starting with next ID after <last stat ID> for given type.\n" +
+                "If <type> key is not set then such stats are ignored.",
                 file.getAbsolutePath()
         );
         Map<String, String> config;
