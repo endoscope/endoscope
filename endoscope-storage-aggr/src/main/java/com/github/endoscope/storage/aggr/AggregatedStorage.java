@@ -103,12 +103,15 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
         }
 
         //search second before and second after to avoid round problems
-        List<String> ids = storage.find(addSeconds(start, -1), addSeconds(end, 1), null, type);
+        List<String> ids = storage.find(addSeconds(start, 1), addSeconds(end, -1), null, type);
         String replaceId = null;
         Stats aggregated;
         if( ids.isEmpty() ){
             aggregated = new Stats();
         } else {
+            if( ids.size() > 0 ){
+                log.warn("Found more than one aggregated stat to update!");
+            }
             replaceId = ids.get(0);
             aggregated = storage.load(replaceId);
         }

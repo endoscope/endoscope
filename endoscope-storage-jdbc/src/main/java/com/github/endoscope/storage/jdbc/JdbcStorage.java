@@ -29,6 +29,7 @@ import static com.github.endoscope.storage.jdbc.ListUtil.emptyIfNull;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.time.DateUtils.setMilliseconds;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -219,13 +220,19 @@ public class JdbcStorage implements Storage {
 
                 List args = new ArrayList<>();
                 String query = " SELECT " + StatEntityHandler.STAT_FIELDS +
-                        " FROM "+tablePrefix+"endoscopeStat " +
-                        " WHERE groupId IN (" + listOfArgs(partition.size()) + ")";
-                args.addAll(partition);
+                        " FROM "+tablePrefix+"endoscopeStat ";
 
-                if( isNotBlank(name) ){
-                    query += "AND name = ? ";
+                if( isBlank(name) ){
+                    query += " WHERE groupId IN (" + listOfArgs(partition.size()) + ")";
+                    args.addAll(partition);
+                } else {
+                    query += "WHERE rootId IN( " +
+                            "   SELECT id " +
+                            "   FROM "+tablePrefix+"endoscopeStat " +
+                            "   WHERE name = ? AND groupId IN (" + listOfArgs(partition.size()) + ")" +
+                            ")";
                     args.add(name);
+                    args.addAll(partition);
                 }
                 if( topLevelOnly ){
                     query += "AND parentId is null ";

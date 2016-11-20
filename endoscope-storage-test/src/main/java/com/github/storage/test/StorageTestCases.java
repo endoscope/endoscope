@@ -300,6 +300,32 @@ public abstract class StorageTestCases {
     }
 
     @Test
+    public void should_load_details_with_children() throws IOException{
+        //given
+        Stat rootStat = stat(100);
+
+        Stat stat1 = stat(10);
+        rootStat.ensureChildrenMap();
+        rootStat.getChildren().put("1", stat1);
+
+        Stat stat2 = stat(1);
+        stat1.ensureChildrenMap();
+        stat1.getChildren().put("11", stat2);
+
+        Stats stats = stats(dt(year+"-01-01 08:05:00"), dt(year+"-01-01 08:15:00"), rootStat);
+        storage.save(stats, "i1", "t1");
+
+        //when
+        StatDetails details = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, null);
+
+        //then
+        assertEquals( 1, details.getHistogram().size());
+        assertEquals( 100L, details.getMerged().getAvg());
+        assertEquals( 10L, details.getMerged().getChild("1").getAvg());
+        assertEquals( 1L, details.getMerged().getChild("1").getChild("11").getAvg());
+    }
+
+    @Test
     public void should_load_top_level() throws IOException{
         //given
         Stat parentStat = stat(100);

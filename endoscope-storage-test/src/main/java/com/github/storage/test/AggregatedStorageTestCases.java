@@ -97,8 +97,8 @@ public abstract class AggregatedStorageTestCases {
         stats.getMap().put("x", Stat.emptyStat());
 
         given(dailyStorage.find(
-                eq(parse("2000-03-02 23:59:59")),
-                eq(parse("2000-03-04 00:00:00")),
+                eq(parse("2000-03-03 00:00:01")),
+                eq(parse("2000-03-03 23:59:58")),
                 isNull(String.class),
                 eq("type")
         )).willReturn(
@@ -109,7 +109,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(dailyStorage).find(eq(parse("2000-03-02 23:59:59")), eq(parse("2000-03-04 00:00:00")), isNull(String.class), eq("type"));
+        verify(dailyStorage).find(eq(parse("2000-03-03 00:00:01")), eq(parse("2000-03-03 23:59:58")), isNull(String.class), eq("type"));
         verify(dailyStorage).replace(isNull(String.class), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2000-03-03 00:00:00"), statsCaptor.getValue().getStartDate());
@@ -126,8 +126,8 @@ public abstract class AggregatedStorageTestCases {
         stats.getMap().put("x", Stat.emptyStat());
 
         given(dailyStorage.find(
-                eq(parse("2000-03-02 23:59:59")),
-                eq(parse("2000-03-04 00:00:00")),
+                eq(parse("2000-03-03 00:00:01")),
+                eq(parse("2000-03-03 23:59:58")),
                 isNull(String.class),
                 eq("type")
         )).willReturn(
@@ -146,7 +146,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(dailyStorage).find(eq(parse("2000-03-02 23:59:59")), eq(parse("2000-03-04 00:00:00")), isNull(String.class), eq("type"));
+        verify(dailyStorage).find(eq(parse("2000-03-03 00:00:01")), eq(parse("2000-03-03 23:59:58")), isNull(String.class), eq("type"));
         verify(dailyStorage).replace(eq("daily-stat-id"), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2000-03-03 00:00:00"), statsCaptor.getValue().getStartDate());
@@ -177,7 +177,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(weeklyStorage).find(eq(parse("2016-10-09 23:59:59")), eq(parse("2016-10-17 00:00:00")), isNull(String.class), eq("type"));
+        verify(weeklyStorage).find(eq(parse("2016-10-10 00:00:01")), eq(parse("2016-10-16 23:59:58")), isNull(String.class), eq("type"));
         verify(weeklyStorage).replace(isNull(String.class), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2016-10-10 00:00:00"), statsCaptor.getValue().getStartDate());
@@ -194,8 +194,8 @@ public abstract class AggregatedStorageTestCases {
         stats.getMap().put("x", Stat.emptyStat());
 
         given(weeklyStorage.find(
-                eq(parse("2016-10-16 23:59:59")),
-                eq(parse("2016-10-24 00:00:00")),
+                eq(parse("2016-10-17 00:00:01")),
+                eq(parse("2016-10-23 23:59:58")),
                 isNull(String.class),
                 eq("type")
         )).willReturn(
@@ -214,7 +214,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(weeklyStorage).find(eq(parse("2016-10-16 23:59:59")), eq(parse("2016-10-24 00:00:00")), isNull(String.class), eq("type"));
+        verify(weeklyStorage).find(eq(parse("2016-10-17 00:00:01")), eq(parse("2016-10-23 23:59:58")), isNull(String.class), eq("type"));
         verify(weeklyStorage).replace(eq("daily-stat-id"), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2016-10-17 00:00:00"), statsCaptor.getValue().getStartDate());
@@ -234,8 +234,8 @@ public abstract class AggregatedStorageTestCases {
         stats.getMap().put("x", Stat.emptyStat());
 
         given(monthlyStorage.find(
-                eq(parse("2016-09-30 23:59:59")),
-                eq(parse("2016-11-01 00:00:00")),
+                eq(parse("2016-10-01 00:00:01")),
+                eq(parse("2016-10-31 23:59:58")),
                 isNull(String.class),
                 eq("type")
         )).willReturn(
@@ -246,7 +246,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(monthlyStorage).find(eq(parse("2016-09-30 23:59:59")), eq(parse("2016-11-01 00:00:00")), isNull(String.class), eq("type"));
+        verify(monthlyStorage).find(eq(parse("2016-10-01 00:00:01")), eq(parse("2016-10-31 23:59:58")), isNull(String.class), eq("type"));
         verify(monthlyStorage).replace(isNull(String.class), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2016-10-01 00:00:00"), statsCaptor.getValue().getStartDate());
@@ -263,8 +263,8 @@ public abstract class AggregatedStorageTestCases {
         stats.getMap().put("x", Stat.emptyStat());
 
         given(monthlyStorage.find(
-                eq(parse("2016-09-30 23:59:59")),
-                eq(parse("2016-11-01 00:00:00")),
+                eq(parse("2016-10-01 00:00:01")),
+                eq(parse("2016-10-31 23:59:58")),
                 isNull(String.class),
                 eq("type")
         )).willReturn(
@@ -283,7 +283,7 @@ public abstract class AggregatedStorageTestCases {
         storage.save(stats, "instance", "type");
 
         //then
-        verify(monthlyStorage).find(eq(parse("2016-09-30 23:59:59")), eq(parse("2016-11-01 00:00:00")), isNull(String.class), eq("type"));
+        verify(monthlyStorage).find(eq(parse("2016-10-01 00:00:01")), eq(parse("2016-10-31 23:59:58")), isNull(String.class), eq("type"));
         verify(monthlyStorage).replace(eq("daily-stat-id"), statsCaptor.capture(), isNull(String.class), eq("type"));
 
         assertEquals(parse("2016-10-01 00:00:00"), statsCaptor.getValue().getStartDate());
