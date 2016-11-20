@@ -89,8 +89,8 @@ public class GzipFileInfo {
     }
 
     private boolean inDateRange(Date from, Date to){
-        return (from == null || from.getTime() <= getFromDate().getTime() )
-            && (to == null || to.getTime() >= getToDate().getTime() );
+        return (from == null || from.getTime() <= getToDate().getTime() )
+            && (to == null || to.getTime() >= getFromDate().getTime() );
     }
 
     private boolean matchType(String type){

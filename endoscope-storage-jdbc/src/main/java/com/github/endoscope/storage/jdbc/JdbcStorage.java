@@ -273,7 +273,7 @@ public class JdbcStorage implements Storage {
             List<GroupEntity> list = run.queryExt(200,
                     " SELECT " + GroupEntityHandler.GROUP_FIELDS +
                     " FROM "+tablePrefix+"endoscopeGroup " +
-                    " WHERE startDate >= ? AND endDate <= ? " + optAppFilterQuery(appInstance, appType) +
+                    " WHERE endDate >= ? AND startDate <= ? " + optAppFilterQuery(appInstance, appType) +
                     " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appInstance, appType)
             );
 

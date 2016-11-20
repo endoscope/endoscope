@@ -156,8 +156,10 @@ public class GzipFileInfoTest {
         assertTrue( info.match(dt("1950-01-01-01-01-01"), null, null, null));
         //exact match
         assertTrue( info.match(dt("2000-01-01-01-01-01"), null, null, null));
+        //date in range
+        assertTrue(info.match(dt("2001-01-01-01-01-01"), null, null, null));
         //match date after
-        assertFalse(info.match(dt("2000-01-01-01-01-02"), null, null, null));
+        assertFalse(info.match(dt("2001-01-01-01-01-02"), null, null, null));
         assertFalse(info.match(dt("2100-01-01-01-01-01"), null, null, null));
     }
 
@@ -171,10 +173,12 @@ public class GzipFileInfoTest {
 
         //long after
         assertTrue( info.match(null, dt("2100-01-01-01-01-01"), null, null));
+        //date in range
+        assertTrue(info.match(null, dt("2001-01-01-01-01-01"), null, null));
         //exact match
         assertTrue( info.match(null, dt("2001-01-01-01-01-02"), null, null));
         //match date before
-        assertFalse(info.match(null, dt("2001-01-01-01-01-01"), null, null));
+        assertFalse(info.match(null, dt("2000-01-01-01-01-00"), null, null));
         assertFalse(info.match(null, dt("1950-01-01-01-01-01"), null, null));
     }
 
@@ -193,11 +197,11 @@ public class GzipFileInfoTest {
         assertTrue( info.match(dt("2000-01-01-01-01-01"), dt("2001-01-01-01-01-02"), null, null));
 
         //file partially in range
-        assertFalse(info.match(dt("1950-01-01-01-01-01"), dt("2001-01-01-01-01-01"), null, null));
-        assertFalse(info.match(dt("2000-01-01-01-01-02"), dt("2100-01-01-01-01-01"), null, null));
+        assertTrue(info.match(dt("1950-01-01-01-01-01"), dt("2001-01-01-01-01-01"), null, null));
+        assertTrue(info.match(dt("2000-01-01-01-01-02"), dt("2100-01-01-01-01-01"), null, null));
 
         //file contains range
-        assertFalse(info.match(dt("2000-01-01-01-01-02"), dt("2001-01-01-01-01-01"), null, null));
+        assertTrue(info.match(dt("2000-01-01-01-01-02"), dt("2001-01-01-01-01-01"), null, null));
     }
 
     @Test

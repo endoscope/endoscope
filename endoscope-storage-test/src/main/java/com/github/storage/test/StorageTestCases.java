@@ -10,11 +10,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import static com.github.endoscope.util.DateUtil.parseDateTime;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -67,15 +67,18 @@ public abstract class StorageTestCases {
         String identifier = storage.save(stats, null, null);
         Stats loaded = storage.load(identifier);
 
+        //we don't compare implementation specific data
+        loaded.setInfo(stats.getInfo());
+
         assertEquals(stats, loaded);
         assertEquals(jsonUtil.toJson(stats), jsonUtil.toJson(loaded));
     }
 
     @Test
     public void should_find_one_stats_in_exact_range() throws IOException{
-        String id1 = storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:15:00")), null, null);
+        String id1 = storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:14:59")), null, null);
         String id2 = storage.save(stats(dt(year+"-01-01 08:15:00"), dt(year+"-01-01 08:30:00")), null, null);
-        String id3 = storage.save(stats(dt(year+"-01-01 08:30:00"), dt(year+"-01-01 08:45:00")), null, null);
+        String id3 = storage.save(stats(dt(year+"-01-01 08:30:01"), dt(year+"-01-01 08:45:00")), null, null);
 
         List<String> ids = storage.find(dt(year+"-01-01 08:15:00"), dt(year+"-01-01 08:30:00"), null, null);
 
@@ -84,24 +87,24 @@ public abstract class StorageTestCases {
     }
 
     @Test
-    public void should_find_one_stats_in_bigger_range() throws IOException{
+    public void should_find_all_stats_in_bigger_range() throws IOException{
         String id1 = storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:15:00")), null, null);
         String id2 = storage.save(stats(dt(year+"-01-01 08:15:00"), dt(year+"-01-01 08:30:00")), null, null);
         String id3 = storage.save(stats(dt(year+"-01-01 08:30:00"), dt(year+"-01-01 08:45:00")), null, null);
 
         List<String> ids = storage.find(dt(year+"-01-01 08:10:00"), dt(year+"-01-01 08:40:00"), null, null);
 
-        assertEquals(1, ids.size() );
-        assertEquals(id2, ids.get(0) );
+        assertEquals(3, ids.size() );
+        assertTrue(ids.containsAll(asList(id1, id2, id3)));
     }
 
     @Test
     public void should_find_two_stats_in_bigger_range() throws IOException{
         String id1 = storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:15:00")), null, null);
         String id2 = storage.save(stats(dt(year+"-01-01 08:15:00"), dt(year+"-01-01 08:30:00")), null, null);
-        String id3 = storage.save(stats(dt(year+"-01-01 08:30:00"), dt(year+"-01-01 08:45:00")), null, null);
+        String id3 = storage.save(stats(dt(year+"-01-01 08:30:01"), dt(year+"-01-01 08:45:00")), null, null);
 
-        List<String> ids = storage.find(dt(year+"-01-01 07:10:00"), dt(year+"-01-01 08:40:00"), null, null);
+        List<String> ids = storage.find(dt(year+"-01-01 07:10:00"), dt(year+"-01-01 08:30:00"), null, null);
 
         assertEquals(2, ids.size() );
         assertEquals(id1, ids.get(0) );
@@ -218,7 +221,7 @@ public abstract class StorageTestCases {
         String id2 = storage.save(stats2, null, null);
 
         //when
-        StatDetails details = storage.loadDetails(STAT_NAME, Arrays.asList(id1, id2));
+        StatDetails details = storage.loadDetails(STAT_NAME, asList(id1, id2));
 
         //then
         Stat expected = stats1.getMap().get(STAT_NAME).deepCopy();
@@ -263,7 +266,7 @@ public abstract class StorageTestCases {
         storage.save(stats3, null, null);
 
         //when
-        StatDetails details = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:15:00"), dt(year+"-01-01 08:30:00"), null, null);
+        StatDetails details = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:20:00"), dt(year+"-01-01 08:25:00"), null, null);
 
         //then
         assertEquals(STAT_NAME, details.getId() );
