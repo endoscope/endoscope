@@ -20,6 +20,8 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -55,7 +57,7 @@ public class StatsDataController {
         }
 
         Stats stats = topLevelForRange(new Range(from, to, past, instance, type));
-        return noCacheResponse(jsonUtil.toJson(stats.getMap()));
+        return noCacheResponse(jsonUtil.toJson(stats));
     }
 
     private Long toLong(String value){
@@ -117,9 +119,11 @@ public class StatsDataController {
             if( range.includeCurrent ){
                 Stats current = topLevelInMemory();
                 result.merge(current, false);
+                result.setInfo("Added in-memory data. Original info: " + result.getInfo());
             }
         } else{
             result = topLevelInMemory();
+            result.setInfo("in-memory data only. Original info: " + result.getInfo());
         }
         return result;
     }
@@ -135,9 +139,11 @@ public class StatsDataController {
                     result.getMerged().merge(current.getMerged(), true);
                     result.getHistogram().addAll(current.getHistogram());
                 }
+                result.setInfo("Added in-memory data. Original info: " + result.getInfo());
             }
         } else {
             result = detailsInMemory(id);
+            result.setInfo("in-memory data only. Original info: " + result.getInfo());
         }
         return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
     }
@@ -194,19 +200,26 @@ public class StatsDataController {
             filters = getStorage().findFilters(range.fromDate, range.toDate, null);
         }
         if( filters == null){
-            filters = Filters.EMPTY;
+            filters = new Filters(null, null);
         }
-        if( !filters.getInstances().contains(Properties.getAppInstance()) ){
-            filters.setInstances(new ArrayList(filters.getInstances()));
-            filters.getInstances().add(Properties.getAppInstance());
-        }
-        if( !filters.getTypes().contains(Properties.getAppType()) ){
-            filters.setTypes(new ArrayList(filters.getTypes()));
-            filters.getTypes().add(Properties.getAppType());
-        }
-        Collections.sort(filters.getInstances());
-        Collections.sort(filters.getTypes());
+        filters.setInstances(addDefaultAndSort(filters.getInstances(), Properties.getAppInstance()));
+        filters.setTypes(    addDefaultAndSort(filters.getTypes(),     Properties.getAppType()));
         return noCacheResponse(jsonUtil.toJson(filters));
+    }
+
+    private List<String> addDefaultAndSort(List<String> list, String defaultValue){
+        if( list == null ){
+            list = new ArrayList<>();
+        }
+        list = list.stream()
+                .filter(element -> element != null)
+                .collect(Collectors.toList());
+
+        if( !list.contains(defaultValue) ){
+            list.add(defaultValue);
+        }
+        Collections.sort(list);
+        return list;
     }
 
     @GET

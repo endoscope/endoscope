@@ -10,6 +10,7 @@ import com.github.endoscope.storage.jdbc.dto.StatEntity;
 import com.github.endoscope.storage.jdbc.handler.GroupEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StatEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StringHandler;
+import com.github.endoscope.util.DateUtil;
 import org.slf4j.Logger;
 
 import javax.sql.DataSource;
@@ -166,6 +167,7 @@ public class JdbcStorage implements Storage {
             GroupEntity group = loadGroup(groupId);
             List<StatEntity> stats = loadGroupStats(groupId);
             restoreGroupStats(group, stats);
+            group.setInfo(storageInfo(group));
             return group;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -383,10 +385,31 @@ public class JdbcStorage implements Storage {
                 log.debug("Loaded {} types for filters in {}ms", types.size(), System.currentTimeMillis() - start);
             }
 
-            return new Filters(instances, types);
+            return new Filters(instances, types, storageInfo(null));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String storageInfo(Stats stats) {
+        StringBuilder info = new StringBuilder();
+        info.append("table=").append(tablePrefix);
+        if( stats != null ){
+            info.append(", start=");
+            if( stats.getStartDate() != null ){
+                info.append(DateUtil.DATE_TIME_GMT.format(stats.getStartDate()));
+            }else {
+                info.append("null");
+            }
+
+            info.append(", end=");
+            if( stats.getEndDate() != null ){
+                info.append(DateUtil.DATE_TIME_GMT.format(stats.getEndDate()));
+            } else {
+                info.append("null");
+            }
+        }
+        return info.toString();
     }
 
     @Override
@@ -412,6 +435,7 @@ public class JdbcStorage implements Storage {
 
     private StatDetails createDetails(String detailsId, List<GroupEntity> groups, List<StatEntity> stats) {
         StatDetails result = new StatDetails(detailsId, null);
+        result.setInfo(storageInfo(null));
         groups.forEach( group -> {
             List<StatEntity> groupStats = stats.stream()
                     .filter( s -> group.getId().equals(s.getGroupId()) )
@@ -442,6 +466,7 @@ public class JdbcStorage implements Storage {
             restoreGroupStats(group, groupStats);
             result.merge(group, !topLevelOnly);
         });
+        result.setInfo(storageInfo(result));
         return result;
     }
 }

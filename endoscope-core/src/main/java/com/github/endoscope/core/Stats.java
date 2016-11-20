@@ -6,6 +6,7 @@ import java.beans.Transient;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @com.fasterxml.jackson.annotation.JsonPropertyOrder({ "statsLeft", "lost", "fatalError", "startDate", "endDate", "map" })
 public class Stats {
@@ -15,6 +16,7 @@ public class Stats {
     private String fatalError = null;
     private Date startDate;
     private Date endDate;
+    private String info;
 
     //do not get it from Properties here as we could loose data by accident by calculating Stats on machine with Property turned off
     private boolean aggregateSubCalls = true;
@@ -205,30 +207,40 @@ public class Stats {
         this.endDate = endDate;
     }
 
+
+    /**
+     * Implementation specific information.
+     * @return
+     */
+    public String getInfo() {
+        return info;
+    }
+
+    /**
+     * Implementation specific information.
+     * @param info
+     */
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Stats)) return false;
-
         Stats stats = (Stats) o;
-
-        if (statsLeft != stats.statsLeft) return false;
-        if (lost != stats.lost) return false;
-        if (map != null ? !map.equals(stats.map) : stats.map != null) return false;
-        if (fatalError != null ? !fatalError.equals(stats.fatalError) : stats.fatalError != null) return false;
-        if (startDate != null ? !startDate.equals(stats.startDate) : stats.startDate != null) return false;
-        return endDate != null ? endDate.equals(stats.endDate) : stats.endDate == null;
-
+        return statsLeft == stats.statsLeft &&
+                lost == stats.lost &&
+                aggregateSubCalls == stats.aggregateSubCalls &&
+                Objects.equals(map, stats.map) &&
+                Objects.equals(fatalError, stats.fatalError) &&
+                Objects.equals(startDate, stats.startDate) &&
+                Objects.equals(endDate, stats.endDate) &&
+                Objects.equals(info, stats.info);
     }
 
     @Override
     public int hashCode() {
-        int result = map != null ? map.hashCode() : 0;
-        result = 31 * result + (int) (statsLeft ^ (statsLeft >>> 32));
-        result = 31 * result + (int) (lost ^ (lost >>> 32));
-        result = 31 * result + (fatalError != null ? fatalError.hashCode() : 0);
-        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
-        result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
-        return result;
+        return Objects.hash(map, statsLeft, lost, fatalError, startDate, endDate, info, aggregateSubCalls);
     }
 }

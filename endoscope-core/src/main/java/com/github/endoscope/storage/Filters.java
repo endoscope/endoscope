@@ -1,23 +1,25 @@
 package com.github.endoscope.storage;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Filters {
-    public static Filters EMPTY = new Filters(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
-    
     List<String> instances;
     List<String> types;
+    String info;
 
     public Filters(){
-        this.instances = new ArrayList<>();
-        this.types = new ArrayList<>();
+        this(new ArrayList<>(), new ArrayList<>());
     }
 
     public Filters(List<String> instances, List<String> types){
+        this(instances, types, null);
+    }
+
+    public Filters(List<String> instances, List<String> types, String info){
         this.instances = instances;
         this.types = types;
+        this.info = info;
     }
 
     public List<String> getInstances() {
@@ -34,5 +36,21 @@ public class Filters {
 
     public void setTypes(List<String> types) {
         this.types = types;
+    }
+
+    /**
+     * Implementation specific information.
+     * @return
+     */
+    public String getInfo() {
+        return info;
+    }
+
+    /**
+     * Implementation specific information.
+     * @param info
+     */
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

@@ -11,6 +11,7 @@ public class StatDetails {
     private String id;
     private Stat merged;
     private List<StatHistory> histogram = new ArrayList<>();
+    private String info;
 
     public StatDetails() {
         merged = new Stat();
@@ -56,5 +57,21 @@ public class StatDetails {
             getMerged().merge(details, true);
         }
         getHistogram().add( new StatHistory(details, startDate, endDate) );
+    }
+
+    /**
+     * Implementation specific information.
+     * @return
+     */
+    public String getInfo() {
+        return info;
+    }
+
+    /**
+     * Implementation specific information.
+     * @param info
+     */
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

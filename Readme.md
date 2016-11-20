@@ -5,11 +5,11 @@ Stats UI
 --------
 Deploy example WAR to Wildfy and open stats UI page:
 
-    http://localhost:8080/example-war/rest/endoscope/
+    http://localhost:8080/endoscope-example-war/rest/endoscope/
 
 You may run some additional processing in order to change statistics by entering:
              
-    http://localhost:8080/example-war/rest/controller/process
+    http://localhost:8080/endoscope-example-war/rest/controller/process
 
 Storage directory changes every time to restart application. 
 In example application those values are hardcoded in:

@@ -282,7 +282,8 @@
         $(".es-details").hide();
     };
 
-    var onTopLevelStatsLoad = function(topLevelStats) {
+    var onTopLevelStatsLoad = function(topData) {
+        var topLevelStats = topData.map;
         placeholder.empty();
         var esTable = $($("#es-table-template").html());
         placeholder.append(esTable);
