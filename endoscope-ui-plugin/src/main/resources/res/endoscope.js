@@ -61,14 +61,14 @@
             clearTimeout(loadingTim);
             $('.es-loading').show();
             ajaxCount++;
-            console.log("incremented ajaxCount to: " + ajaxCount);
+            //console.log("incremented ajaxCount to: " + ajaxCount);
         }).bind("ajaxComplete", function(){
             ajaxCount--;
-            console.log("decremented ajaxCount to: " + ajaxCount);
+            //console.log("decremented ajaxCount to: " + ajaxCount);
             if( ajaxCount > 0 ){ //do not hide loader if other/parallel calls are still running
                 return;
             }
-            console.log("about to hide loader image");
+            //console.log("about to hide loader image");
             loadingTim = setTimeout(function(){
                 $('.es-loading').hide();
             }, 500);
