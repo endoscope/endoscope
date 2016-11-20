@@ -9,6 +9,7 @@ import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import javax.ws.rs.GET;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Path("/endoscope")
@@ -116,7 +118,7 @@ public class StatsDataController {
         Stats result;
         if( canSearch(range) ){
             result = getStorage().loadAggregated(true, range.fromDate, range.toDate, range.instance, range.type);
-            if( range.includeCurrent ){
+            if( inMemoryInRange(range) ){
                 Stats current = topLevelInMemory();
                 result.merge(current, false);
                 result.setInfo("Added in-memory data. Original info: " + result.getInfo());
@@ -132,7 +134,7 @@ public class StatsDataController {
         StatDetails result;
         if( canSearch(range) ){
             result = getStorage().loadDetails(id, range.fromDate, range.toDate, range.instance, range.type);
-            if( range.includeCurrent ){
+            if( inMemoryInRange(range) ){
                 StatDetails current = detailsInMemory(id);
                 if( current != null ){
                     //we don't want to merge not set stats as it would reset min value to 0
@@ -146,6 +148,12 @@ public class StatsDataController {
             result.setInfo("in-memory data only. Original info: " + result.getInfo());
         }
         return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
+    }
+
+    private boolean inMemoryInRange(Range range){
+        return range.includeCurrent
+                && (isBlank(range.instance) || StringUtils.equals(range.instance, Properties.getAppInstance()))
+                && (isBlank(range.type) || StringUtils.equals(range.type, Properties.getAppType()));
     }
 
     private boolean canSearch(Range range){
