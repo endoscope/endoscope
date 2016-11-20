@@ -362,7 +362,7 @@ public class JdbcStorage implements Storage {
                 instances = run.queryExt(20,
                         " SELECT distinct(appGroup) " +
                                 " FROM "+tablePrefix+"endoscopeGroup " +
-                                " WHERE startDate >= ? AND endDate <= ? AND appType = ?",
+                                " WHERE endDate >= ? AND startDate <= ? AND appType = ?",
                         stringHandler, fromTs, toTs, type);
                 log.debug("Loaded {} instances for filters in {}ms", instances.size(), System.currentTimeMillis() - start);
                 types = singletonList(type);
@@ -371,7 +371,7 @@ public class JdbcStorage implements Storage {
                 instances = run.queryExt(20,
                                 " SELECT distinct(appGroup) " +
                                 " FROM "+tablePrefix+"endoscopeGroup " +
-                                " WHERE startDate >= ? AND endDate <= ? ",
+                                " WHERE endDate >= ? AND startDate <= ? ",
                         stringHandler, fromTs, toTs);
                 log.debug("Loaded {} instances for filters in {}ms", instances.size(), System.currentTimeMillis() - start);
 
@@ -380,7 +380,7 @@ public class JdbcStorage implements Storage {
                 types = run.queryExt(20,
                                 " SELECT distinct(appType) " +
                                 " FROM "+tablePrefix+"endoscopeGroup " +
-                                " WHERE startDate >= ? AND endDate <= ? "
+                                " WHERE endDate >= ? AND startDate <= ? "
                         , stringHandler, fromTs, toTs);
                 log.debug("Loaded {} types for filters in {}ms", types.size(), System.currentTimeMillis() - start);
             }

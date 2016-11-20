@@ -174,7 +174,7 @@ public abstract class StorageTestCases {
         storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:15:00")), "i1", "t2");
         storage.save(stats(dt(year+"-01-01 08:30:00"), dt(year+"-01-01 08:40:00")), "i3", "t2");
 
-        Filters filters = storage.findFilters(dt(year+"-01-01 08:20:00"), dt(year+"-01-01 08:50:00"), null);
+        Filters filters = storage.findFilters(dt(year+"-01-01 08:35:00"), dt(year+"-01-01 08:37:00"), null);
 
         assertEquals( 2, filters.getInstances().size() );
         assertTrue(filters.getInstances().contains("i2"));
