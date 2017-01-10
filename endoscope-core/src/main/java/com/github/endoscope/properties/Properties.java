@@ -18,6 +18,7 @@ public class Properties {
     public static String APP_INSTANCE = "endoscope.app.instance";
     public static String DEPRECATED_APP_GROUP = "endoscope.app.group";//now it's instance
     public static String AGGREGATE_SUB_CALLS = "endoscope.aggregate.sub.calls";
+    public static String DAYS_TO_KEEP = "endoscope.days.to.keep";//set <= 0 to disable
 
     /*
      Credentials format is: "username:password"
@@ -32,6 +33,7 @@ public class Properties {
     public static String DEFAULT_SAVE_FREQ_MINUTES = "5";
     public static String DEFAULT_MAX_ID_LENGTH = "100";
     public static String DEFAULT_AGGREGATE_SUB_CALLS = "true";
+    public static String DEFAULT_DAYS_TO_KEEP = "35";
 
 
 
@@ -138,5 +140,9 @@ public class Properties {
         //notice that: "true".equalsIgnoreCase behaves in different way in case of incorrect value
         //we wan't it disabled when set to "false" (whatever character case) only.
         return !"false".equalsIgnoreCase(safeGetProperty(AGGREGATE_SUB_CALLS, DEFAULT_AGGREGATE_SUB_CALLS));
+    }
+
+    public static int getDaysToKeepData() {
+        return Integer.valueOf(safeGetProperty(DAYS_TO_KEEP, DEFAULT_DAYS_TO_KEEP));
     }
 }

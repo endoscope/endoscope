@@ -293,4 +293,131 @@ public abstract class AggregatedStorageTestCases {
         assertTrue(statsCaptor.getValue().getMap().containsKey("y"));
     }
 
+    @Test
+    public void shouldFindStatsInDefaultStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-01 23:58:00");
+
+        //when
+        storage.find(from, to, "instance", "type");
+
+        //then
+        verify(defaultStorage).find(eq(from), eq(to), eq("instance"), eq("type"));
+        verifyNoMoreInteractions(dailyStorage);
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldFindStatsInDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-02 01:00:00");
+
+        //when
+        storage.find(from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).find(eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldFindStatsInWeeklyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-08 01:00:00");
+
+        //when
+        storage.find(from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verifyNoMoreInteractions(dailyStorage);
+        verify(weeklyStorage).find(eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldFindStatsInMonthlyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-11-18 01:00:00");
+
+        //when
+        storage.find(from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verifyNoMoreInteractions(dailyStorage);
+        verifyNoMoreInteractions(weeklyStorage);
+        verify(monthlyStorage).find(eq(from), eq(to), isNull(String.class), eq("type"));
+    }
+
+    @Test
+    public void shouldLoadDetailsFromDefaultStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-01 23:58:00");
+
+        //when
+        storage.loadDetails("detailsId", from, to, "instance", "type");
+
+        //then
+        verify(defaultStorage).loadDetails(eq("detailsId"), eq(from), eq(to), eq("instance"), eq("type"));
+        verifyNoMoreInteractions(dailyStorage);
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadDailyDetailsFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-02 01:58:00");
+
+        //when
+        storage.loadDetails("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadWeeklyDetailsFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-08 01:58:00");
+
+        //when
+        storage.loadDetails("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadMonthlyDetailsFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-11-08 01:58:00");
+
+        //when
+        storage.loadDetails("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
 }

@@ -20,6 +20,7 @@ public class StatsCyclicWriter {
     private DateUtil dateUtil;
     private Date lastSave;
     private Date lastError;
+    private int daysToKeep;
 
     /**
      *
@@ -30,7 +31,8 @@ public class StatsCyclicWriter {
                 new DateUtil(),
                 Properties.getAppInstance(),
                 Properties.getAppType(),
-                Properties.getSaveFreqMinutes());
+                Properties.getSaveFreqMinutes(),
+                Properties.getDaysToKeepData());
     }
 
     /**
@@ -39,13 +41,14 @@ public class StatsCyclicWriter {
      * @param dateUtil
      */
     public StatsCyclicWriter(Storage storage, DateUtil dateUtil, String appInstance,
-                             String appType, int saveFreqMinutes){
+                             String appType, int saveFreqMinutes, int daysToKeep){
         this.storage = storage;
         this.dateUtil = dateUtil;
         lastSave = dateUtil.now();
         this.appType = appType;
         this.appInstance = appInstance;
         this.saveFreqMinutes = saveFreqMinutes;
+        this.daysToKeep = daysToKeep;
     }
 
     public boolean shouldSave(){
@@ -68,18 +71,35 @@ public class StatsCyclicWriter {
     }
 
     public void safeSave(Stats stats){
+        if( storage == null ){
+            return;
+        }
         try{
-            if( storage != null ){
-                ensureDatesAreSet(stats);
-                long start = System.currentTimeMillis();
-                storage.save(stats, appInstance, appType);
-                lastSave = dateUtil.now();
-                lastError = null;
-                log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
-            }
+            ensureDatesAreSet(stats);
+            long start = System.currentTimeMillis();
+            storage.save(stats, appInstance, appType);
+            lastSave = dateUtil.now();
+            lastError = null;
+            log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
-            log.error("failed to save stats - next attempt in 5 minutes", e);
+            log.warn("Failed to save stats - next attempt in 5 minutes. Message: ", e.getMessage());
+            log.debug("Failed to save stats - next attempt in 5 minutes. ", e);
             lastError = dateUtil.now();
+        }
+    }
+
+    public void safeCleanup() {
+        if( daysToKeep <= 0 || lastError != null ){
+            return;
+        }
+        try{
+            long start = System.currentTimeMillis();
+            storage.cleanup(daysToKeep, appType);
+            lastSave = dateUtil.now();
+            log.info("Performed cleanup in {}ms", System.currentTimeMillis() - start);
+        }catch(Exception e){
+            log.warn("Failed to cleanup stats. Message: {}", e.getMessage());
+            log.debug("Failed to cleanup stats.", e);
         }
     }
 

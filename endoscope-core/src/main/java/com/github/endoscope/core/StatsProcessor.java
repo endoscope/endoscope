@@ -5,6 +5,7 @@ import com.github.endoscope.storage.StatsCyclicWriter;
 import com.github.endoscope.util.DebugUtil;
 import org.slf4j.Logger;
 
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -56,7 +57,9 @@ public class StatsProcessor {
     }
 
     private Stats createEmptyStats() {
-        return new Stats(Properties.getAggregateSubCalls());
+        Stats stats = new Stats(Properties.getAggregateSubCalls());
+        stats.setStartDate(new Date());
+        return stats;
     }
 
     public void store(Context context){
@@ -83,6 +86,7 @@ public class StatsProcessor {
         if( statsCyclicWriter.shouldSave() ){
             synchronized(stats){
                 statsCyclicWriter.safeSave(stats);
+                statsCyclicWriter.safeCleanup();
                 stats = createEmptyStats();
             }
         }

@@ -78,4 +78,13 @@ public interface Storage {
      * @return not null
      */
     Stats loadAggregated(boolean topLevelOnly, Date from, Date to, String instance, String type);
+
+    /**
+     * Removes some of old and no longer used stats.
+     * It's optional operation. Implementation might do nothing.
+     *
+     * @param daysToKeep cleanup stats older than this value
+     * @param type
+     */
+    void cleanup(int daysToKeep, String type);
 }

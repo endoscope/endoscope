@@ -11,6 +11,7 @@ import com.github.endoscope.storage.jdbc.handler.GroupEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StatEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StringHandler;
 import com.github.endoscope.util.DateUtil;
+import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 
 import javax.sql.DataSource;
@@ -76,6 +77,46 @@ public class JdbcStorage implements Storage {
     @Override
     public String save(Stats stats, String instance, String type) {
         return replace(null, stats, instance, type);
+    }
+
+    @Override
+    public void cleanup(int daysToKeep, String type) {
+        if( daysToKeep <= 0 ){
+            log.debug("cleanup disabled - skipping");
+            return;
+        }
+        List<String> groupsToDelete = null;
+
+        Date date = DateUtils.addDays(new Date(), -1 * daysToKeep);
+        Timestamp ts = new Timestamp(date.getTime());
+        try{
+            log.debug("searching for groups to delete. Table prefix:{}, days to keep: {}", tablePrefix, daysToKeep);
+            groupsToDelete = run.queryExt(10,
+                " SELECT id " +
+                " FROM "+tablePrefix+"endoscopeGroup " +
+                " WHERE 1=1" +
+                "  AND enddate < ?" +
+                "  AND appType = ?" +
+                " LIMIT 10",
+                stringHandler, ts, type);
+            if( groupsToDelete.isEmpty() ){
+                log.debug("nothing to cleanup");
+                return;
+            }
+            log.debug("Found groups to clean: {}", groupsToDelete);
+
+            log.debug("cleaning stats");
+            run.update("DELETE FROM "+tablePrefix+"endoscopeStat WHERE groupId in(" + listOfArgs(groupsToDelete.size()) + ")",
+                    groupsToDelete.toArray());
+
+            log.debug("cleaning groups");
+            run.update("DELETE FROM "+tablePrefix+"endoscopeGroup WHERE id in(" + listOfArgs(groupsToDelete.size()) + ")",
+                    groupsToDelete.toArray());
+
+            log.debug("completed cleanup");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to cleanup groups: " + groupsToDelete, e);
+        }
     }
 
     @Override

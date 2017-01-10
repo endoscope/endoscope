@@ -517,7 +517,9 @@
 
     var extractSeries = function(histogram, property){
         var result = [];
-        if( property == "bad" ){
+        if( histogram == null || histogram.length == 0 ){
+            //do nothing
+        } else if( property == "bad" ){
             result.push([histogram[0].startDate, options.valueBadLevel]);
             result.push([histogram[histogram.length-1].startDate, options.valueBadLevel]);
         } else if( property == "warn" ){

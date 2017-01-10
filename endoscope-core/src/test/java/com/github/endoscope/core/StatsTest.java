@@ -8,7 +8,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
+import static com.github.endoscope.util.DateUtil.parseDateTime;
 import static com.github.endoscope.util.PropertyTestUtil.withProperty;
 
 public class StatsTest {
@@ -108,5 +110,45 @@ public class StatsTest {
         Stats s2 = s1.deepCopy();
 
         Assert.assertEquals(s1, s2);
+    }
+
+    @Test
+    public void should_merge_dates(){
+        Stats result = new Stats();
+        Assert.assertEquals(null, result.getStartDate());
+        Assert.assertEquals(null, result.getEndDate());
+
+        Stats stats1 = new Stats();
+        stats1.setStartDate(dt("2000-01-01 08:00:00"));
+        stats1.setEndDate(dt("2000-01-01 09:00:00"));
+        result.merge(stats1, true);
+
+        //non-null values should override null values
+        Assert.assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
+        Assert.assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
+
+        //smaller range of date will not update result
+        Stats stats2 = new Stats();
+        stats2.setStartDate(dt("2000-01-01 08:30:00"));
+        stats2.setEndDate(dt("2000-01-01 08:40:00"));
+        result.merge(stats2, true);
+
+        //no change
+        Assert.assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
+        Assert.assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
+
+        //wider range should update result
+        Stats stats3 = new Stats();
+        stats3.setStartDate(dt("2000-01-01 07:00:00"));
+        stats3.setEndDate(dt("2000-01-01 10:00:00"));
+        result.merge(stats3, true);
+
+        //updated
+        Assert.assertEquals(dt("2000-01-01 07:00:00"), result.getStartDate());
+        Assert.assertEquals(dt("2000-01-01 10:00:00"), result.getEndDate());
+    }
+
+    private Date dt(String date){
+        return parseDateTime(date);
     }
 }

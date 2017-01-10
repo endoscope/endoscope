@@ -73,5 +73,8 @@ public class StorageFactoryTest {
         public Stats loadAggregated(boolean topLevelOnly, Date from, Date to, String instance, String type) {
             return null;
         }
+
+        @Override
+        public void cleanup(int daysToKeep, String type) {}
     }
 }

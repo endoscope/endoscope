@@ -1,11 +1,17 @@
 package com.github.endoscope.storage.jdbc;
 
+import com.github.endoscope.core.Stats;
 import com.github.storage.test.StorageTestCases;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
 import org.junit.AfterClass;
+import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class JdbcStorageTest extends StorageTestCases {
     private static Server server;
@@ -38,5 +44,25 @@ public class JdbcStorageTest extends StorageTestCases {
         }catch(Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void should_cleanup_old_stats() throws IOException {
+        //warning fixed dates may destabilize tests if data overlaps
+        Stats oldStats = stats( dt("1990-01-01 08:00:00"), dt("1990-01-01 08:15:00"));
+        String oldIdentifier = storage.save(oldStats, null, "cleanup-instance-test");
+
+        Stats newStats = stats( dt(getYear()+"-01-01 08:00:00"), dt(getYear()+"-01-01 08:15:00"));
+        String newIdentifier = storage.save(newStats, null, "cleanup-instance-test");
+
+        List<String> ids = storage.find(dt("1980-01-01 08:00:00"), dt(getYear()+"-12-01 08:00:00"), null, "cleanup-instance-test");
+        assertEquals(2, ids.size() );
+
+        int oneDay = 1;
+        storage.cleanup(oneDay, "cleanup-instance-test");
+
+        ids = storage.find(dt("1980-01-01 08:00:00"), dt(getYear()+"-12-01 08:00:00"), null, "cleanup-instance-test");
+        assertEquals(1, ids.size() );
+        assertEquals(newIdentifier, ids.get(0) );
     }
 }

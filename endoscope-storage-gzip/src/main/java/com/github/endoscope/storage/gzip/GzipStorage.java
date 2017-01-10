@@ -184,4 +184,7 @@ public class GzipStorage implements Storage {
             IOUtils.closeQuietly(in);
         }
     }
+
+    @Override
+    public void cleanup(int daysToKeep, String type) {}
 }

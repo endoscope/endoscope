@@ -23,7 +23,7 @@ public abstract class StorageTestCases {
     private static final String STAT_NAME = "the-stat";
     protected Storage storage;
     protected JsonUtil jsonUtil = new JsonUtil();
-    private static int year = 2000;
+    private static int year = 3000;//future - otherwise it'll overlap cleanup test
 
     public StorageTestCases(Storage storage){
         this.storage = storage;
@@ -51,7 +51,7 @@ public abstract class StorageTestCases {
         return stats(from, to, stat(100));
     }
 
-    private Date dt(String date){
+    protected Date dt(String date){
         return parseDateTime(date);
     }
 
@@ -59,6 +59,10 @@ public abstract class StorageTestCases {
     public void before(){
         //stats share the same storage so we must ensure that each test works on it's own
         year++;
+    }
+
+    protected int getYear(){
+        return year;
     }
 
     @Test

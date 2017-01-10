@@ -21,9 +21,7 @@ public class Stats {
     //do not get it from Properties here as we could loose data by accident by calculating Stats on machine with Property turned off
     private boolean aggregateSubCalls = true;
 
-    public Stats(){
-        startDate = new Date();
-    }
+    public Stats(){}
 
     /**
      * Set aggregateSubCalls to false to collect entry point's only.
@@ -34,7 +32,6 @@ public class Stats {
      */
     public Stats(boolean aggregateSubCalls){
         this.aggregateSubCalls = aggregateSubCalls;
-        startDate = new Date();
     }
 
     private Stat getOrAddParent(Context context) {

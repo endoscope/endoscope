@@ -110,7 +110,7 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
             aggregated = new Stats();
         } else {
             if( ids.size() > 0 ){
-                log.warn("Found more than one aggregated stat to update!");
+                log.warn("Found more than one aggregated stat to update! IDS: {}", ids);
             }
             replaceId = ids.get(0);
             aggregated = storage.load(replaceId);
@@ -153,6 +153,14 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
         return monthlyStorage;
     }
 
+    private Storage chooseDetailsStorage(Date from, Date to){
+        long periodLength = to.getTime() - from.getTime() - MINUTE_LENGTH_MS;
+        if( periodLength > DAY_LENGTH_MS ){
+            return dailyStorage;
+        }
+        return defaultStorage;
+    }
+
     /**
      * In aggregated stats we don't keep this information.
      * We need to reset it in order to find values in that storage.
@@ -180,12 +188,13 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
 
     @Override
     public StatDetails loadDetails(String detailsId, List<String> groupIds) {
-        throw new RuntimeException("Operation not supported");//there is no way to identify storage without time period
+        //there is no way to identify storage without time period
+        return defaultStorage.loadDetails(detailsId, groupIds);
     }
 
     @Override
     public StatDetails loadDetails(String detailsId, Date from, Date to, String instance, String type) {
-        Storage storage = chooseStorage(from, to);
+        Storage storage = chooseDetailsStorage(from, to);
         instance = fixInstance(storage, instance);
         return storage.loadDetails(detailsId, from, to, instance, type);
     }
@@ -195,5 +204,11 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
         Storage storage = chooseStorage(from, to);
         instance = fixInstance(storage, instance);
         return storage.loadAggregated(topLevelOnly, from, to, instance, type);
+    }
+
+    @Override
+    public void cleanup(int daysToKeep, String type) {
+        defaultStorage.cleanup(daysToKeep, type);
+        //we not not cleanup aggregated data
     }
 }
