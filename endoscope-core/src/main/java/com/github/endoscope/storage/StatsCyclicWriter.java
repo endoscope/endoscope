@@ -82,7 +82,7 @@ public class StatsCyclicWriter {
             lastError = null;
             log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
-            log.warn("Failed to save stats - next attempt in 5 minutes. Message: ", e.getMessage());
+            log.warn("Failed to save stats - next attempt in 5 minutes. Error type: {}, Message: {}", e.getClass().getName(), e.getMessage());
             log.debug("Failed to save stats - next attempt in 5 minutes. ", e);
             lastError = dateUtil.now();
         }
@@ -98,7 +98,7 @@ public class StatsCyclicWriter {
             lastSave = dateUtil.now();
             log.info("Performed cleanup in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
-            log.warn("Failed to cleanup stats. Message: {}", e.getMessage());
+            log.warn("Failed to cleanup stats. Error type: {}, Message: {}", e.getClass().getName(), e.getMessage());
             log.debug("Failed to cleanup stats.", e);
         }
     }
