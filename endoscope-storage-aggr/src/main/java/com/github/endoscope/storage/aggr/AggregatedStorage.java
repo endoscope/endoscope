@@ -109,7 +109,7 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
         if( ids.isEmpty() ){
             aggregated = new Stats();
         } else {
-            if( ids.size() > 0 ){
+            if( ids.size() > 1 ){
                 log.warn("Found more than one aggregated stat to update! IDS: {}", ids);
             }
             replaceId = ids.get(0);
