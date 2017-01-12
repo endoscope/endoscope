@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class StatsCyclicWriter {
@@ -82,7 +84,8 @@ public class StatsCyclicWriter {
             lastError = null;
             log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
-            log.warn("Failed to save stats - next attempt in 5 minutes. Error type: {}, Message: {}", e.getClass().getName(), e.getMessage());
+            Throwable cause = firstNonNull(getRootCause(e), e);
+            log.warn("Failed to save stats - next attempt in 5 minutes. Error type: {}, Message: {}", cause.getClass().getName(), cause.getMessage());
             log.debug("Failed to save stats - next attempt in 5 minutes. ", e);
             lastError = dateUtil.now();
         }
@@ -98,7 +101,8 @@ public class StatsCyclicWriter {
             lastSave = dateUtil.now();
             log.info("Performed cleanup in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
-            log.warn("Failed to cleanup stats. Error type: {}, Message: {}", e.getClass().getName(), e.getMessage());
+            Throwable cause = firstNonNull(getRootCause(e), e);
+            log.warn("Failed to cleanup stats. Error type: {}, Message: {}", cause.getClass().getName(), cause.getMessage());
             log.debug("Failed to cleanup stats.", e);
         }
     }
