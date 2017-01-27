@@ -20,7 +20,7 @@ public class EngineTest {
 
             waitUtilStatsGetCollected(ci);
 
-            ci.getStatsProcessor().process(stats -> {
+            ci.getCurrentStats().readStats(stats -> {
                 Map<String, Stat> map = stats.getMap();
                 Assert.assertEquals(2, map.size());
                 Assert.assertTrue(map.containsKey("a1"));
@@ -34,7 +34,7 @@ public class EngineTest {
 
     private void waitUtilStatsGetCollected(Engine ci) {
         for(int i=0; i< 10; i++){
-            if( ci.getStatsProcessor().getQueueSize() == 0 ){
+            if( ci.getCurrentStats().getQueueSize() == 0 ){
                 break;
             }
             try {

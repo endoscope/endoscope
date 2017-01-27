@@ -12,8 +12,8 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class StatsCyclicWriter {
-    private static final Logger log = getLogger(StatsCyclicWriter.class);
+public class StatsPersistence {
+    private static final Logger log = getLogger(StatsPersistence.class);
 
     private String appType;
     private String appInstance;
@@ -28,7 +28,7 @@ public class StatsCyclicWriter {
      *
      * @param storage if null then save is disabled
      */
-    public StatsCyclicWriter(Storage storage){
+    public StatsPersistence(Storage storage){
         this(storage,
                 new DateUtil(),
                 Properties.getAppInstance(),
@@ -42,8 +42,8 @@ public class StatsCyclicWriter {
      * @param storage if null then save is disabled
      * @param dateUtil
      */
-    public StatsCyclicWriter(Storage storage, DateUtil dateUtil, String appInstance,
-                             String appType, int saveFreqMinutes, int daysToKeep){
+    public StatsPersistence(Storage storage, DateUtil dateUtil, String appInstance,
+                            String appType, int saveFreqMinutes, int daysToKeep){
         this.storage = storage;
         this.dateUtil = dateUtil;
         lastSave = dateUtil.now();

@@ -1,9 +1,8 @@
 package com.github.endoscope.core;
 
 import com.github.endoscope.properties.Properties;
-import com.github.endoscope.storage.StatsCyclicWriter;
-import com.github.endoscope.storage.StorageFactory;
 import com.github.endoscope.storage.Storage;
+import com.github.endoscope.storage.StorageFactory;
 
 import java.util.LinkedList;
 
@@ -11,15 +10,15 @@ public class Engine {
     private ThreadLocal<LinkedList<Context>> contextStack = new ThreadLocal<>();
     private Boolean enabled = null;
     private Storage storage = null;//may stay null if disabled or cannot setup it
-    private StatsCyclicWriter statsCyclicWriter;
-    private StatsProcessor statsProcessor;
+    private CurrentStats currentStats;
+    private CurrentStatsAsyncTasks currentStatsAsyncTasks;
     private int maxIdLength = Properties.getMaxIdLength();
 
     public Engine(){
         if( isEnabled()) {
             storage = new StorageFactory().safeCreate();//may return null
-            statsCyclicWriter = new StatsCyclicWriter(storage);
-            statsProcessor = new StatsProcessor(statsCyclicWriter);
+            currentStats = new CurrentStats();
+            currentStatsAsyncTasks = new CurrentStatsAsyncTasks(currentStats, storage);
         }
     }
 
@@ -89,7 +88,8 @@ public class Engine {
         context.setTime(System.currentTimeMillis() - context.getTime());
 
         if( stack.isEmpty() ){
-            statsProcessor.store(context);
+            currentStats.add(context);
+            currentStatsAsyncTasks.triggerAsyncTask();
         }
     }
 
@@ -103,17 +103,22 @@ public class Engine {
             context.setTime(System.currentTimeMillis() - context.getTime());
         }
         if( context != null ){
-            statsProcessor.store(context);
+            currentStats.add(context);
+            currentStatsAsyncTasks.triggerAsyncTask();
         }
     }
 
-    public StatsProcessor getStatsProcessor() {
+    public CurrentStats getCurrentStats() {
         checkEnabled();
-        return statsProcessor;
+        return currentStats;
     }
 
     public Storage getStorage(){
         checkEnabled();
         return storage;
+    }
+
+    public CurrentStatsAsyncTasks getCurrentStatsAsyncTasks() {
+        return currentStatsAsyncTasks;
     }
 }

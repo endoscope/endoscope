@@ -47,7 +47,7 @@ public class Endoscope {
      * @param function
      */
     public static <T> T processStats(Function<Stats, T> function){
-        return ENGINE.getStatsProcessor().process(function);
+        return ENGINE.getCurrentStats().readStats(function);
     }
 
     /**
@@ -68,13 +68,13 @@ public class Endoscope {
     public static Storage getStatsStorage(){ return ENGINE.getStorage(); }
 
     public static void stopStatsProcessorThread(){
-        ENGINE.getStatsProcessor().stopStatsProcessorThread();
+        ENGINE.getCurrentStatsAsyncTasks().stopStatsProcessorThread();
     }
 
     /**
      * Clears current stats.
      */
     public static void resetStats(){
-        ENGINE.getStatsProcessor().resetStats();
+        ENGINE.getCurrentStats().resetStats();
     }
 }

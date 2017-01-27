@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StatsCyclicWriterTest {
+public class StatsPersistenceTest {
     private static final String APP_TYPE = "app-type";
     private static final String APP_INSTANCE = "app-instance";
     private static final int SAVE_FEQ = 10;
@@ -38,9 +38,9 @@ public class StatsCyclicWriterTest {
     public void should_save() throws Exception {
         given(dateUtil.now()).willReturn(new Date(0), new Date(10 * 60 * 1000));
 
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertTrue(statsCyclicWriter.shouldSave());
+        assertTrue(statsPersistence.shouldSave());
         verify(dateUtil, times(2)).now();
         verifyNoMoreInteractions(dateUtil);
         verifyNoMoreInteractions(storage);
@@ -50,9 +50,9 @@ public class StatsCyclicWriterTest {
     public void should_not_save() throws Exception {
         given(dateUtil.now()).willReturn(new Date(0), new Date(10 * 60 * 1000 -1));
 
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertFalse(statsCyclicWriter.shouldSave());
+        assertFalse(statsPersistence.shouldSave());
         verify(dateUtil, times(2)).now();
         verifyNoMoreInteractions(dateUtil);
         verifyNoMoreInteractions(storage);
@@ -62,44 +62,44 @@ public class StatsCyclicWriterTest {
     public void should_save_file_and_update_save_date() throws Exception {
         Date saveTime = new Date(13 * 60 * 1000);
         given(dateUtil.now()).willReturn(new Date(0), saveTime);
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertEquals(0, statsCyclicWriter.getLastSaveTime().getTime());
+        assertEquals(0, statsPersistence.getLastSaveTime().getTime());
 
         Stats stats = new Stats();
-        statsCyclicWriter.safeSave(stats);
+        statsPersistence.safeSave(stats);
 
         verify(storage).save(same(stats), eq(APP_INSTANCE), eq(APP_TYPE));
         verifyNoMoreInteractions(storage);
         verify(dateUtil, times(4)).now();
         verifyNoMoreInteractions(dateUtil);
-        assertEquals(saveTime, statsCyclicWriter.getLastSaveTime());
+        assertEquals(saveTime, statsPersistence.getLastSaveTime());
     }
 
     @Test
     public void should_not_save_for_5_minutes_since_error() throws Exception {
         given(dateUtil.now()).willReturn(new Date(0));
 
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, DAYS_TO_KEEP);
-        assertFalse(statsCyclicWriter.shouldSave());
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, DAYS_TO_KEEP);
+        assertFalse(statsPersistence.shouldSave());
 
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsCyclicWriter.shouldSave());
+        assertTrue(statsPersistence.shouldSave());
 
         //this will fail and set last error date
         given(dateUtil.now()).willReturn(new Date(0));
-        statsCyclicWriter.safeSave(null);
+        statsPersistence.safeSave(null);
 
         //let's go back to the moment where we should save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertFalse(statsCyclicWriter.shouldSave());
+        assertFalse(statsPersistence.shouldSave());
 
         given(dateUtil.now()).willReturn(new Date( 3 * ONE_MINUTE_MS + 500));
-        assertFalse(statsCyclicWriter.shouldSave());
+        assertFalse(statsPersistence.shouldSave());
 
         given(dateUtil.now()).willReturn(new Date( 5 * ONE_MINUTE_MS + 500)); //5,5minutes
-        assertTrue(statsCyclicWriter.shouldSave());
+        assertTrue(statsPersistence.shouldSave());
     }
 
     @Test
@@ -107,9 +107,9 @@ public class StatsCyclicWriterTest {
         given(dateUtil.now()).willReturn(new Date(0));
 
         int daysToKeep = 0;//disabled
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
 
-        statsCyclicWriter.safeCleanup();
+        statsPersistence.safeCleanup();
 
         verifyNoMoreInteractions(storage);
     }
@@ -120,17 +120,17 @@ public class StatsCyclicWriterTest {
         given(storage.save(any(), any(), any())).willThrow(RuntimeException.class);
 
         int daysToKeep = 1;//enabled
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsCyclicWriter.shouldSave());
+        assertTrue(statsPersistence.shouldSave());
 
         //this will fail and set last error date
         given(dateUtil.now()).willReturn(new Date(0));
-        statsCyclicWriter.safeSave(null);
-        assertFalse(statsCyclicWriter.shouldSave());//locked due to error
+        statsPersistence.safeSave(null);
+        assertFalse(statsPersistence.shouldSave());//locked due to error
 
-        statsCyclicWriter.safeCleanup();
+        statsPersistence.safeCleanup();
 
         verifyNoMoreInteractions(storage);
     }
@@ -141,12 +141,12 @@ public class StatsCyclicWriterTest {
         given(storage.save(any(), any(), any())).willThrow(RuntimeException.class);
 
         int daysToKeep = 1;//enabled
-        StatsCyclicWriter statsCyclicWriter = new StatsCyclicWriter(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
+        StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsCyclicWriter.shouldSave());
+        assertTrue(statsPersistence.shouldSave());
 
-        statsCyclicWriter.safeCleanup();
+        statsPersistence.safeCleanup();
 
         verify(storage).cleanup(eq(daysToKeep), eq(APP_TYPE));
         verifyNoMoreInteractions(storage);

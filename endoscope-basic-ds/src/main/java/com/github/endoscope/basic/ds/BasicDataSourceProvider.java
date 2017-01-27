@@ -24,6 +24,12 @@ public class BasicDataSourceProvider implements DataSourceProvider {
 
                 dataSource.setUrl(initParam);
 
+                //We save statistics every 15min or even less often
+                //There is no reason to keep connection open for so long unused
+                dataSource.setMinEvictableIdleTimeMillis(55000);
+                dataSource.setTimeBetweenEvictionRunsMillis(60000);
+
+
                 return dataSource;
             }catch(Exception e){
                 log.info("Failed to create custom Endoscope DataSource", e);

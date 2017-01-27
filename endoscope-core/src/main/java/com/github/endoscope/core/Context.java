@@ -3,6 +3,10 @@ package com.github.endoscope.core;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * This class represents method invocation tree.
+ * You can "add" such tree to Stats in order to update global statistics.
+ */
 public class Context {
     private String id;
     private long time;
