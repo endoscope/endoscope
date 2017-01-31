@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +33,7 @@ public class CurrentStatsAsyncTasks {
 
         collector = new ThreadPoolExecutor(0, 1,
                 60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
+                new LinkedBlockingQueue<>(),
                 runnable -> {
                     Thread t = Executors.defaultThreadFactory().newThread(runnable);
                     t.setDaemon(true);//we don't want to block JVM shutdown
@@ -43,28 +43,33 @@ public class CurrentStatsAsyncTasks {
     }
 
     public void triggerAsyncTask() {
-        if (!enabled || (taskResult != null && !taskResult.isDone())) {
-            //previous task is still running
-            return;
-        }
-        log.debug("Creating new async task: {}", COLLECTOR_ID);
-        taskResult = collector.submit(() -> {
-            safeSleep();
-            log.debug("started async task: {}", COLLECTOR_ID);
-            try {
-                currentStats.processAllFromQueue();
-                //following might take some time
-                if( safeSaveIfNeeded() ){
-                    //so just before existing update in-memory stats again
-                    currentStats.processAllFromQueue();
-                }
-            } catch (Exception e) {
-                currentStats.setFatalError(getStacktrace(e));
-                log.debug("error occurred when processing async task: {}", COLLECTOR_ID, e);
+        try{
+            if (!enabled || (taskResult != null && !taskResult.isDone())) {
+                //previous task is still running
+                //it's not a perfect synchronization but it doesn't have to be
+                return;
             }
-            log.debug("finished async task: {}", COLLECTOR_ID);
-        });
-        log.debug("Created new async task: {}", COLLECTOR_ID);
+            log.debug("Creating new async task: {}", COLLECTOR_ID);
+            taskResult = collector.submit(() -> {
+                safeSleep();
+                log.debug("started async task: {}", COLLECTOR_ID);
+                try {
+                    currentStats.processAllFromQueue();
+                    //following might take some time
+                    if( safeSaveIfNeeded() ){
+                        //so just before existing update in-memory stats again
+                        currentStats.processAllFromQueue();
+                    }
+                } catch (Exception e) {
+                    currentStats.setFatalError(getStacktrace(e));
+                    log.debug("error occurred when processing async task: {}", COLLECTOR_ID, e);
+                }
+                log.debug("finished async task: {}", COLLECTOR_ID);
+            });
+            log.debug("Created new async task: {}", COLLECTOR_ID);
+        }catch(Exception e){
+            log.warn("Failed to trigger asynchronous stats collection task", e);
+        }
     }
 
     private boolean safeSaveIfNeeded() {
