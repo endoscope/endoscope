@@ -5,6 +5,7 @@ import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.StatHistory;
 import com.github.endoscope.storage.Storage;
@@ -79,8 +80,22 @@ public class StatsDataController {
                             @QueryParam("instance") String instance,
                             @QueryParam("type") String type){
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        StatDetails child = detailsForRange(id, new Range(from, to, past, instance, type));
-        return noCacheResponse(jsonUtil.toJson(child));
+        StatDetails details = detailsForRange(id, new Range(from, to, past, instance, type));
+        return noCacheResponse(jsonUtil.toJson(details));
+    }
+
+    @GET
+    @Path("/data/histogram")
+    @Produces("application/json")
+    public Response histogram(@QueryParam("id") String id,
+                            @QueryParam("from") String fromS,
+                            @QueryParam("to") String toS,
+                            @QueryParam("past") String pastS,
+                            @QueryParam("instance") String instance,
+                            @QueryParam("type") String type){
+        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
+        Histogram histogram = histogramForRange(id, new Range(from, to, past, instance, type));
+        return noCacheResponse(jsonUtil.toJson(histogram));
     }
 
     private static class Range {
@@ -139,7 +154,6 @@ public class StatsDataController {
                 if( current != null ){
                     //we don't want to merge not set stats as it would reset min value to 0
                     result.getMerged().merge(current.getMerged(), true);
-                    result.getHistogram().addAll(current.getHistogram());
                 }
                 result.setInfo("Added in-memory data. Original info: " + result.getInfo());
             }
@@ -148,6 +162,24 @@ public class StatsDataController {
             result.setInfo("in-memory data only. Original info: " + result.getInfo());
         }
         return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
+    }
+
+    private Histogram histogramForRange(String id, Range range) {
+        Histogram result;
+        if( canSearch(range) ){
+            result = getStorage().loadHistogram(id, range.fromDate, range.toDate, range.instance, range.type);
+            if( inMemoryInRange(range) ){
+                Histogram current = histogramInMemory(id);
+                if( current != null ){
+                    result.getHistogram().addAll(current.getHistogram());
+                }
+                result.setInfo("Added in-memory data. Original info: " + result.getInfo());
+            }
+        } else {
+            result = histogramInMemory(id);
+            result.setInfo("in-memory data only. Original info: " + result.getInfo());
+        }
+        return (result != null) ? result : new Histogram(id);
     }
 
     private boolean inMemoryInRange(Range range){
@@ -171,11 +203,21 @@ public class StatsDataController {
             if( s == null ){//might happen when stats get saved and/or reset in the mean time
                 return null;
             }
-            StatDetails result = new StatDetails();
             s = s.deepCopy();
-            result.setMerged(s);
+            StatDetails result = new StatDetails(id, s);
+            return result;
+        });
+    }
+
+    private Histogram histogramInMemory(String id) {
+        return Endoscope.processStats(stats -> {
+            Stat s = stats.getMap().get(id);
+            if( s == null ){//might happen when stats get saved and/or reset in the mean time
+                return null;
+            }
+            Histogram result = new Histogram(id);
             result.getHistogram().add(
-                new StatHistory(s, stats.getStartDate(), new Date())
+                    new StatHistory(s, stats.getStartDate(), new Date())
             );
             return result;
         });

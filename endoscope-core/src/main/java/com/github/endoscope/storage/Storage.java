@@ -70,6 +70,16 @@ public interface Storage {
     StatDetails loadDetails(String detailsId, Date from, Date to, String instance, String type);
 
     /**
+     * @param detailsId not null
+     * @param from optional
+     * @param to optional
+     * @param instance optional
+     * @param type optional
+     * @return not null
+     */
+    Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type);
+
+    /**
      * @param topLevelOnly
      * @param from optional
      * @param to optional

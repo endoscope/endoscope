@@ -6,7 +6,6 @@ public class StatEntity {
     private String id;
     private String groupId;
     private String parentId;
-    private String rootId;
     private String name;
 
     private Stat stat = new Stat();
@@ -33,14 +32,6 @@ public class StatEntity {
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
-    }
-
-    public String getRootId() {
-        return rootId;
-    }
-
-    public void setRootId(String rootId) {
-        this.rootId = rootId;
     }
 
     public String getName() {

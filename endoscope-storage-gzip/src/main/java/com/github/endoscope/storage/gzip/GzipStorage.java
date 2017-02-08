@@ -3,6 +3,7 @@ package com.github.endoscope.storage.gzip;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -116,24 +118,32 @@ public class GzipStorage implements Storage {
         return new Filters(new ArrayList(instances), new ArrayList(types));
     }
 
-    @Override
-    public StatDetails loadDetails(String detailsId, List<String> statsIds){
-        StatDetails result = new StatDetails(detailsId, null);
+    private void processStats(List<String> statsIds, Consumer<Stats> consumer){
         statsIds.stream()
                 .map( statsId -> load(statsId) )
                 .filter( stats -> stats != null && stats.getStartDate() != null )
                 .sorted( (stats1, stats2) -> stats1.getStartDate().compareTo(stats2.getStartDate()) )
-                .forEach( stats -> {
-                    Map<String, Stat> map = stats.getMap();
-                    if( map == null ){
-                        return;
-                    }
-                    Stat stat = map.get(detailsId);
-                    if( stat == null ){
-                        return;
-                    }
-                    result.add(stat, stats.getStartDate(),stats.getEndDate());
-                });
+                .forEach( stats -> consumer.accept(stats));
+    }
+
+    private Stat getDetailsOrEmpty(String detailsId, Stats stats){
+        Map<String, Stat> map = stats.getMap();
+        if( map != null ){
+            Stat stat = map.get(detailsId);
+            if( stat != null ){
+                return stat;
+            }
+        }
+        return Stat.emptyStat();
+    }
+
+    @Override
+    public StatDetails loadDetails(String detailsId, List<String> statsIds){
+        StatDetails result = new StatDetails(detailsId, null);
+        processStats(statsIds, stats -> {
+            Stat stat = getDetailsOrEmpty(detailsId, stats);
+            result.add(stat);
+        });
         return result;
     }
 
@@ -141,6 +151,17 @@ public class GzipStorage implements Storage {
     public StatDetails loadDetails(String detailsId, Date from, Date to, String instance, String type){
         List<String> statsIds = find(from, to, instance, type);
         return loadDetails(detailsId, statsIds);
+    }
+
+    @Override
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+        List<String> statsIds = find(from, to, instance, type);
+        Histogram result = new Histogram(detailsId);
+        processStats(statsIds, stats -> {
+            Stat stat = getDetailsOrEmpty(detailsId, stats);
+            result.add(stat, stats.getStartDate(),stats.getEndDate());
+        });
+        return result;
     }
 
     @Override

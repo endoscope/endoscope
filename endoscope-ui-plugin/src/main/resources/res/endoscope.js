@@ -6,6 +6,7 @@
 
     var api = {
         statUrl: "data/details",
+        histogramUrl: "data/histogram",
         topUrl: "data/top",
         filtersUrl: "data/filters"
     };
@@ -367,7 +368,10 @@
     var loadChildStats = function(row) {
         row.addClass('es-loading es-sel');
         var statId = row.data('id');
-        hideDetails();
+
+        hideDetails();//hide chart
+
+        //load child stats
         $.ajax(api.statUrl, {
             dataType: "json",
             data: {
@@ -388,11 +392,33 @@
             row.removeClass('es-loading');
             showError("Failed to load child stats");
         });
+
+        //load chart
+        $.ajax(api.histogramUrl, {
+                dataType: "json",
+                data: {
+                    id: statId,
+                    from: options.from,
+                    to: options.to,
+                    past: options.past,
+                    instance: options.instance,
+                    type: options.type
+                }
+            })
+            .done(function(result){
+                onHistogramReceive(result, row, 1);
+            })
+            .fail(function(){
+                showError("Failed to load histogram");
+            });
     };
 
     var onDetailStatsReceive = function(details, parentRow, level) {
         processChildStats(details.merged, parentRow, level);
-        buildDetails(details, parentRow);
+    };
+
+    var onHistogramReceive = function(result, parentRow, level) {
+        buildDetails(result, parentRow);
     };
 
     var findChildNodes = function(row){

@@ -3,6 +3,7 @@ package com.github.endoscope.storage.jdbc;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.storage.jdbc.dto.GroupEntity;
@@ -276,7 +277,7 @@ public class JdbcStorage implements Storage {
                     args.addAll(partition);
                 }
                 if( topLevelOnly ){
-                    query += "AND parentId is null ";
+                    query += " AND parentId is null ";
                 }
 
                 log.debug("Loading group stats");
@@ -475,6 +476,14 @@ public class JdbcStorage implements Storage {
         return createDetails(detailsId, groups, stats);
     }
 
+    @Override
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+        List<GroupEntity> groups = findGroupsInRange(from, to, instance, type);
+        List<String> groupIds = extractGroupIds(groups);
+        List<StatEntity> stats = loadGroupStats(groupIds, detailsId, true);//topLevel only
+        return createHistogram(detailsId, groups, stats);
+    }
+
     private List<String> extractGroupIds(List<GroupEntity> groups) {
         return groups.stream()
                     .map( g-> g.getId())
@@ -492,11 +501,28 @@ public class JdbcStorage implements Storage {
 
             Stat details = group.getMap().get(detailsId);
 
-            result.add(details, group.getStartDate(),group.getEndDate());
+            result.add(details);
         });
         if( result.getMerged() == null ){
             result.setMerged(Stat.emptyStat());
         }
+        return result;
+    }
+
+    private Histogram createHistogram(String detailsId, List<GroupEntity> groups, List<StatEntity> topLevelStats) {
+        Histogram result = new Histogram();
+        result.setId(detailsId);
+        result.setInfo(storageInfo(null));
+
+        groups.forEach( group -> {
+            Stat details = topLevelStats.stream()
+                    .filter( s -> group.getId().equals(s.getGroupId()) )
+                    .filter( s -> s != null )
+                    .map( s-> s.getStat())
+                    .findFirst()
+                    .orElseGet(() -> Stat.emptyStat());
+            result.add(details, group.getStartDate(),group.getEndDate());
+        });
         return result;
     }
 

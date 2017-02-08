@@ -400,8 +400,8 @@ public abstract class AggregatedStorageTestCases {
 
         //then
         verifyNoMoreInteractions(defaultStorage);
-        verify(dailyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
-        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(dailyStorage);
+        verify(weeklyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
         verifyNoMoreInteractions(monthlyStorage);
     }
 
@@ -416,7 +416,71 @@ public abstract class AggregatedStorageTestCases {
 
         //then
         verifyNoMoreInteractions(defaultStorage);
-        verify(dailyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(dailyStorage);
+        verifyNoMoreInteractions(weeklyStorage);
+        verify(monthlyStorage).loadDetails(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+    }
+
+    @Test
+    public void shouldLoadHistogramFromDefaultStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-01 23:58:00");
+
+        //when
+        storage.loadHistogram("detailsId", from, to, "instance", "type");
+
+        //then
+        verify(defaultStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), eq("instance"), eq("type"));
+        verifyNoMoreInteractions(dailyStorage);
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadDailyHistogramFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-02 01:58:00");
+
+        //when
+        storage.loadHistogram("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadWeeklyHistogramFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-10-08 01:58:00");
+
+        //when
+        storage.loadHistogram("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verifyNoMoreInteractions(weeklyStorage);
+        verifyNoMoreInteractions(monthlyStorage);
+    }
+
+    @Test
+    public void shouldLoadMonthlyHistogramFromDailyStorage(){
+        //given
+        Date from = parse("2016-10-01 00:00:00");
+        Date to   = parse("2016-11-08 01:58:00");
+
+        //when
+        storage.loadHistogram("detailsId", from, to, "instance", "type");
+
+        //then
+        verifyNoMoreInteractions(defaultStorage);
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
         verifyNoMoreInteractions(weeklyStorage);
         verifyNoMoreInteractions(monthlyStorage);
     }

@@ -2,6 +2,7 @@ package com.github.endoscope.storage.aggr;
 
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.Storage;
 import org.apache.commons.lang3.time.DateUtils;
@@ -153,7 +154,7 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
         return monthlyStorage;
     }
 
-    private Storage chooseDetailsStorage(Date from, Date to){
+    private Storage chooseHistogramStorage(Date from, Date to){
         long periodLength = to.getTime() - from.getTime() - MINUTE_LENGTH_MS;
         if( periodLength > DAY_LENGTH_MS ){
             return dailyStorage;
@@ -194,9 +195,16 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
 
     @Override
     public StatDetails loadDetails(String detailsId, Date from, Date to, String instance, String type) {
-        Storage storage = chooseDetailsStorage(from, to);
+        Storage storage = chooseStorage(from, to);
         instance = fixInstance(storage, instance);
         return storage.loadDetails(detailsId, from, to, instance, type);
+    }
+
+    @Override
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+        Storage storage = chooseHistogramStorage(from, to);
+        instance = fixInstance(storage, instance);
+        return storage.loadHistogram(detailsId, from, to, instance, type);
     }
 
     @Override

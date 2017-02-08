@@ -3,6 +3,7 @@ package com.github.storage.test;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
 import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
@@ -233,17 +234,6 @@ public abstract class StorageTestCases {
 
         assertEquals(STAT_NAME, details.getId() );
         assertEquals( expected, details.getMerged());
-        assertEquals( 2, details.getHistogram().size());
-
-        assertEquals( 150L, details.getHistogram().get(0).getAvg() );
-        assertEquals( dt(year+"-01-01 08:00:00"), details.getHistogram().get(0).getStartDate() );
-        assertEquals( dt(year+"-01-01 08:15:00"), details.getHistogram().get(0).getEndDate() );
-        assertEquals( 2, details.getHistogram().get(0).getHits() );
-
-        assertEquals( 1000L, details.getHistogram().get(1).getAvg() );
-        assertEquals( dt(year+"-01-01 08:15:00"), details.getHistogram().get(1).getStartDate() );
-        assertEquals( dt(year+"-01-01 08:30:00"), details.getHistogram().get(1).getEndDate() );
-        assertEquals( 1, details.getHistogram().get(1).getHits() );
     }
 
     @Test
@@ -275,15 +265,68 @@ public abstract class StorageTestCases {
         //then
         assertEquals(STAT_NAME, details.getId() );
         assertEquals( 1, details.getMerged().getHits());
-        assertEquals( 1, details.getHistogram().size());
-        assertEquals( 1000L, details.getHistogram().get(0).getAvg() );
-        assertEquals( dt(year+"-01-01 08:15:00"), details.getHistogram().get(0).getStartDate() );
-        assertEquals( dt(year+"-01-01 08:30:00"), details.getHistogram().get(0).getEndDate() );
-        assertEquals( 1, details.getHistogram().get(0).getHits() );
+    }
+
+    @Test
+    public void should_load_histogram_by_date_range() throws IOException{
+        //given
+        Stats stats1 = stats(
+                dt(year+"-01-01 08:00:00"),
+                dt(year+"-01-01 08:15:00"),
+                stat(100, 200)//hits = 2, avg = 150
+        );
+        Stats stats2 = stats(
+                dt(year+"-01-01 08:15:00"),
+                dt(year+"-01-01 08:30:00"),
+                stat(1000) //hits =1 avg = 1000
+        );
+        Stats stats3 = stats(
+                dt(year+"-01-01 08:30:00"),
+                dt(year+"-01-01 08:45:00"),
+                stat(1000, 1000, 1000)// hits = 3, avg = 1000
+        );
+
+        storage.save(stats1, null, null);
+        storage.save(stats2, null, null);
+        storage.save(stats3, null, null);
+
+        //when
+        Histogram histogram = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:20:00"), dt(year+"-01-01 08:25:00"), null, null);
+
+        //then
+        assertEquals(STAT_NAME, histogram.getId() );
+        assertEquals( 1, histogram.getHistogram().size());
+        assertEquals( 1000L, histogram.getHistogram().get(0).getAvg() );
+        assertEquals( dt(year+"-01-01 08:15:00"), histogram.getHistogram().get(0).getStartDate() );
+        assertEquals( dt(year+"-01-01 08:30:00"), histogram.getHistogram().get(0).getEndDate() );
+        assertEquals( 1, histogram.getHistogram().get(0).getHits() );
     }
 
     @Test
     public void should_load_details_by_instance_and_type() throws IOException{
+        //given
+        Stats stats1 = stats(dt(year+"-01-01 08:05:00"), dt(year+"-01-01 08:15:00"), stat(2));
+        Stats stats10 = stats(dt(year+"-01-01 08:05:00"), dt(year+"-01-01 08:15:00"), stat(10));
+        Stats stats100 = stats(dt(year+"-01-01 08:05:00"), dt(year+"-01-01 08:15:00"), stat(100));
+
+        //save the same but with different instance and type
+        storage.save(stats1, "i1", null);
+        storage.save(stats10, "i1", "t1");
+        storage.save(stats100, "i2", "t1");
+
+        //when
+        StatDetails detailsI  = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", null);
+        StatDetails detailsT  = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, "t1");
+        StatDetails detailsIT = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", "t1");
+
+        //then
+        assertEquals( 6, detailsI.getMerged().getAvg());
+        assertEquals( 55, detailsT.getMerged().getAvg());
+        assertEquals( 10, detailsIT.getMerged().getAvg());
+    }
+
+    @Test
+    public void should_load_histogram_by_instance_and_type() throws IOException{
         //given
         Stats stats = stats(dt(year+"-01-01 08:05:00"), dt(year+"-01-01 08:15:00"), stat(100));
 
@@ -293,14 +336,14 @@ public abstract class StorageTestCases {
         storage.save(stats, "i2", "t1");
 
         //when
-        StatDetails detailsI  = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", null);
-        StatDetails detailsT  = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, "t1");
-        StatDetails detailsIT = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", "t1");
+        Histogram histogramI  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", null);
+        Histogram histogramT  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, "t1");
+        Histogram histogramIT = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", "t1");
 
         //then
-        assertEquals( 2, detailsI.getHistogram().size());
-        assertEquals( 2, detailsT.getHistogram().size());
-        assertEquals( 1, detailsIT.getHistogram().size());
+        assertEquals( 2, histogramI.getHistogram().size());
+        assertEquals( 2, histogramT.getHistogram().size());
+        assertEquals( 1, histogramIT.getHistogram().size());
     }
 
     @Test
@@ -323,7 +366,6 @@ public abstract class StorageTestCases {
         StatDetails details = storage.loadDetails(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, null);
 
         //then
-        assertEquals( 1, details.getHistogram().size());
         assertEquals( 100L, details.getMerged().getAvg());
         assertEquals( 10L, details.getMerged().getChild("1").getAvg());
         assertEquals( 1L, details.getMerged().getChild("1").getChild("11").getAvg());

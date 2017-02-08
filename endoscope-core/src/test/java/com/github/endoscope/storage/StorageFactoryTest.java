@@ -70,6 +70,11 @@ public class StorageFactoryTest {
         }
 
         @Override
+        public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+            return null;
+        }
+
+        @Override
         public Stats loadAggregated(boolean topLevelOnly, Date from, Date to, String instance, String type) {
             return null;
         }
