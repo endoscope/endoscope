@@ -266,22 +266,34 @@ public class JdbcStorage implements Storage {
 
                 if( isBlank(name) ){
                     query += " WHERE groupId IN (" + listOfArgs(partition.size()) + ")";
+                    if( topLevelOnly ){
+                        query += " AND parentId is null ";
+                    }
                     args.addAll(partition);
                 } else {
-                    query += "WHERE rootId IN( " +
+                    if( topLevelOnly ){
+                        query += " WHERE groupId IN (" + listOfArgs(partition.size()) + ")"
+                            + " AND parentId is null"
+                            + " AND name = ? ";
+                    } else {
+                        query += "WHERE rootId IN( " +
                             "   SELECT id " +
                             "   FROM "+tablePrefix+"endoscopeStat " +
-                            "   WHERE name = ? AND groupId IN (" + listOfArgs(partition.size()) + ")" +
+                            "   WHERE groupId IN (" + listOfArgs(partition.size()) + ")" +
+                            "     AND name = ? " +
                             ")";
-                    args.add(name);
+                    }
                     args.addAll(partition);
+                    args.add(name);
                 }
-                if( topLevelOnly ){
-                    query += " AND parentId is null ";
-                }
+
+
+log.debug("query: {} {}", System.currentTimeMillis(), query);
+log.debug("args: {}", args);
 
                 log.debug("Loading group stats");
                 List<StatEntity> partitionResult = run.queryExt(200, query, statHandler, args.toArray());
+log.debug("done: {}", System.currentTimeMillis());
                 log.debug("Loaded {} group stats in {}ms", partitionResult.size(), System.currentTimeMillis() - start);
 
                 result.addAll(partitionResult);

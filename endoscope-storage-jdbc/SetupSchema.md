@@ -38,7 +38,7 @@ Oracle schema
          fatalError VARCHAR(255),
          appGroup VARCHAR(100),
          appType VARCHAR(100)
-     );
+     );     
      CREATE INDEX endo_gr_startDate ON public.endoscopeGroup(startDate);
      CREATE INDEX endo_gr_endDate ON public.endoscopeGroup(endDate);
      CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
@@ -57,10 +57,12 @@ Oracle schema
          ah10 NUMBER, 
          hasChildren NUMBER 
      );
+     
+     CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
+     --instead of following consider complex indexes like in PostgreSQL schema
      CREATE INDEX endo_st_parentId ON public.endoscopeStat(parentId);
      CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
      CREATE INDEX endo_st_name ON public.endoscopeStat(name);
-     CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
      
      
 PostgreSQL schema
@@ -93,9 +95,7 @@ PostgreSQL schema
          ah10 numeric, 
          hasChildren numeric 
      );
-     CREATE INDEX endo_st_parentId ON public.endoscopeStat(parentId);
-     CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
-     CREATE INDEX endo_st_name ON public.endoscopeStat(name);
+     CREATE INDEX endo_st_g_p_n ON public.endoscopeStat(groupId, parentId, name);
      CREATE INDEX endo_st_rootId ON public.endoscopeStat(rootId);
 
 
@@ -129,9 +129,7 @@ PostgreSQL schema
          ah10 numeric, 
          hasChildren numeric 
      );
-     CREATE INDEX endo_st_day_parentId ON public.day_endoscopeStat(parentId);
-     CREATE INDEX endo_st_day_groupId ON public.day_endoscopeStat(groupId);
-     CREATE INDEX endo_st_day_name ON public.day_endoscopeStat(name);
+     CREATE INDEX endo_st_day_g_p_n ON public.day_endoscopeStat(groupId, parentId, name);
      CREATE INDEX endo_st_day_rootId ON public.day_endoscopeStat(rootId);
      
      CREATE TABLE public.week_endoscopeGroup(
@@ -162,9 +160,7 @@ PostgreSQL schema
          ah10 numeric, 
          hasChildren numeric 
      );
-     CREATE INDEX endo_st_week_parentId ON public.week_endoscopeStat(parentId);
-     CREATE INDEX endo_st_week_groupId ON public.week_endoscopeStat(groupId);
-     CREATE INDEX endo_st_week_name ON public.week_endoscopeStat(name);
+     CREATE INDEX endo_st_week_g_p_n ON public.week_endoscopeStat(groupId, parentId, name);
      CREATE INDEX endo_st_week_rootId ON public.week_endoscopeStat(rootId);
      
      CREATE TABLE public.month_endoscopeGroup(
@@ -195,7 +191,5 @@ PostgreSQL schema
          ah10 numeric, 
          hasChildren numeric 
      );
-     CREATE INDEX endo_st_month_parentId ON public.month_endoscopeStat(parentId);
-     CREATE INDEX endo_st_month_groupId ON public.month_endoscopeStat(groupId);
-     CREATE INDEX endo_st_month_name ON public.month_endoscopeStat(name);
+     CREATE INDEX endo_st_month_g_p_n ON public.month_endoscopeStat(groupId, parentId, name);
      CREATE INDEX endo_st_month_rootId ON public.month_endoscopeStat(rootId);
