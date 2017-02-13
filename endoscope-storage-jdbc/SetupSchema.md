@@ -39,9 +39,10 @@ Oracle schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );     
+     CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
+     --instead of following consider complex indexes like in PostgreSQL schema
      CREATE INDEX endo_gr_startDate ON public.endoscopeGroup(startDate);
      CREATE INDEX endo_gr_endDate ON public.endoscopeGroup(endDate);
-     CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
      CREATE INDEX endo_gr_appType ON public.endoscopeGroup(appType);
                      
      CREATE TABLE public.endoscopeStat(
@@ -64,6 +65,7 @@ Oracle schema
      CREATE INDEX endo_st_groupId ON public.endoscopeStat(groupId);
      CREATE INDEX endo_st_name ON public.endoscopeStat(name);
      
+     --see also aggregated tables schema for Postgresql
      
 PostgreSQL schema
 -----------------
@@ -76,11 +78,9 @@ PostgreSQL schema
          fatalError VARCHAR(255),
          appGroup VARCHAR(100),
          appType VARCHAR(100)
-     );
-     CREATE INDEX endo_gr_startDate ON public.endoscopeGroup(startDate);
-     CREATE INDEX endo_gr_endDate ON public.endoscopeGroup(endDate);
+     );    
      CREATE INDEX endo_gr_appGroup ON public.endoscopeGroup(appGroup);
-     CREATE INDEX endo_gr_appType ON public.endoscopeGroup(appType);
+     CREATE INDEX endo_gr_e_s_t ON public.endoscopeGroup(endDate, startDate, appType);
                      
      CREATE TABLE public.endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -111,10 +111,8 @@ PostgreSQL schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX endo_gr_day_startDate ON public.day_endoscopeGroup(startDate);
-     CREATE INDEX endo_gr_day_endDate ON public.day_endoscopeGroup(endDate);
      CREATE INDEX endo_gr_day_appGroup ON public.day_endoscopeGroup(appGroup);
-     CREATE INDEX endo_gr_day_appType ON public.day_endoscopeGroup(appType);
+     CREATE INDEX endo_gr_day_e_s_t ON public.day_endoscopeGroup(endDate, startDate, appType);
                      
      CREATE TABLE public.day_endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -142,10 +140,8 @@ PostgreSQL schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX endo_gr_week_startDate ON public.week_endoscopeGroup(startDate);
-     CREATE INDEX endo_gr_week_endDate ON public.week_endoscopeGroup(endDate);
      CREATE INDEX endo_gr_week_appGroup ON public.week_endoscopeGroup(appGroup);
-     CREATE INDEX endo_gr_week_appType ON public.week_endoscopeGroup(appType);
+     CREATE INDEX endo_gr_week_e_s_t ON public.week_endoscopeGroup(endDate, startDate, appType);
                      
      CREATE TABLE public.week_endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 
@@ -173,10 +169,8 @@ PostgreSQL schema
          appGroup VARCHAR(100),
          appType VARCHAR(100)
      );
-     CREATE INDEX endo_gr_month_startDate ON public.month_endoscopeGroup(startDate);
-     CREATE INDEX endo_gr_month_endDate ON public.month_endoscopeGroup(endDate);
      CREATE INDEX endo_gr_month_appGroup ON public.month_endoscopeGroup(appGroup);
-     CREATE INDEX endo_gr_month_appType ON public.month_endoscopeGroup(appType);
+     CREATE INDEX endo_gr_month_e_s_t ON public.month_endoscopeGroup(endDate, startDate, appType);
                      
      CREATE TABLE public.month_endoscopeStat(
          id VARCHAR(36) PRIMARY KEY, 

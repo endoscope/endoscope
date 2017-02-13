@@ -44,6 +44,8 @@ public class JdbcStorage implements Storage {
     private StatEntityHandler statHandler = new StatEntityHandler();
     private StringHandler stringHandler = new StringHandler();
     private String tablePrefix = "";
+    private static long ONE_HOUR_MILLIS = 360000L;
+    private static long ONE_DAY_MILLIS = 24 * ONE_HOUR_MILLIS;
 
     public JdbcStorage setTablePrefix(String tablePrefix){
         this.tablePrefix = tablePrefix;
@@ -97,9 +99,10 @@ public class JdbcStorage implements Storage {
                 " FROM "+tablePrefix+"endoscopeGroup " +
                 " WHERE 1=1" +
                 "  AND enddate < ?" +
+                "  AND startdate < ?" +
                 "  AND appType = ?" +
                 " LIMIT 10",
-                stringHandler, ts, type);
+                stringHandler, ts, ts, type);
             if( groupsToDelete.isEmpty() ){
                 log.debug("nothing to cleanup");
                 return;
@@ -287,13 +290,8 @@ public class JdbcStorage implements Storage {
                     args.add(name);
                 }
 
-
-log.debug("query: {} {}", System.currentTimeMillis(), query);
-log.debug("args: {}", args);
-
                 log.debug("Loading group stats");
                 List<StatEntity> partitionResult = run.queryExt(200, query, statHandler, args.toArray());
-log.debug("done: {}", System.currentTimeMillis());
                 log.debug("Loaded {} group stats in {}ms", partitionResult.size(), System.currentTimeMillis() - start);
 
                 result.addAll(partitionResult);
@@ -331,11 +329,24 @@ log.debug("done: {}", System.currentTimeMillis());
 
             Timestamp fromTs = new Timestamp(from.getTime());
             Timestamp toTs = new Timestamp(to.getTime());
+
+            // Query performance optimization.
+            //   endDate < ? and startDate > ?
+            // conditions don't change result but influence the way query optimizer works.
+            // It may break contract if group length is longer than search range and at the same time search range
+            // is smaller than 1 day. Such configuration should not be use in this app.
+            long rangeMilliseconds = ONE_HOUR_MILLIS + Math.min(to.getTime() - from.getTime(), ONE_DAY_MILLIS );
+            Timestamp distantFromTs = new Timestamp(from.getTime() - rangeMilliseconds);
+            Timestamp distantToTs = new Timestamp(to.getTime() + rangeMilliseconds);
+
             List<GroupEntity> list = run.queryExt(200,
                     " SELECT " + GroupEntityHandler.GROUP_FIELDS +
                     " FROM "+tablePrefix+"endoscopeGroup " +
-                    " WHERE endDate >= ? AND startDate <= ? " + optAppFilterQuery(appInstance, appType) +
-                    " ORDER BY startDate", groupHandler, filterBlank(fromTs, toTs, appInstance, appType)
+                    " WHERE endDate >= ? AND endDate < ?" +
+                    " AND startDate <= ? AND startDate > ?" +
+                     optAppFilterQuery(appInstance, appType) +
+                    " ORDER BY startDate", groupHandler, filterBlank(
+                            fromTs, distantToTs, toTs, distantFromTs, appInstance, appType)
             );
 
             log.debug("Loaded {} groups for range: {} to {} in {}ms", list.size(), from, to, System.currentTimeMillis() - start);
@@ -421,7 +432,7 @@ log.debug("done: {}", System.currentTimeMillis());
             if( isNotBlank(type) ){
                 log.debug("Finding instances for filters");
                 instances = run.queryExt(20,
-                        " SELECT distinct(appGroup) " +
+                                " SELECT distinct(appGroup) " +
                                 " FROM "+tablePrefix+"endoscopeGroup " +
                                 " WHERE endDate >= ? AND startDate <= ? AND appType = ?",
                         stringHandler, fromTs, toTs, type);

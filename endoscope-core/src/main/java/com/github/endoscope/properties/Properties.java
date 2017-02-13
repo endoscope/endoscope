@@ -30,7 +30,7 @@ public class Properties {
     public static String DEFAULT_MAX_STAT_COUNT = "300000";
     public static String DEFAULT_SUPPORTED_NAMES = ".*(Bean|Service|Controller|Ejb|EJB)";
     public static String DEFAULT_QUEUE_MAX_SIZE = "1000000";
-    public static String DEFAULT_SAVE_FREQ_MINUTES = "5";
+    public static String DEFAULT_SAVE_FREQ_MINUTES = "15";
     public static String DEFAULT_MAX_ID_LENGTH = "100";
     public static String DEFAULT_AGGREGATE_SUB_CALLS = "true";
     public static String DEFAULT_DAYS_TO_KEEP = "35";
