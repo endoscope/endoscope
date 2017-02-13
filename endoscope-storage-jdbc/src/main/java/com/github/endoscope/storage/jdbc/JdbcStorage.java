@@ -335,7 +335,11 @@ public class JdbcStorage implements Storage {
             // conditions don't change result but influence the way query optimizer works.
             // It may break contract if group length is longer than search range and at the same time search range
             // is smaller than 1 day. Such configuration should not be use in this app.
-            long rangeMilliseconds = ONE_HOUR_MILLIS + Math.min(to.getTime() - from.getTime(), ONE_DAY_MILLIS );
+            long rangeMilliseconds = to.getTime() - from.getTime();
+            if( rangeMilliseconds < ONE_DAY_MILLIS ){
+                rangeMilliseconds = ONE_DAY_MILLIS;
+            }
+            rangeMilliseconds += ONE_HOUR_MILLIS;
             Timestamp distantFromTs = new Timestamp(from.getTime() - rangeMilliseconds);
             Timestamp distantToTs = new Timestamp(to.getTime() + rangeMilliseconds);
 
@@ -396,10 +400,10 @@ public class JdbcStorage implements Storage {
     private String optAppFilterQuery(String appInstance, String appType){
         StringBuilder q = new StringBuilder();
         if( isNotBlank(appInstance) ){
-            q.append(" and appGroup = ? ");
+            q.append(" AND appGroup = ? ");
         }
         if( isNotBlank(appType) ){
-            q.append(" and appType = ? ");
+            q.append(" AND appType = ? ");
         }
         return q.toString();
     }
