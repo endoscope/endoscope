@@ -506,6 +506,14 @@ public class JdbcStorage implements Storage {
     @Override
     public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
         List<GroupEntity> groups = findGroupsInRange(from, to, instance, type);
+
+//zazazaz
+//        //limit number of data we load - otherwise it might be huge and slow
+//        if( groups.size() > 120 ){
+//            groups = HistogramUtil.reduce(100, groups);
+//mark as reduced
+//        }
+
         List<String> groupIds = extractGroupIds(groups);
         List<StatEntity> stats = loadGroupStats(groupIds, detailsId, true);//topLevel only
         return createHistogram(detailsId, groups, stats);

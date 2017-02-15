@@ -2,6 +2,8 @@ package com.github.endoscope.storage.jdbc.dto;
 
 import com.github.endoscope.core.Stat;
 
+import java.util.Objects;
+
 public class StatEntity {
     private String id;
     private String groupId;
@@ -48,5 +50,22 @@ public class StatEntity {
 
     public void setStat(Stat stat) {
         this.stat = stat;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StatEntity)) return false;
+        StatEntity that = (StatEntity) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(groupId, that.groupId) &&
+                Objects.equals(parentId, that.parentId) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(stat, that.stat);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, groupId, parentId, name, stat);
     }
 }
