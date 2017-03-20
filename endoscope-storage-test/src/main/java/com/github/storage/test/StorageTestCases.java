@@ -1,5 +1,9 @@
 package com.github.storage.test;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
@@ -9,10 +13,6 @@ import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 import static com.github.endoscope.util.DateUtil.parseDateTime;
 import static java.util.Arrays.asList;
@@ -291,7 +291,7 @@ public abstract class StorageTestCases {
         storage.save(stats3, null, null);
 
         //when
-        Histogram histogram = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:20:00"), dt(year+"-01-01 08:25:00"), null, null);
+        Histogram histogram = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:20:00"), dt(year+"-01-01 08:25:00"), null, null, null);
 
         //then
         assertEquals(STAT_NAME, histogram.getId() );
@@ -336,9 +336,9 @@ public abstract class StorageTestCases {
         storage.save(stats, "i2", "t1");
 
         //when
-        Histogram histogramI  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", null);
-        Histogram histogramT  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, "t1");
-        Histogram histogramIT = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", "t1");
+        Histogram histogramI  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", null, null);
+        Histogram histogramT  = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), null, "t1", null);
+        Histogram histogramIT = storage.loadHistogram(STAT_NAME, dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:30:00"), "i1", "t1", null);
 
         //then
         assertEquals( 2, histogramI.getHistogram().size());

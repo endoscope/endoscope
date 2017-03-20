@@ -31,6 +31,7 @@
     var placeholder;
     var loadingTim;
     var ajaxCount=0;
+    var histogram=[];
 
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
@@ -394,6 +395,11 @@
         });
 
         //load chart
+        histogram = [];
+        loadHistogram(statId, null);
+    };
+
+    var loadHistogram = function(statId, lastGroupId){
         $.ajax(api.histogramUrl, {
                 dataType: "json",
                 data: {
@@ -402,11 +408,12 @@
                     to: options.to,
                     past: options.past,
                     instance: options.instance,
-                    type: options.type
+                    type: options.type,
+                    lastGroupId: lastGroupId
                 }
             })
             .done(function(result){
-                onHistogramReceive(result, row, 1);
+                onHistogramReceive(result);
             })
             .fail(function(){
                 showError("Failed to load histogram");
@@ -415,10 +422,6 @@
 
     var onDetailStatsReceive = function(details, parentRow, level) {
         processChildStats(details.merged, parentRow, level);
-    };
-
-    var onHistogramReceive = function(result, parentRow, level) {
-        buildDetails(result, parentRow);
     };
 
     var findChildNodes = function(row){
@@ -480,8 +483,8 @@
         return options.past > 2 * 86400000;
     };
 
-    var buildDetails = function(details, parentRow){
-        var histogram = details.histogram;
+    var onHistogramReceive = function(details){
+        histogram = histogram.concat(details.histogram);
         var chartOptions = {
             legend: {
                 backgroundColor: null,
@@ -498,6 +501,8 @@
                 autoHighlight: false
             },
             xaxis:{
+                min: details.startDate,
+                max: details.endDate,
                 color: "#777777",
                 font: {"color": "#ffffff"},
                 mode: "time",
@@ -539,6 +544,11 @@
         //$(container).bind( "plothover", function ( evt, position, item ) {
         //    console.log(JSON.stringify({pos: position, item: item}));
         //});
+
+        //load next parts if exists
+        if( details.lastGroupId != null ){
+            loadHistogram(details.id, details.lastGroupId);
+        }
     };
 
     var extractSeries = function(histogram, property){

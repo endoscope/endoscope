@@ -1,5 +1,7 @@
 package com.github.storage.test;
 
+import java.util.Date;
+
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.AggregatedStorage;
@@ -12,8 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Date;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -428,10 +428,10 @@ public abstract class AggregatedStorageTestCases {
         Date to   = parse("2016-10-01 23:58:00");
 
         //when
-        storage.loadHistogram("detailsId", from, to, "instance", "type");
+        storage.loadHistogram("detailsId", from, to, "instance", "type", null);
 
         //then
-        verify(defaultStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), eq("instance"), eq("type"));
+        verify(defaultStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), eq("instance"), eq("type"), isNull(String.class));
         verifyNoMoreInteractions(dailyStorage);
         verifyNoMoreInteractions(weeklyStorage);
         verifyNoMoreInteractions(monthlyStorage);
@@ -444,11 +444,11 @@ public abstract class AggregatedStorageTestCases {
         Date to   = parse("2016-10-02 01:58:00");
 
         //when
-        storage.loadHistogram("detailsId", from, to, "instance", "type");
+        storage.loadHistogram("detailsId", from, to, "instance", "type", null);
 
         //then
         verifyNoMoreInteractions(defaultStorage);
-        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"), isNull(String.class));
         verifyNoMoreInteractions(weeklyStorage);
         verifyNoMoreInteractions(monthlyStorage);
     }
@@ -460,11 +460,11 @@ public abstract class AggregatedStorageTestCases {
         Date to   = parse("2016-10-08 01:58:00");
 
         //when
-        storage.loadHistogram("detailsId", from, to, "instance", "type");
+        storage.loadHistogram("detailsId", from, to, "instance", "type", null);
 
         //then
         verifyNoMoreInteractions(defaultStorage);
-        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"), isNull(String.class));
         verifyNoMoreInteractions(weeklyStorage);
         verifyNoMoreInteractions(monthlyStorage);
     }
@@ -476,11 +476,11 @@ public abstract class AggregatedStorageTestCases {
         Date to   = parse("2016-11-08 01:58:00");
 
         //when
-        storage.loadHistogram("detailsId", from, to, "instance", "type");
+        storage.loadHistogram("detailsId", from, to, "instance", "type", null);
 
         //then
         verifyNoMoreInteractions(defaultStorage);
-        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"));
+        verify(dailyStorage).loadHistogram(eq("detailsId"), eq(from), eq(to), isNull(String.class), eq("type"), isNull(String.class));
         verifyNoMoreInteractions(weeklyStorage);
         verifyNoMoreInteractions(monthlyStorage);
     }

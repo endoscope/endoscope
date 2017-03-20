@@ -1,15 +1,15 @@
 package com.github.endoscope.storage.jdbc;
 
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+
 public class QueryRunnerExt extends QueryRunner {
-    private int fetchSize = 0;
+    private ThreadLocal<Integer> fetchSize = ThreadLocal.withInitial(() -> null);
 
     public QueryRunnerExt() {
     }
@@ -27,16 +27,16 @@ public class QueryRunnerExt extends QueryRunner {
     }
 
     public int getFetchSize() {
-        return fetchSize;
+        return fetchSize.get();
     }
 
     public void setFetchSize(int fetchSize) {
-        this.fetchSize = fetchSize;
+        this.fetchSize.set(fetchSize);
     }
 
     private void applyFetchSize(PreparedStatement ps) throws SQLException {
-        if( fetchSize > 0 ){
-            ps.setFetchSize(fetchSize);
+        if( fetchSize.get() != null ){
+            ps.setFetchSize(fetchSize.get());
         }
     }
 
@@ -55,12 +55,12 @@ public class QueryRunnerExt extends QueryRunner {
     }
 
     public <T> T queryExt(int fetchSize, String sql, ResultSetHandler<T> rsh, Object... params) throws SQLException {
-        int previous = this.fetchSize;
-        this.fetchSize = fetchSize;
+        Integer previous = this.fetchSize.get();
+        this.fetchSize.set(fetchSize);
         try {
             return query(sql, rsh, params);
         }finally{
-            this.fetchSize = previous;
+            this.fetchSize.set(previous);
         }
     }
 }

@@ -1,5 +1,17 @@
 package com.github.endoscope.storage.jdbc;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
@@ -12,20 +24,9 @@ import com.github.endoscope.storage.jdbc.handler.GroupEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StatEntityHandler;
 import com.github.endoscope.storage.jdbc.handler.StringHandler;
 import com.github.endoscope.util.DateUtil;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import static com.github.endoscope.storage.jdbc.ListUtil.emptyIfNull;
 import static java.util.Collections.singletonList;
@@ -46,6 +47,8 @@ public class JdbcStorage implements Storage {
     private String tablePrefix = "";
     private static long ONE_HOUR_MILLIS = 360000L;
     private static long ONE_DAY_MILLIS = 24 * ONE_HOUR_MILLIS;
+    private static int HISTOGRAM_PAGE = 100;
+    private static int HISTOGRAM_PAGE_MAX = 120;
 
     public JdbcStorage setTablePrefix(String tablePrefix){
         this.tablePrefix = tablePrefix;
@@ -504,19 +507,48 @@ public class JdbcStorage implements Storage {
     }
 
     @Override
-    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
-        List<GroupEntity> groups = findGroupsInRange(from, to, instance, type);
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type, String lastGroupId){
+        List<GroupEntity> allGroups = findGroupsInRange(from, to, instance, type);
+        List<GroupEntity> tailGroups = tailAfter(allGroups, lastGroupId);
+        List<GroupEntity> groups = limitHistogramSize(tailGroups);
 
-//zazazaz
-//        //limit number of data we load - otherwise it might be huge and slow
-//        if( groups.size() > 120 ){
-//            groups = HistogramUtil.reduce(100, groups);
-//mark as reduced
-//        }
+        lastGroupId = (groups.size() == tailGroups.size()) ? null : groups.get(HISTOGRAM_PAGE-1).getId();
 
         List<String> groupIds = extractGroupIds(groups);
         List<StatEntity> stats = loadGroupStats(groupIds, detailsId, true);//topLevel only
-        return createHistogram(detailsId, groups, stats);
+
+        Histogram result = createHistogram(groups, stats);
+        result.setId(detailsId);
+        result.setInfo(storageInfo(null));
+        result.setLastGroupId(lastGroupId);
+        result.setStartDate(allGroups.stream().map(GroupEntity::getStartDate).min(Date::compareTo).orElseGet(() -> new Date()));
+        result.setEndDate(allGroups.stream().map(GroupEntity::getStartDate).max(Date::compareTo).orElseGet(() -> new Date()));
+
+        return result;
+    }
+
+    private List<GroupEntity> tailAfter(List<GroupEntity> groups, String lastGroupId) {
+        if( lastGroupId == null ){
+            return groups;
+        }
+        List<GroupEntity> nextGroups = new ArrayList();
+        final MutableBoolean found = new MutableBoolean(false);
+        groups.forEach( g -> {
+            if(found.isTrue()) {
+                nextGroups.add(g);
+            } else if (lastGroupId.equals(g.getId()) ) {
+                found.setTrue();
+            }
+        });
+        return nextGroups;
+    }
+
+    private List<GroupEntity> limitHistogramSize(List<GroupEntity> groups) {
+        //if there is just few more than don't do the trick
+        if( groups.size() <= HISTOGRAM_PAGE_MAX ){
+            return groups;
+        }
+        return groups.subList(0, HISTOGRAM_PAGE);
     }
 
     private List<String> extractGroupIds(List<GroupEntity> groups) {
@@ -544,11 +576,8 @@ public class JdbcStorage implements Storage {
         return result;
     }
 
-    private Histogram createHistogram(String detailsId, List<GroupEntity> groups, List<StatEntity> topLevelStats) {
+    private Histogram createHistogram(List<GroupEntity> groups, List<StatEntity> topLevelStats) {
         Histogram result = new Histogram();
-        result.setId(detailsId);
-        result.setInfo(storageInfo(null));
-
         groups.forEach( group -> {
             Stat details = topLevelStats.stream()
                     .filter( s -> group.getId().equals(s.getGroupId()) )

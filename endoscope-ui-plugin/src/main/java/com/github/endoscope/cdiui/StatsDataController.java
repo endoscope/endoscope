@@ -1,5 +1,17 @@
 package com.github.endoscope.cdiui;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.github.endoscope.Endoscope;
 import com.github.endoscope.core.Stat;
 import com.github.endoscope.core.Stats;
@@ -12,18 +24,6 @@ import com.github.endoscope.storage.Storage;
 import com.github.endoscope.util.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -92,9 +92,11 @@ public class StatsDataController {
                             @QueryParam("to") String toS,
                             @QueryParam("past") String pastS,
                             @QueryParam("instance") String instance,
-                            @QueryParam("type") String type){
+                            @QueryParam("type") String type,
+                            @QueryParam("lastGroupId") String lastGroupId){
         Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        Histogram histogram = histogramForRange(id, new Range(from, to, past, instance, type));
+        lastGroupId = StringUtils.trimToNull(lastGroupId);
+        Histogram histogram = histogramForRange(id, new Range(from, to, past, instance, type), lastGroupId);
         return noCacheResponse(jsonUtil.toJson(histogram));
     }
 
@@ -164,10 +166,10 @@ public class StatsDataController {
         return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
     }
 
-    private Histogram histogramForRange(String id, Range range) {
+    private Histogram histogramForRange(String id, Range range, String lastGroupId) {
         Histogram result;
         if( canSearch(range) ){
-            result = getStorage().loadHistogram(id, range.fromDate, range.toDate, range.instance, range.type);
+            result = getStorage().loadHistogram(id, range.fromDate, range.toDate, range.instance, range.type, lastGroupId);
             if( inMemoryInRange(range) ){
                 Histogram current = histogramInMemory(id);
                 if( current != null ){

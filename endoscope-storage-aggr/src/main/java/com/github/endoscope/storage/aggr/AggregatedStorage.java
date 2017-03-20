@@ -1,5 +1,10 @@
 package com.github.endoscope.storage.aggr;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Filters;
 import com.github.endoscope.storage.Histogram;
@@ -7,11 +12,6 @@ import com.github.endoscope.storage.StatDetails;
 import com.github.endoscope.storage.Storage;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
 
 import static org.apache.commons.lang3.time.DateUtils.addSeconds;
 import static org.apache.commons.lang3.time.DateUtils.ceiling;
@@ -201,10 +201,10 @@ public class AggregatedStorage implements com.github.endoscope.storage.Aggregate
     }
 
     @Override
-    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type, String lastGroupId){
         Storage storage = chooseHistogramStorage(from, to);
         instance = fixInstance(storage, instance);
-        return storage.loadHistogram(detailsId, from, to, instance, type);
+        return storage.loadHistogram(detailsId, from, to, instance, type, lastGroupId);
     }
 
     @Override

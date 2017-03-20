@@ -154,7 +154,7 @@ public class GzipStorage implements Storage {
     }
 
     @Override
-    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type){
+    public Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type, String lastGroupId){
         List<String> statsIds = find(from, to, instance, type);
         Histogram result = new Histogram(detailsId);
         processStats(statsIds, stats -> {
