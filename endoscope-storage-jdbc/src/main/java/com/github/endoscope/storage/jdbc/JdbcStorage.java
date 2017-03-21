@@ -521,8 +521,9 @@ public class JdbcStorage implements Storage {
         result.setId(detailsId);
         result.setInfo(storageInfo(null));
         result.setLastGroupId(lastGroupId);
+
         result.setStartDate(allGroups.stream().map(GroupEntity::getStartDate).min(Date::compareTo).orElseGet(() -> new Date()));
-        result.setEndDate(allGroups.stream().map(GroupEntity::getStartDate).max(Date::compareTo).orElseGet(() -> new Date()));
+        result.setEndDate(allGroups.stream().map(GroupEntity::getEndDate).max(Date::compareTo).orElseGet(() -> new Date()));
 
         return result;
     }
