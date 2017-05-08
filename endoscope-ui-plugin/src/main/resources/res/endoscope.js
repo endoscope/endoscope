@@ -557,10 +557,10 @@
             //do nothing
         } else if( property == "bad" ){
             result.push([histogram[0].startDate, options.valueBadLevel]);
-            result.push([histogram[histogram.length-1].startDate, options.valueBadLevel]);
+            result.push([histogram[histogram.length-1].endDate, options.valueBadLevel]);
         } else if( property == "warn" ){
             result.push([histogram[0].startDate, options.valueWarnLevel]);
-            result.push([histogram[histogram.length-1].startDate, options.valueWarnLevel]);
+            result.push([histogram[histogram.length-1].endDate, options.valueWarnLevel]);
         } else {
             histogram.forEach(function(h){
                 var time = (h.startDate + h.endDate)/2;
