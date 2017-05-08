@@ -1,5 +1,7 @@
 package com.github.endoscope.cdi;
 
+import org.slf4j.Logger;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.ws.rs.Path;
@@ -9,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -71,13 +71,6 @@ public class TypeChecker {
         return false;
     }
 
-    private boolean isIncompatibleType(AnnotatedType type) {
-        if( type.isAnnotationPresent(javax.enterprise.inject.Specializes.class) ){
-            return true;
-        }
-        return false;
-    }
-
     private boolean isSupportedType(AnnotatedType type) {
         for( Class c : SUPPORTED_ANNOTATIONS ){
             if( type.isAnnotationPresent(c) ){
@@ -125,11 +118,6 @@ public class TypeChecker {
     public boolean isNotSupported(AnnotatedType annotatedType) {
         if( isAlreadyAnnotated(annotatedType) ){
             log.debug("SUPPORTED: is already annotated: {}", annotatedType.getJavaClass());
-            return true;
-        }
-
-        if( isIncompatibleType(annotatedType) ){
-            log.debug("incompatible type: {}", annotatedType.getJavaClass());
             return true;
         }
 
