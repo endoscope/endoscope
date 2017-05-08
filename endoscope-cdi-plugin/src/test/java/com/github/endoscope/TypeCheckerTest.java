@@ -1,5 +1,7 @@
 package com.github.endoscope;
 
+import javax.enterprise.inject.spi.AnnotatedType;
+
 import com.github.endoscope.cdi.TypeChecker;
 import com.github.endoscope.cdi.WithEndoscope;
 import org.junit.Before;
@@ -8,8 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.enterprise.inject.spi.AnnotatedType;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -127,5 +127,14 @@ public class TypeCheckerTest {
             BDDMockito.given(type.isAnnotationPresent(c)).willReturn(false);
             assertNotSupported(tc);
         }
+    }
+
+    @Test
+    public void should_exclude_incompatible(){
+        TypeChecker tc = new TypeChecker(null, null, ".*");
+        BDDMockito.given(type.getJavaClass()).willReturn(TheType.class);
+        BDDMockito.given(type.isAnnotationPresent(javax.enterprise.inject.Specializes.class)).willReturn(true);
+
+        assertNotSupported(tc);
     }
 }
