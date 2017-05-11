@@ -1,8 +1,11 @@
 package com.github.endoscope.cdiui;
 
-import com.github.endoscope.properties.Properties;
-
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,20 +13,22 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Base64;
 
+import com.github.endoscope.properties.Properties;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  By default filters /endoscope/* so if you need different path configure it in web.xml
 
- $lt;filter$gt;
-   $lt;filter-name$gt;endoscopeSecurityFilter$lt;/filter-name$gt;
-   $lt;filter-class$gt;com.github.endoscope.cdiui.SecurityFilter$lt;/filter-class$gt;
- $lt;/filter$gt;
- $lt;filter-mapping$gt;
-   $lt;filter-name$gt;endoscopeSecurityFilter$lt;/filter-name$gt;
-   $lt;url-pattern$gt;/rest/endoscope/*$lt;/url-pattern$gt;
- $lt;/filter-mapping$gt;
+ &lt;filter&gt;
+   &lt;filter-name&gt;endoscopeSecurityFilter&lt;/filter-name&gt;
+   &lt;filter-class&gt;com.github.endoscope.cdiui.SecurityFilter&lt;/filter-class&gt;
+ &lt;/filter&gt;
+ &lt;filter-mapping&gt;
+   &lt;filter-name&gt;endoscopeSecurityFilter&lt;/filter-name&gt;
+   &lt;url-pattern&gt;/endoscope/*&lt;/url-pattern&gt;
+ &lt;/filter-mapping&gt;
 
  */
 @WebFilter("/endoscope/*")

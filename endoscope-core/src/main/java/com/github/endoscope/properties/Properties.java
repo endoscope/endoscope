@@ -7,8 +7,13 @@ public class Properties {
     public static String QUEUE_MAX_SIZE = "endoscope.max.queue.size";
     public static String EXCLUDED_PACKAGES = "endoscope.excluded-packages";
     public static String SUPPORTED_NAMES = "endoscope.supported-names";
+
+    //true/false
     public static String ENABLED = "endoscope.enabled";
+
     public static String SCANNED_PACKAGES = "endoscope.scanned-packages";
+
+    //After successful save memory statistics get's cleaned
     public static String SAVE_FREQ_MINUTES = "endoscope.save.feq.minutes";//set to <= 0 in order to disable
     public static String STORAGE_CLASS = "endoscope.storage.class";
     public static String STORAGE_CLASS_INIT_PARAM = "endoscope.storage.class.init.param";
