@@ -46,41 +46,31 @@ public class StatsDataController {
     @GET
     @Path("/data/top")
     @Produces("application/json")
-    public Response top(@QueryParam("from") String fromS,
-                        @QueryParam("to") String toS,
-                        @QueryParam("past") String pastS,
+    public Response top(@QueryParam("from") String from,
+                        @QueryParam("to") String to,
+                        @QueryParam("past") String past,
                         @QueryParam("instance") String instance,
                         @QueryParam("type") String type,
                         @QueryParam("reset") boolean reset) {
-        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-
         if( reset ){
             log.info("Resetting current stats");
             Endoscope.resetStats();
         }
 
-        Stats stats = topLevelForRange(new Range(from, to, past, instance, type));
+        Stats stats = topLevelForRange(new TimeRange(from, to, past, instance, type));
         return noCacheResponse(jsonUtil.toJson(stats));
-    }
-
-    private Long toLong(String value){
-        if( value == null || value.trim().length() == 0 ){
-            return null;
-        }
-        return Long.valueOf(value);
     }
 
     @GET
     @Path("/data/details")
     @Produces("application/json")
     public Response details(@QueryParam("id") String id,
-                            @QueryParam("from") String fromS,
-                            @QueryParam("to") String toS,
-                            @QueryParam("past") String pastS,
+                            @QueryParam("from") String from,
+                            @QueryParam("to") String to,
+                            @QueryParam("past") String past,
                             @QueryParam("instance") String instance,
                             @QueryParam("type") String type){
-        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        StatDetails details = detailsForRange(id, new Range(from, to, past, instance, type));
+        StatDetails details = detailsForRange(id, new TimeRange(from, to, past, instance, type));
         return noCacheResponse(jsonUtil.toJson(details));
     }
 
@@ -88,53 +78,21 @@ public class StatsDataController {
     @Path("/data/histogram")
     @Produces("application/json")
     public Response histogram(@QueryParam("id") String id,
-                            @QueryParam("from") String fromS,
-                            @QueryParam("to") String toS,
-                            @QueryParam("past") String pastS,
+                            @QueryParam("from") String from,
+                            @QueryParam("to") String to,
+                            @QueryParam("past") String past,
                             @QueryParam("instance") String instance,
                             @QueryParam("type") String type,
                             @QueryParam("lastGroupId") String lastGroupId){
-        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
         lastGroupId = StringUtils.trimToNull(lastGroupId);
-        Histogram histogram = histogramForRange(id, new Range(from, to, past, instance, type), lastGroupId);
+        Histogram histogram = histogramForRange(id, new TimeRange(from, to, past, instance, type), lastGroupId);
         return noCacheResponse(jsonUtil.toJson(histogram));
     }
 
-    private static class Range {
-        public Range(Long from, Long to, Long past, String instance, String type){
-            this.instance = instance;
-            this.type = type;
-            if( past != null ){
-                if( past > 0 ){
-                    toDate = new Date();
-                    fromDate = new Date(toDate.getTime() - past);
-                }
-            } else {
-                if( from != null ){
-                    fromDate = new Date(from);
-
-                    //to requires from
-                    if( to != null ){
-                        toDate = new Date(to);
-                        includeCurrent = false;
-                    } else {
-                        toDate = new Date();
-                    }
-                }
-            }
-        }
-
-        Date fromDate = null;
-        Date toDate = null;
-        String instance;
-        String type;
-        boolean includeCurrent = true;
-    }
-
-    private Stats topLevelForRange(Range range) {
+    private Stats topLevelForRange(TimeRange range) {
         Stats result;
         if( canSearch(range) ){
-            result = getStorage().loadAggregated(true, range.fromDate, range.toDate, range.instance, range.type);
+            result = getStorage().loadAggregated(true, range.getFromDate(), range.getToDate(), range.getInstance(), range.getType());
             if( inMemoryInRange(range) ){
                 Stats current = topLevelInMemory();
                 result.merge(current, false);
@@ -147,10 +105,10 @@ public class StatsDataController {
         return result;
     }
 
-    private StatDetails detailsForRange(String id, Range range) {
+    private StatDetails detailsForRange(String id, TimeRange range) {
         StatDetails result;
         if( canSearch(range) ){
-            result = getStorage().loadDetails(id, range.fromDate, range.toDate, range.instance, range.type);
+            result = getStorage().loadDetails(id, range.getFromDate(), range.getToDate(), range.getInstance(), range.getType());
             if( inMemoryInRange(range) ){
                 StatDetails current = detailsInMemory(id);
                 if( current != null ){
@@ -166,11 +124,12 @@ public class StatsDataController {
         return (result != null) ? result : new StatDetails(id, Stat.emptyStat());
     }
 
-    private Histogram histogramForRange(String id, Range range, String lastGroupId) {
+    private Histogram histogramForRange(String id, TimeRange range, String lastGroupId) {
         Histogram result;
         if( canSearch(range) ){
-            result = getStorage().loadHistogram(id, range.fromDate, range.toDate, range.instance, range.type, lastGroupId);
-            if( inMemoryInRange(range) ){
+            result = getStorage().loadHistogram(id, range.getFromDate(), range.getToDate(), range.getInstance(), range.getType(), lastGroupId);
+
+            if( inMemoryInRange(range) && result.isLastHistogramPart() ){
                 Histogram current = histogramInMemory(id);
                 if( current != null ){
                     result.getHistogram().addAll(current.getHistogram());
@@ -181,17 +140,18 @@ public class StatsDataController {
             result = histogramInMemory(id);
             result.setInfo("in-memory data only. Original info: " + result.getInfo());
         }
+        result.setInfo(result.getInfo() + ", " + range.toString() );
         return (result != null) ? result : new Histogram(id);
     }
 
-    private boolean inMemoryInRange(Range range){
-        return range.includeCurrent
-                && (isBlank(range.instance) || StringUtils.equals(range.instance, Properties.getAppInstance()))
-                && (isBlank(range.type) || StringUtils.equals(range.type, Properties.getAppType()));
+    private boolean inMemoryInRange(TimeRange range){
+        return range.isIncludeCurrent()
+                && (isBlank(range.getInstance()) || StringUtils.equals(range.getInstance(), Properties.getAppInstance()))
+                && (isBlank(range.getType()) || StringUtils.equals(range.getType(), Properties.getAppType()));
     }
 
-    private boolean canSearch(Range range){
-        return range.fromDate != null && range.toDate != null
+    private boolean canSearch(TimeRange range){
+        return range.getFromDate() != null && range.getToDate() != null
                 && Endoscope.getStatsStorage() != null;
     }
 
@@ -242,14 +202,13 @@ public class StatsDataController {
     @GET
     @Path("/data/filters")
     @Produces("application/json")
-    public Response filters(@QueryParam("from") String fromS,
-                            @QueryParam("to") String toS,
-                            @QueryParam("past") String pastS){
-        Long from = toLong(fromS), to = toLong(toS), past = toLong(pastS);
-        Range range = new Range(from, to, past, null, null);
+    public Response filters(@QueryParam("from") String from,
+                            @QueryParam("to") String to,
+                            @QueryParam("past") String past){
+        TimeRange range = new TimeRange(from, to, past, null, null);
         Filters filters = null;
         if( canSearch(range) ){
-            filters = getStorage().findFilters(range.fromDate, range.toDate, null);
+            filters = getStorage().findFilters(range.getFromDate(), range.getToDate(), null);
         }
         if( filters == null){
             filters = new Filters(null, null);

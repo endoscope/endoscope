@@ -42,6 +42,11 @@ public class Histogram {
         getHistogram().add( new StatHistory(details, startDate, endDate) );
     }
 
+    @Transient
+    public boolean isLastHistogramPart(){
+        return lastGroupId == null;
+    }
+
     /**
      * Implementation specific information.
      * @return

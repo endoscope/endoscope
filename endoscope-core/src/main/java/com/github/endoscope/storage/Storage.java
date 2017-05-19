@@ -77,10 +77,12 @@ public interface Storage {
      * @param type optional
      * @param lastGroupId optional
      *                    Load histogram part starting at next group after this one.
-     *                    You can get this value from result. If present it means that only part of histogram was
-     *                    returned and you need to to call service again to get next parts until this value is null.
+     *                    You can get this value from result. If present it means that only a part of histogram was
+     *                    returned and you need to to call service again to get next parts until this value is null
+     *                    in result.
      *
-     *                    Implementation may ignore it but in such case it will not return it either.
+     *                    It's just an optimization for UI and implementation may ignore it returning all histogram
+     *                    values at once.
      * @return not null
      */
     Histogram loadHistogram(String detailsId, Date from, Date to, String instance, String type, String lastGroupId);

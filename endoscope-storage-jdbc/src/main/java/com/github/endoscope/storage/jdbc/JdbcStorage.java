@@ -472,7 +472,7 @@ public class JdbcStorage implements Storage {
 
     private String storageInfo(Stats stats) {
         StringBuilder info = new StringBuilder();
-        info.append("table=").append(tablePrefix);
+        info.append("tablePrefix=").append(tablePrefix);
         if( stats != null ){
             info.append(", start=");
             if( stats.getStartDate() != null ){
