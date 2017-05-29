@@ -11,6 +11,7 @@
     <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.flot.time.min.js"></script>
     <script language="javascript" type="text/javascript" src="res/lib/flot/jquery.flot.fillbetween.min.js"></script>
     <script language="javascript" type="text/javascript" src="res/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="res/lib/datetimepicker/jquery.datetimepicker.full.min.js"></script>
     <script language="javascript" type="text/javascript" src="res/lib/jquery.typewatch.js"></script>
     <script language="javascript" type="text/javascript" src="res/lib/jquery.storageapi.min.js"></script>
     <script language="javascript" type="text/javascript" src="res/lib/jquery-ui/jquery-ui.min.js"></script>
@@ -21,6 +22,7 @@
 
     <link href="res/lib/jquery-ui/jquery-ui.min.css" rel="stylesheet" type="text/css">
     <link href="res/lib/bootstrap/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="res/lib/datetimepicker/jquery.datetimepicker.min.css" rel="stylesheet" type="text/css">
     <link href="res/endoscope-layout.css" rel="stylesheet" type="text/css">
     <link href="res/endoscope.css" rel="stylesheet" type="text/css">
 
@@ -80,14 +82,13 @@
                 <div class="form-group">
                     <select class="form-control" id="es-past" title="Select data range">
                         <option value="3600000" selected="selected">1 hour</option>
+                        <option value="21600000">6 hours</option>
                         <option value="86400000">1 day</option>
-                        <option value="172800000">2 days</option>
                         <option value="604800000">1 week</option>
-                        <option value="1209600000">2 weeks</option>
-                        <option value="2592000000">30 days</option>
                         <option value="0">In-memory</option>
-                        <option value="-1">Start from now</option>
+                        <option value="-1">In-memory - reset</option>
                         <option value="-2" style="display: none">Custom</option>
+                        <option value="-3">Choose...</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -141,6 +142,29 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 <button id="es-filter-save" type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="es-time-range-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Time Range</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="es-time-range-from">From</label>
+                    <input id="es-time-range-from" type="text" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label for="es-time-range-to">To</label>
+                    <input id="es-time-range-to" type="text" class="form-control" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="es-time-range-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button id="es-time-range-save" type="button" class="btn btn-primary">Save</button>
             </div>
         </div>
     </div>

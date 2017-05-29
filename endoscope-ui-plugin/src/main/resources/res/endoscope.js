@@ -25,13 +25,14 @@
         sortDirection: 1
     }, $.localStorage.get(settingsKey));
 
-    //debug
-    window.endoscope = options;
-
     var placeholder;
     var loadingTim;
     var ajaxCount=0;
     var histogram=[];
+
+    //https://github.com/kartik-v/php-date-formatter
+    var dateFormat = 'Y/m/d H:i';
+    var dateFormatter = new DateFormatter();
 
     function Endoscope(_placeholder) {
         placeholder = _placeholder;
@@ -56,6 +57,7 @@
         });
 
         setupFilters();
+        setupTimeRangeModal();
     }
 
     var setupAjaxLoaderImage = function(){
@@ -75,6 +77,13 @@
                 $('.es-loading').hide();
             }, 500);
         });
+    };
+
+    var setupTimeRangeModal = function(){
+        jQuery('#es-time-range-from').datetimepicker();
+        jQuery('#es-time-range-to').datetimepicker();
+        $("#es-time-range-cancel").click(onTimeRangeCancel)
+        $("#es-time-range-save").click(onTimeRangeSave)
     };
 
     var setupFilters = function(){
@@ -184,14 +193,51 @@
 
     var onPeriodChange = function(){
         var reset = applyPeriodChange();
-        saveOptions();
-        loadTopLevel(reset);
-        loadFilters();
+        if( $("#es-past").val() != -3 ){ //wait for modal results
+            saveOptions();
+            loadTopLevel(reset);
+            loadFilters();
+        };
+    };
+
+    var onTimeRangeCancel = function(){
+        setupPeriod(); //reset to previous value
+    };
+
+    var onTimeRangeSave = function(){
+        let fromInput = $("#es-time-range-from");
+        let toInput = $("#es-time-range-to");
+
+        let fromD = dateFormatter.parseDate(fromInput.val(), dateFormat);
+        let toD = dateFormatter.parseDate(toInput.val(), dateFormat);
+
+        if( fromD == null ){
+            fromInput.val('');
+            return;
+        }
+        if( toD == null || toD <= fromD){
+            toInput.val('');
+            return;
+        }
+        options.from = fromD.getTime();
+        options.to = toD.getTime();
+        options.past = null;
+
+        var element = $("#es-past");
+        element.val("-2");
+
+        onPeriodChange();
+        $('#es-time-range-modal').modal('hide');
     };
 
     var applyPeriodChange = function(){
         var reset = false;
         var element = $("#es-past");
+        if( element.val() == -3 ){
+            $('#es-time-range-modal').modal({
+                keyboard: false
+            });
+        }
         if( element.val() == -1 ){//reset and switch to custom
             options.past = null;
             options.from = new Date().getTime();
@@ -201,9 +247,10 @@
         }
         if( element.val() == -2 ){//custom
             var customOption = getCustomPeriodOption();
-            var label = new Date(options.from).toISOString() + " - ";
+            var label = dateFormatter.formatDate( new Date(options.from), dateFormat);
+            label += " - ";
             if( options.to != null ){
-                label += new Date(options.to).toISOString();
+                label += dateFormatter.formatDate( new Date(options.to), dateFormat);
             } else {
                 label += "now";
             }
@@ -581,9 +628,8 @@
 
         if( obj.children ){
             row.addClass("es-has-children");
-            if( level < 2 ){//autoexpand up to 2-nd level
-                row.addClass("es-expanded");
-            }
+            //autoexpand all children
+            row.addClass("es-expanded");
         }
         row.attr("data-level", level);
         if(level == 0){
