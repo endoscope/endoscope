@@ -639,9 +639,6 @@
         } else {
             row.addClass("es-child es-sel");
             row.find(".es-count").append(obj.ah10/10);
-            if( level > 2 ){
-                row.hide();//no autoexpand at higher levels
-            }
         }
         row.attr("title", id);
 
