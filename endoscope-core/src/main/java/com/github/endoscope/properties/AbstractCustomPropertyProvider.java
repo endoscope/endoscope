@@ -20,4 +20,15 @@ public class AbstractCustomPropertyProvider extends SystemPropertyProvider {
         }
         return current;
     }
+
+    protected String append(String name, String value){
+        String current = get(name, null);
+        if( current == null ){
+            current = value;
+        } else {
+            current += "," + value;
+        }
+        override.put(name, current);
+        return current;
+    }
 }
