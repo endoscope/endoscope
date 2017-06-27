@@ -1,9 +1,5 @@
 package com.github.endoscope.core;
 
-import com.github.endoscope.storage.StatsPersistence;
-import com.github.endoscope.storage.Storage;
-import org.slf4j.Logger;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.UUID;
@@ -14,9 +10,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.github.endoscope.storage.StatsPersistence;
+import com.github.endoscope.storage.Storage;
+import org.slf4j.Logger;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class CurrentStatsAsyncTasks {
+public class CurrentStatsAsyncTasks implements AsyncTasksFactory {
     private static final Logger log = getLogger(CurrentStatsAsyncTasks.class);
     public static final String COLLECTOR_THREAD_NAME = "endoscope-stats-collector";
     public static final String COLLECTOR_ID = UUID.randomUUID().toString();

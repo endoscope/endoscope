@@ -13,24 +13,7 @@ import com.github.endoscope.Endoscope;
 public class CdiInterceptor {
     @AroundInvoke
     public Object monitorOperation(InvocationContext ctx) throws Exception {
-
-        if (!Endoscope.isEnabled()) {
-            return ctx.proceed();
-        }
-
-        boolean first = false;
-        try {
-            first = Endoscope.push(getCallNameFromContext(ctx));
-            return ctx.proceed();
-        } catch (final Error e) {
-            throw e;
-        } finally {
-            if( first ){
-                Endoscope.popAll();
-            }else {
-                Endoscope.pop();
-            }
-        }
+        return Endoscope.monitorEx(getCallNameFromContext(ctx), () -> ctx.proceed() );
     }
 
     protected String getCallNameFromContext(InvocationContext ctx) {

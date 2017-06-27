@@ -1,14 +1,13 @@
 package com.github.endoscope;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import com.github.endoscope.core.Engine;
+import com.github.endoscope.core.ExceptionalSupplier;
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.storage.Storage;
 
-import java.util.function.Function;
-
-/**
- * Easy to use static facade.
- */
 public class Endoscope {
     private static Engine ENGINE = new Engine();
 
@@ -17,27 +16,28 @@ public class Endoscope {
     }
 
     /**
+     * Return result provided by supplier.
+     * If endoscope is enabled additionally monitor operation.
      *
-     * @param id required, might get cut if too long
-     * @return true if it was first element pushed to call stack
+     * @param id operation identifier
+     * @param supplier result supplier
+     * @param <T>
+     * @return supplier result
      */
-    public static boolean push(String id){
-        return ENGINE.push(id);
-    }
-
-    public static void pop(){
-        ENGINE.pop();
+    public static <T> T monitor(String id, Supplier<T> supplier) {
+        return ENGINE.monitor(id, supplier);
     }
 
     /**
-     * Use it to finalize collecting data for current thread.
-     * When Endoscope is correctly used in try/finally it just pops latest element.
+     * Similar to #monitor(String, Supplier) but declared with thrown Exception.
      *
-     * It may however prevent memory leak when Endoscope stack is not cleaned up correctly.
-     * For example when pop is not put in finally and exception occurs.
+     * @param id operation identifier
+     * @param supplier result supplier that may throw Exception
+     * @param <T>
+     * @return supplier result
      */
-    public static void popAll(){
-        ENGINE.popAll();
+    public static <T> T monitorEx(String id, ExceptionalSupplier<T> supplier) throws Exception {
+        return ENGINE.monitorEx(id, supplier);
     }
 
     /**

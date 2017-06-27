@@ -1,17 +1,19 @@
 package com.github.endoscope.core;
 
+import java.util.LinkedList;
+import java.util.function.Supplier;
+
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.storage.Storage;
 import com.github.endoscope.storage.StorageFactory;
-
-import java.util.LinkedList;
+import org.apache.commons.lang3.StringUtils;
 
 public class Engine {
     private ThreadLocal<LinkedList<Context>> contextStack = new ThreadLocal<>();
     private Boolean enabled = null;
     private Storage storage = null;//may stay null if disabled or cannot setup it
     private CurrentStats currentStats;
-    private CurrentStatsAsyncTasks currentStatsAsyncTasks;
+    private AsyncTasksFactory currentStatsAsyncTasks;
     private int maxIdLength = Properties.getMaxIdLength();
 
     public Engine(){
@@ -20,6 +22,13 @@ public class Engine {
             currentStats = new CurrentStats();
             currentStatsAsyncTasks = new CurrentStatsAsyncTasks(currentStats, storage);
         }
+    }
+
+    protected Engine(boolean enabled, Storage storage, AsyncTasksFactory tasksFactory){
+        this.enabled = enabled;
+        this.storage = storage;
+        currentStats = new CurrentStats();
+        currentStatsAsyncTasks = tasksFactory;
     }
 
     public boolean isEnabled(){
@@ -43,7 +52,7 @@ public class Engine {
      * @param id required, might get cut if too long
      * @return true if it was first element pushed to call stack
      */
-    public boolean push(String id){
+    protected boolean push(String id){
         checkEnabled();
 
         id = prepareId(id);
@@ -65,11 +74,9 @@ public class Engine {
     }
 
     private String prepareId(String id){
+        id = StringUtils.trimToNull(id);
         if( id == null ){
-            return "<null>";
-        }
-        if( id.isEmpty() ){
-            return "<empty>";
+            return "<blank>";
         }
         if( id.length() > maxIdLength ){
             return id.substring(0, maxIdLength);
@@ -77,7 +84,7 @@ public class Engine {
         return id;
     }
 
-    public void pop(){
+    protected void pop(){
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
@@ -93,7 +100,7 @@ public class Engine {
         }
     }
 
-    public void popAll(){
+    protected void popAll(){
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
@@ -118,7 +125,60 @@ public class Engine {
         return storage;
     }
 
-    public CurrentStatsAsyncTasks getCurrentStatsAsyncTasks() {
+    public AsyncTasksFactory getCurrentStatsAsyncTasks() {
         return currentStatsAsyncTasks;
+    }
+
+    /**
+     * Return result provided by supplier.
+     * If endoscope is enabled additionally monitor operation.
+     *
+     * @param id operation identifier
+     * @param supplier result supplier
+     * @param <T>
+     * @return supplier result
+     */
+    public <T> T monitor(String id, Supplier<T> supplier) {
+        if (!isEnabled()) {
+            return supplier.get();
+        }
+
+        boolean first = false;
+        try {
+            first = push(id);
+            return supplier.get();
+        } finally {
+            if( first ){
+                popAll();
+            }else {
+                pop();
+            }
+        }
+    }
+
+    /**
+     * Similar to #monitor(String, Supplier) but declared with thrown Exception.
+     *
+     * @param id operation identifier
+     * @param supplier result supplier that may throw Exception
+     * @param <T>
+     * @return supplier result
+     */
+    public <T> T monitorEx(String id, ExceptionalSupplier<T> supplier) throws Exception {
+        if (!isEnabled()) {
+            return supplier.get();
+        }
+
+        boolean first = false;
+        try {
+            first = push(id);
+            return supplier.get();
+        } finally {
+            if( first ){
+                popAll();
+            }else {
+                pop();
+            }
+        }
     }
 }
