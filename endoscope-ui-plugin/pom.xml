@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>endoscope-cdi-plugin</artifactId>
+            <artifactId>endoscope-core</artifactId>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
