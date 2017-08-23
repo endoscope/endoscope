@@ -1,18 +1,19 @@
 package com.github.endoscope.core;
 
-import com.github.endoscope.properties.Properties;
-
 import java.beans.Transient;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
+
+import com.github.endoscope.properties.Properties;
 
 @com.fasterxml.jackson.annotation.JsonPropertyOrder({ "statsLeft", "lost", "fatalError", "startDate", "endDate", "map" })
 public class Stats {
     private Map<String, Stat> map = new HashMap<>();
     private long statsLeft = Properties.getMaxStatCount();
-    private long lost = 0;
+    private AtomicLong lost = new AtomicLong(0);
     private String fatalError = null;
     private Date startDate;
     private Date endDate;
@@ -116,7 +117,7 @@ public class Stats {
         Stats s = new Stats();
 
         s.statsLeft = statsLeft;
-        s.lost = lost;
+        s.lost.set(lost.get());
         s.fatalError = fatalError;
         s.startDate = startDate;
         s.endDate = endDate;
@@ -130,7 +131,7 @@ public class Stats {
     public void merge(Stats inc, boolean withChildren){
         //too much hassle with merging statsLeft
 
-        lost = lost + inc.lost;
+        lost.set(lost.get() + inc.lost.get());
         if( inc.fatalError != null && fatalError == null ){
             fatalError = inc.fatalError;
         }
@@ -151,9 +152,12 @@ public class Stats {
         });
     }
 
+    /**
+     * This method is thread safe.
+     */
     @Transient
-    public void incrementLost() {
-        lost++;
+    public void threadSafeIncrementLost() {
+        lost.incrementAndGet();
     }
 
     public Map<String, Stat> getMap() {
@@ -165,11 +169,11 @@ public class Stats {
     }
 
     public long getLost() {
-        return lost;
+        return lost.get();
     }
 
     public void setLost(long lost) {
-        this.lost = lost;
+        this.lost.set(lost);
     }
 
     public long getStatsLeft() {
@@ -227,7 +231,7 @@ public class Stats {
         if (!(o instanceof Stats)) return false;
         Stats stats = (Stats) o;
         return statsLeft == stats.statsLeft &&
-                lost == stats.lost &&
+                lost.get() == stats.lost.get() &&
                 aggregateSubCalls == stats.aggregateSubCalls &&
                 Objects.equals(map, stats.map) &&
                 Objects.equals(fatalError, stats.fatalError) &&
@@ -238,6 +242,6 @@ public class Stats {
 
     @Override
     public int hashCode() {
-        return Objects.hash(map, statsLeft, lost, fatalError, startDate, endDate, info, aggregateSubCalls);
+        return Objects.hash(map, statsLeft, lost.get(), fatalError, startDate, endDate, info, aggregateSubCalls);
     }
 }

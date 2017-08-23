@@ -47,7 +47,7 @@ public class Endoscope {
      * @param function
      */
     public static <T> T processStats(Function<Stats, T> function){
-        return ENGINE.getCurrentStats().readStats(function);
+        return ENGINE.getCurrentStats().lockReadStats(function);
     }
 
     /**

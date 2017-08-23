@@ -75,7 +75,7 @@ public class CurrentStatsAsyncTasks implements AsyncTasksFactory {
     private boolean safeSaveIfNeeded() {
         if (statsPersistence != null && statsPersistence.shouldSave()) {
             log.debug("persisting stats: {}", COLLECTOR_ID);
-            currentStats.readStats(stats -> {
+            currentStats.lockReadStats(stats -> {
                 statsPersistence.safeSave(stats);
                 currentStats.resetStats();
                 return null;

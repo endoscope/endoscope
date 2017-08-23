@@ -80,7 +80,7 @@ public class StatsTest {
     public void should_increment_lost(){
         Stats s = new Stats();
         Assert.assertEquals(0, s.getLost());
-        s.incrementLost();
+        s.threadSafeIncrementLost();
         Assert.assertEquals(1, s.getLost());
     }
 

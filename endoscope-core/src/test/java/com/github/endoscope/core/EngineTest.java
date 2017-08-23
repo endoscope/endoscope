@@ -35,7 +35,7 @@ public class EngineTest {
 
             waitUtilStatsGetCollected(ci);
 
-            ci.getCurrentStats().readStats(stats -> {
+            ci.getCurrentStats().lockReadStats(stats -> {
                 Map<String, Stat> map = stats.getMap();
                 assertEquals(2, map.size());
                 Assert.assertTrue(map.containsKey("a1"));
@@ -168,7 +168,7 @@ public class EngineTest {
         engine.getCurrentStats().processAllFromQueue();
         assertEquals( 0, engine.getCurrentStats().getQueueSize());
 
-        Stat stat = engine.getCurrentStats().readStats(stats -> stats.getMap().get("id") );
+        Stat stat = engine.getCurrentStats().lockReadStats(stats -> stats.getMap().get("id") );
         assertEquals( 123, stat.getMax());
     }
 
@@ -190,7 +190,7 @@ public class EngineTest {
 
         engine.getCurrentStats().processAllFromQueue();
 
-        Stat stat = engine.getCurrentStats().readStats(stats -> stats.getMap().get("id-parent") );
+        Stat stat = engine.getCurrentStats().lockReadStats(stats -> stats.getMap().get("id-parent") );
         assertNotNull(stat);
         assertEquals(2, stat.getChildren().size());
         assertNotNull(stat.getChild("id-child1"));
@@ -216,7 +216,7 @@ public class EngineTest {
 
         engine.getCurrentStats().processAllFromQueue();
 
-        Stat stat = engine.getCurrentStats().readStats(stats -> stats.getMap().get("id-parent") );
+        Stat stat = engine.getCurrentStats().lockReadStats(stats -> stats.getMap().get("id-parent") );
         assertNotNull(stat);
         assertEquals(2, stat.getChildren().size());
         assertNotNull(stat.getChild("id-child1"));
@@ -227,7 +227,7 @@ public class EngineTest {
     @Test
     public void should_handle_null_id() {
         Engine engine = new Engine(true, null, new NoopTasksFactory() );
-        Map<String, Stat> map = engine.getCurrentStats().readStats(stats -> stats.getMap() );
+        Map<String, Stat> map = engine.getCurrentStats().lockReadStats(stats -> stats.getMap() );
 
         assertTrue(map.isEmpty());
 
@@ -241,7 +241,7 @@ public class EngineTest {
     @Test
     public void should_handle_blank_id() {
         Engine engine = new Engine(true, null, new NoopTasksFactory() );
-        Map<String, Stat> map = engine.getCurrentStats().readStats(stats -> stats.getMap() );
+        Map<String, Stat> map = engine.getCurrentStats().lockReadStats(stats -> stats.getMap() );
 
         assertTrue(map.isEmpty());
 

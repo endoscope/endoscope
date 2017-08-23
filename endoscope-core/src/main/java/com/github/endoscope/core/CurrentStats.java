@@ -1,11 +1,11 @@
 package com.github.endoscope.core;
 
-import com.github.endoscope.properties.Properties;
-import org.slf4j.Logger;
-
 import java.util.Date;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
+
+import com.github.endoscope.properties.Properties;
+import org.slf4j.Logger;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -18,7 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Storing Contexts in queue must be thread safe and as fast as possible.
  * This is critical requirement as otherwise it could affect monitored application performance.
  *
- * Operations on stats also needs to be thread safe as we don't know who runs #readStats method.
+ * Operations on stats also needs to be thread safe as we don't know who runs #lockReadStats method.
  * All stats operations might take a lot of time: save, processing and updates (in case of complex stats).
  * Because of that we need different thread that will move data from queue to stats.
  */
@@ -43,13 +43,12 @@ public class CurrentStats {
         try{
             queue.addLast(context);
         }catch(IllegalStateException e){//eg. due to exhausted queue size
-            synchronized(stats){
-                stats.incrementLost();
-            }
+            //don't sync here - that could block application
+            stats.threadSafeIncrementLost();
         }
     }
 
-    public <T> T readStats(Function<Stats, T> function){
+    public <T> T lockReadStats(Function<Stats, T> function){
         synchronized(stats){
             return function.apply(stats);
         }
@@ -73,7 +72,13 @@ public class CurrentStats {
         stats.setFatalError(message);//assignment is thread safe
     }
 
-    public void resetStats(){
+    /**
+     * Creates new empty stats and returns old one.
+     * @return old stats
+     */
+    public Stats resetStats(){
+        Stats old = stats;
         stats = createEmptyStats();
+        return old;
     }
 }
