@@ -9,12 +9,6 @@ import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Date: 02/06/2017
- * Time: 16:23
- *
- * @Author p.halicz
- */
 @RunWith(Parameterized.class)
 public class UrlCleanupUtilTest {
     UrlCleanupUtil util = new UrlCleanupUtil();

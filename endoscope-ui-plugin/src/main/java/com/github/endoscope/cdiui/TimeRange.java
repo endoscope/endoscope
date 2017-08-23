@@ -6,12 +6,6 @@ package com.github.endoscope.cdiui;
 
 import java.util.Date;
 
-/**
- * Date: 16/05/2017
- * Time: 17:05
- *
- * @Author UNSET
- */
 class TimeRange {
     private Date fromDate = null;
     private Date toDate = null;
