@@ -1,12 +1,13 @@
-package com.github.endoscope.storage;
+    package com.github.endoscope.storage;
+
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.util.DateUtil;
 import org.slf4j.Logger;
-
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
@@ -20,8 +21,8 @@ public class StatsPersistence {
     private int saveFreqMinutes;
     private Storage storage = null;
     private DateUtil dateUtil;
-    private Date lastSave;
-    private Date lastError;
+    private AtomicLong lastSave = new AtomicLong(0);
+    private AtomicLong lastError = new AtomicLong(0);
     private int daysToKeep;
 
     /**
@@ -46,59 +47,66 @@ public class StatsPersistence {
                             String appType, int saveFreqMinutes, int daysToKeep){
         this.storage = storage;
         this.dateUtil = dateUtil;
-        lastSave = dateUtil.now();
+        lastSave.set(dateUtil.now().getTime());
         this.appType = appType;
         this.appInstance = appInstance;
         this.saveFreqMinutes = saveFreqMinutes;
         this.daysToKeep = daysToKeep;
     }
 
-    public boolean shouldSave(){
+    public boolean threadSafeShouldSave(){
         if( storage != null && saveFreqMinutes > 0 ){
             Date now = dateUtil.now();
 
             //do not try to save for some time if error occurred
-            if( lastError != null ){
-                long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - lastError.getTime());
+            long val = lastError.get();
+            if( val > 0 ){
+                long minutes = TimeUnit.MILLISECONDS.toMinutes(now.getTime() - val);
                 if( minutes < 5 ){
                     return false;
                 }
             }
 
-            long offset = now.getTime() - lastSave.getTime();
+            long offset = now.getTime() - lastSave.get();
             long minutes = TimeUnit.MILLISECONDS.toMinutes(offset);
             return minutes >= saveFreqMinutes;
         }
         return false;
     }
 
-    public void safeSave(Stats stats){
+    /**
+     * @param stats
+     * @return true if successfully saved stats - otherwise false
+     */
+    public boolean safeSave(Stats stats){
         if( storage == null ){
-            return;
+            return false;
         }
         try{
             ensureDatesAreSet(stats);
             long start = System.currentTimeMillis();
             storage.save(stats, appInstance, appType);
-            lastSave = dateUtil.now();
-            lastError = null;
+            lastSave.set(dateUtil.now().getTime());
+            lastError.set(0);
             log.info("Saved stats in {}ms", System.currentTimeMillis() - start);
+            return true;
         }catch(Exception e){
             Throwable cause = firstNonNull(getRootCause(e), e);
             log.warn("Failed to save stats - next attempt in 5 minutes. Error type: {}, Message: {}", cause.getClass().getName(), cause.getMessage());
             log.debug("Failed to save stats - next attempt in 5 minutes. ", e);
-            lastError = dateUtil.now();
+            lastError.set(dateUtil.now().getTime());
+            return false;
         }
     }
 
     public void safeCleanup() {
-        if( daysToKeep <= 0 || lastError != null ){
+        if( daysToKeep <= 0 || lastError.get() > 0 ){
             return;
         }
         try{
             long start = System.currentTimeMillis();
             storage.cleanup(daysToKeep, appType);
-            lastSave = dateUtil.now();
+            lastSave.set(dateUtil.now().getTime());
             log.info("Performed cleanup in {}ms", System.currentTimeMillis() - start);
         }catch(Exception e){
             Throwable cause = firstNonNull(getRootCause(e), e);
@@ -117,6 +125,6 @@ public class StatsPersistence {
     }
 
     public Date getLastSaveTime() {
-        return lastSave;
+        return new Date(lastSave.get());
     }
 }

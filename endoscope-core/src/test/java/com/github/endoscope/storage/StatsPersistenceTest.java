@@ -1,13 +1,13 @@
 package com.github.endoscope.storage;
 
+import java.util.Date;
+
 import com.github.endoscope.core.Stats;
 import com.github.endoscope.util.DateUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,11 +36,11 @@ public class StatsPersistenceTest {
 
     @Test
     public void should_save() throws Exception {
-        given(dateUtil.now()).willReturn(new Date(0), new Date(10 * 60 * 1000));
+        given(dateUtil.now()).willReturn(new Date(2), new Date(10 * 60 * 1000 + 2));
 
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertTrue(statsPersistence.shouldSave());
+        assertTrue(statsPersistence.threadSafeShouldSave());
         verify(dateUtil, times(2)).now();
         verifyNoMoreInteractions(dateUtil);
         verifyNoMoreInteractions(storage);
@@ -48,11 +48,11 @@ public class StatsPersistenceTest {
 
     @Test
     public void should_not_save() throws Exception {
-        given(dateUtil.now()).willReturn(new Date(0), new Date(10 * 60 * 1000 -1));
+        given(dateUtil.now()).willReturn(new Date(2), new Date(10 * 60 * 1000 -1));
 
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertFalse(statsPersistence.shouldSave());
+        assertFalse(statsPersistence.threadSafeShouldSave());
         verify(dateUtil, times(2)).now();
         verifyNoMoreInteractions(dateUtil);
         verifyNoMoreInteractions(storage);
@@ -61,10 +61,10 @@ public class StatsPersistenceTest {
     @Test
     public void should_save_file_and_update_save_date() throws Exception {
         Date saveTime = new Date(13 * 60 * 1000);
-        given(dateUtil.now()).willReturn(new Date(0), saveTime);
+        given(dateUtil.now()).willReturn(new Date(2), saveTime);
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, SAVE_FEQ, DAYS_TO_KEEP);
 
-        assertEquals(0, statsPersistence.getLastSaveTime().getTime());
+        assertEquals(2, statsPersistence.getLastSaveTime().getTime());
 
         Stats stats = new Stats();
         statsPersistence.safeSave(stats);
@@ -78,33 +78,33 @@ public class StatsPersistenceTest {
 
     @Test
     public void should_not_save_for_5_minutes_since_error() throws Exception {
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
 
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, DAYS_TO_KEEP);
-        assertFalse(statsPersistence.shouldSave());
+        assertFalse(statsPersistence.threadSafeShouldSave());
 
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsPersistence.shouldSave());
+        assertTrue(statsPersistence.threadSafeShouldSave());
 
         //this will fail and set last error date
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
         statsPersistence.safeSave(null);
 
         //let's go back to the moment where we should save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertFalse(statsPersistence.shouldSave());
+        assertFalse(statsPersistence.threadSafeShouldSave());
 
         given(dateUtil.now()).willReturn(new Date( 3 * ONE_MINUTE_MS + 500));
-        assertFalse(statsPersistence.shouldSave());
+        assertFalse(statsPersistence.threadSafeShouldSave());
 
         given(dateUtil.now()).willReturn(new Date( 5 * ONE_MINUTE_MS + 500)); //5,5minutes
-        assertTrue(statsPersistence.shouldSave());
+        assertTrue(statsPersistence.threadSafeShouldSave());
     }
 
     @Test
     public void should_skip_cleanup_when_disabled(){
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
 
         int daysToKeep = 0;//disabled
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
@@ -116,19 +116,19 @@ public class StatsPersistenceTest {
 
     @Test
     public void should_skip_cleanup_when_last_save_failed(){
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
         given(storage.save(any(), any(), any())).willThrow(RuntimeException.class);
 
         int daysToKeep = 1;//enabled
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsPersistence.shouldSave());
+        assertTrue(statsPersistence.threadSafeShouldSave());
 
         //this will fail and set last error date
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
         statsPersistence.safeSave(null);
-        assertFalse(statsPersistence.shouldSave());//locked due to error
+        assertFalse(statsPersistence.threadSafeShouldSave());//locked due to error
 
         statsPersistence.safeCleanup();
 
@@ -137,14 +137,14 @@ public class StatsPersistenceTest {
 
     @Test
     public void should_run_cleanup(){
-        given(dateUtil.now()).willReturn(new Date(0));
+        given(dateUtil.now()).willReturn(new Date(2));
         given(storage.save(any(), any(), any())).willThrow(RuntimeException.class);
 
         int daysToKeep = 1;//enabled
         StatsPersistence statsPersistence = new StatsPersistence(storage, dateUtil, APP_INSTANCE, APP_TYPE, ONE_MINUTE, daysToKeep);
         //it's time for first save
         given(dateUtil.now()).willReturn(new Date( 1 * ONE_MINUTE_MS + 500));
-        assertTrue(statsPersistence.shouldSave());
+        assertTrue(statsPersistence.threadSafeShouldSave());
 
         statsPersistence.safeCleanup();
 

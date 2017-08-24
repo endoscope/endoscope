@@ -18,20 +18,24 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class CurrentStatsAsyncTasks implements AsyncTasksFactory {
     private static final Logger log = getLogger(CurrentStatsAsyncTasks.class);
-    public static final String COLLECTOR_THREAD_NAME = "endoscope-stats-collector";
+    public static final String COLLECTOR_THREAD_NAME = "endoscope-stats-collect";
+    public static final String SAVING_THREAD_NAME = "endoscope-stats-save";
     public static final String COLLECTOR_ID = UUID.randomUUID().toString();
+    public static final String SAVING_ID = UUID.randomUUID().toString();
 
-    private ExecutorService collector;
+    private ExecutorService collectingExecutor;
+    private ExecutorService savingExecutor;
     private CurrentStats currentStats;
     private StatsPersistence statsPersistence;
     private boolean enabled = true;
-    private Future taskResult;
+    private Future collectingTaskResult;
+    private Future savingTaskResult;
 
     public CurrentStatsAsyncTasks(CurrentStats currentStats, Storage storage) {
         this.currentStats = currentStats;
         this.statsPersistence = new StatsPersistence(storage);
 
-        collector = new ThreadPoolExecutor(0, 1,
+        collectingExecutor = new ThreadPoolExecutor(0, 1,
                 60L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>(),
                 runnable -> {
@@ -40,58 +44,109 @@ public class CurrentStatsAsyncTasks implements AsyncTasksFactory {
                     t.setName(COLLECTOR_THREAD_NAME);
                     return t;
         });
+
+        savingExecutor = new ThreadPoolExecutor(0, 1,
+                60L, TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>(),
+                runnable -> {
+                    Thread t = Executors.defaultThreadFactory().newThread(runnable);
+                    t.setDaemon(true);//we don't want to block JVM shutdown
+                    t.setName(SAVING_THREAD_NAME);
+                    return t;
+                });
     }
 
     public void triggerAsyncTask() {
         try{
-            if (!enabled || (taskResult != null && !taskResult.isDone())) {
+            if (!enabled || (collectingTaskResult != null && !collectingTaskResult.isDone())) {
                 //previous task is still running
                 //it's not a perfect synchronization but it doesn't have to be
                 return;
             }
-            log.debug("Creating new async task: {}", COLLECTOR_ID);
-            taskResult = collector.submit(() -> {
+            log.debug("Creating new async task for collector: {}", COLLECTOR_ID);
+            collectingTaskResult = collectingExecutor.submit(() -> {
+
+                //this stuff runs in new thread
+
                 safeSleep();
-                log.debug("started async task: {}", COLLECTOR_ID);
+                log.debug("started async task for collector: {}", COLLECTOR_ID);
                 try {
                     currentStats.processAllFromQueue();
-                    //following might take some time
-                    if( safeSaveIfNeeded() ){
-                        //so just before existing update in-memory stats again
-                        currentStats.processAllFromQueue();
+                    if (statsPersistence != null && statsPersistence.threadSafeShouldSave()) {
+                        //run save in another thread so we don't block processing elements from queue
+                        triggerAsyncSafeSave();
                     }
                 } catch (Exception e) {
                     currentStats.setFatalError(getStacktrace(e));
-                    log.debug("error occurred when processing async task: {}", COLLECTOR_ID, e);
+                    log.debug("error occurred when processing async task for collector: {}", COLLECTOR_ID, e);
                 }
-                log.debug("finished async task: {}", COLLECTOR_ID);
+                log.debug("finished async task for collector: {}", COLLECTOR_ID);
             });
-            log.debug("Created new async task: {}", COLLECTOR_ID);
+            log.debug("Created new async task for collector: {}", COLLECTOR_ID);
         }catch(Exception e){
-            log.warn("Failed to trigger asynchronous stats collection task", e);
+            log.warn("Failed to trigger async task for collector: {}", COLLECTOR_ID, e);
         }
     }
 
-    private boolean safeSaveIfNeeded() {
-        if (statsPersistence != null && statsPersistence.shouldSave()) {
-            log.debug("persisting stats: {}", COLLECTOR_ID);
-            currentStats.lockReadStats(stats -> {
-                statsPersistence.safeSave(stats);
-                currentStats.resetStats();
-                return null;
+    private void triggerAsyncSafeSave() {
+        try{
+            if (!enabled ) {
+                return;
+            }
+            if (savingTaskResult != null && !savingTaskResult.isDone()) {
+                log.debug("Previous async task for saving stats: {} is still running...skipping", SAVING_ID);
+                //it's not a perfect synchronization but it doesn't have to be
+                return;
+            }
+            log.debug("Creating new async task for saving stats: {}", SAVING_ID);
+            savingTaskResult = savingExecutor.submit(() -> {
+
+                //this stuff runs in new thread
+
+                safeSleep();
+                log.debug("started async task for saving stats: {}", SAVING_ID);
+                try {
+                    safeSave();
+                } catch (Exception e) {
+                    log.debug("error occurred when processing async task for saving stats: {}", SAVING_ID, e);
+                }
+                log.debug("finished async task for saving stats: {}", SAVING_ID);
             });
-            log.debug("running stats cleanup: {}", COLLECTOR_ID);
-            statsPersistence.safeCleanup();
-            log.debug("finished persisting stats: {}", COLLECTOR_ID);
-            return true;
+            log.debug("Created new async task for saving stats: {}", SAVING_ID);
+        }catch(Exception e){
+            log.warn("Failed to trigger async task for saving stats: {}", SAVING_ID, e);
         }
-        return false;
+    }
+
+    private boolean safeSave() {
+        //this stuff runs in new thread
+
+        log.debug("persisting stats");
+
+        //don't lock for long here! - just get stats we plan to save and start to collect new values
+        Stats oldStats = currentStats.lockReadStats(stats -> currentStats.resetStats() );
+
+        boolean saved = statsPersistence.safeSave(oldStats);
+        if( !saved ){
+            log.debug("failed to save stats - returning stats in order to try again later");
+            currentStats.lockReadStats(stats -> {
+                stats.merge(oldStats, true);
+                return true;
+            });
+        } else {
+            log.debug("saved stats - running stats cleanup");
+            statsPersistence.safeCleanup();
+        }
+
+        log.debug("finished persisting stats");
+        return true;
     }
 
     public void stopStatsProcessorThread() {
-        log.info("Requested {} shutdown", COLLECTOR_THREAD_NAME);
+        log.info("Requested threads: {}, {} shutdown", COLLECTOR_THREAD_NAME, SAVING_THREAD_NAME);
         enabled = false;
-        collector.shutdownNow();
+        collectingExecutor.shutdownNow();
+        savingExecutor.shutdownNow();
     }
 
     public boolean isEnabled() {
