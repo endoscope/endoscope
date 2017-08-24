@@ -77,4 +77,8 @@ public class Endoscope {
     public static void resetStats(){
         ENGINE.getCurrentStats().resetStats();
     }
+
+    public static long getQueueSize(){
+        return ENGINE.getCurrentStats().getQueueSize();
+    }
 }

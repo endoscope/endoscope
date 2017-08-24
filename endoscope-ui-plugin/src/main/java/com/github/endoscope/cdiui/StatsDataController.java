@@ -242,4 +242,11 @@ public class StatsDataController {
                 "window.endoscopeAppInstance = \"" + Properties.getAppInstance() + "\";\n"
         );
     }
+
+    @GET
+    @Path("/data/queue-size")
+    @Produces("application/json")
+    public Response queueCount() {
+        return noCacheResponse("{\"count\": " + Endoscope.getQueueSize() + "}");
+    }
 }
