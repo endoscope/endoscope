@@ -34,7 +34,7 @@ public class Properties {
 
     public static String DEFAULT_MAX_STAT_COUNT = "300000";
     public static String DEFAULT_SUPPORTED_NAMES = ".*(Bean|Service|Controller|Ejb|EJB)";
-    public static String DEFAULT_QUEUE_MAX_SIZE = "100000";
+    public static String DEFAULT_QUEUE_MAX_SIZE = "100000";//it's number of Context trees in queue so overall size depends on app but it's something like: 100k -> ~100MB
     public static String DEFAULT_SAVE_FREQ_MINUTES = "15";
     public static String DEFAULT_MAX_ID_LENGTH = "100";
     public static String DEFAULT_AGGREGATE_SUB_CALLS = "true";
