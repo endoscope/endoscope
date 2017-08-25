@@ -1,11 +1,11 @@
 package com.github.endoscope.basic.ds;
 
+import javax.sql.DataSource;
+
 import com.github.endoscope.storage.jdbc.DataSourceProvider;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-
-import javax.sql.DataSource;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -29,6 +29,8 @@ public class BasicDataSourceProvider implements DataSourceProvider {
                 dataSource.setMinEvictableIdleTimeMillis(55000);
                 dataSource.setTimeBetweenEvictionRunsMillis(60000);
 
+                dataSource.setMaxWaitMillis(60 * 60 * 1000);//1h
+                dataSource.setDefaultQueryTimeout( 15 * 60 *  1000);//15min
 
                 return dataSource;
             }catch(Exception e){
