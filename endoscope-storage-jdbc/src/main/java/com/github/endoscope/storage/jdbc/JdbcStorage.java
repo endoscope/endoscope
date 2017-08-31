@@ -38,17 +38,17 @@ import static org.apache.commons.lang3.time.DateUtils.setMilliseconds;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class JdbcStorage implements Storage {
-    private static final Logger log = getLogger(JdbcStorage.class);
+    protected static final Logger log = getLogger(JdbcStorage.class);
 
-    private QueryRunnerExt run;
-    private GroupEntityHandler groupHandler = new GroupEntityHandler();
-    private StatEntityHandler statHandler = new StatEntityHandler();
-    private StringHandler stringHandler = new StringHandler();
-    private String tablePrefix = "";
-    private static long ONE_HOUR_MILLIS = 360000L;
-    private static long ONE_DAY_MILLIS = 24 * ONE_HOUR_MILLIS;
-    private static int HISTOGRAM_PAGE = 100;
-    private static int HISTOGRAM_PAGE_MAX = 120;
+    protected QueryRunnerExt run;
+    protected GroupEntityHandler groupHandler = new GroupEntityHandler();
+    protected StatEntityHandler statHandler = new StatEntityHandler();
+    protected StringHandler stringHandler = new StringHandler();
+    protected String tablePrefix = "";
+    protected static long ONE_HOUR_MILLIS = 360000L;
+    protected static long ONE_DAY_MILLIS = 24 * ONE_HOUR_MILLIS;
+    protected static int HISTOGRAM_PAGE = 100;
+    protected static int HISTOGRAM_PAGE_MAX = 120;
 
     public JdbcStorage setTablePrefix(String tablePrefix){
         this.tablePrefix = tablePrefix;
@@ -155,7 +155,7 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private void insertGroup(Stats stats, Connection conn, String groupId, String instance, String type) throws SQLException {
+    protected void insertGroup(Stats stats, Connection conn, String groupId, String instance, String type) throws SQLException {
         int u = run.update(conn,
                 "INSERT INTO "+tablePrefix+"endoscopeGroup(id, startDate, endDate, statsLeft, lost, fatalError, appGroup, appType) " +
                 "                    values( ?,         ?,       ?,         ?,    ?,          ?,        ?,       ?)",
@@ -188,13 +188,13 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private Object[][] prepareStatsData(String groupId, Stats stats) {
+    protected Object[][] prepareStatsData(String groupId, Stats stats) {
         List<Object[]> resultList = new ArrayList<>();
         prepareStatsData(groupId, null, null, stats.getMap(), resultList);
         return resultList.toArray(new Object[0][0]);
     }
 
-    private void prepareStatsData(String groupId, String parentId, String rootId, Map<String, Stat> map,
+    protected void prepareStatsData(String groupId, String parentId, String rootId, Map<String, Stat> map,
                                   List<Object[]> resultList){
         map.forEach((statName, stat) -> {
             String statId = UUID.randomUUID().toString();
@@ -223,7 +223,7 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private void restoreGroupStats(GroupEntity group, List<StatEntity> stats) {
+    protected void restoreGroupStats(GroupEntity group, List<StatEntity> stats) {
         List<StatEntity> roots = restoreStatTree(stats);
         roots.forEach( se -> group.getMap().put(se.getName(), se.getStat()) );
     }
@@ -233,7 +233,7 @@ public class JdbcStorage implements Storage {
      * returns list of root stats.
      * @param stats
      */
-    private List<StatEntity> restoreStatTree(List<StatEntity> stats) {
+    protected List<StatEntity> restoreStatTree(List<StatEntity> stats) {
         List<StatEntity> roots = new ArrayList<>();
         Map<String, StatEntity> statsById = stats.stream().collect(toMap(se -> se.getId(), se -> se));
         stats.forEach( se -> {
@@ -248,19 +248,19 @@ public class JdbcStorage implements Storage {
         return roots;
     }
 
-    private List<StatEntity> loadGroupStats(String id) {
+    protected List<StatEntity> loadGroupStats(String id) {
         return loadGroupStats(singletonList(id), null, false);
     }
 
-    private List<StatEntity> loadGroupStats(List<String> groupIds, boolean topLevelOnly) {
+    protected List<StatEntity> loadGroupStats(List<String> groupIds, boolean topLevelOnly) {
         return loadGroupStats(groupIds, null, topLevelOnly);
     }
 
-    private List<StatEntity> loadGroupStats(List<String> groupIds, String name) {
+    protected List<StatEntity> loadGroupStats(List<String> groupIds, String name) {
         return loadGroupStats(groupIds, name, false);
     }
 
-    private List<StatEntity> loadGroupStats(List<String> groupIds, String name, boolean topLevelOnly) {
+    protected List<StatEntity> loadGroupStats(List<String> groupIds, String name, boolean topLevelOnly) {
         List<StatEntity> result = new ArrayList<>();
         ListUtil.partition(groupIds, 50).forEach(partition -> {
             try {
@@ -305,7 +305,7 @@ public class JdbcStorage implements Storage {
         return result;
     }
 
-    private GroupEntity loadGroup(String id) throws SQLException {
+    protected GroupEntity loadGroup(String id) throws SQLException {
         long start = System.currentTimeMillis();
         log.debug("Loading group for id: {}", id);
         List<GroupEntity> groups = run.queryExt(200,
@@ -325,7 +325,7 @@ public class JdbcStorage implements Storage {
         return extractGroupIds(groups);
     }
 
-    private List<GroupEntity> findGroupsInRange(Date from, Date to, String appInstance, String appType) {
+    protected List<GroupEntity> findGroupsInRange(Date from, Date to, String appInstance, String appType) {
         try {
             log.debug("Loading groups in range");
             long start = System.currentTimeMillis();
@@ -363,7 +363,7 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private List<GroupEntity> findGroupsByIds(List<String> ids) {
+    protected List<GroupEntity> findGroupsByIds(List<String> ids) {
         List<GroupEntity> result = new ArrayList<>();
 
         ids = emptyIfNull(ids).stream().filter( id -> isNotBlank(id) ).collect(toList());
@@ -392,7 +392,7 @@ public class JdbcStorage implements Storage {
         return result;
     }
 
-    private String listOfArgs(int count){
+    protected String listOfArgs(int count){
         StringBuilder sb = new StringBuilder("?");
         for(int i=1; i<count; i++){
             sb.append(",?");
@@ -400,7 +400,7 @@ public class JdbcStorage implements Storage {
         return sb.toString();
     }
 
-    private String optAppFilterQuery(String appInstance, String appType){
+    protected String optAppFilterQuery(String appInstance, String appType){
         StringBuilder q = new StringBuilder();
         if( isNotBlank(appInstance) ){
             q.append(" AND appGroup = ? ");
@@ -411,7 +411,7 @@ public class JdbcStorage implements Storage {
         return q.toString();
     }
 
-    private Object[] filterBlank(Object ... params){
+    protected Object[] filterBlank(Object ... params){
         return Arrays.stream(params)
                 .filter( p -> {
                     if(p == null ){
@@ -470,7 +470,7 @@ public class JdbcStorage implements Storage {
         }
     }
 
-    private String storageInfo(Stats stats) {
+    protected String storageInfo(Stats stats) {
         StringBuilder info = new StringBuilder();
         info.append("tablePrefix=").append(tablePrefix);
         if( stats != null ){
@@ -528,7 +528,7 @@ public class JdbcStorage implements Storage {
         return result;
     }
 
-    private List<GroupEntity> tailAfter(List<GroupEntity> groups, String lastGroupId) {
+    protected List<GroupEntity> tailAfter(List<GroupEntity> groups, String lastGroupId) {
         if( lastGroupId == null ){
             return groups;
         }
@@ -544,7 +544,7 @@ public class JdbcStorage implements Storage {
         return nextGroups;
     }
 
-    private List<GroupEntity> limitHistogramSize(List<GroupEntity> groups) {
+    protected List<GroupEntity> limitHistogramSize(List<GroupEntity> groups) {
         //if there is just few more than don't do the trick
         if( groups.size() <= HISTOGRAM_PAGE_MAX ){
             return groups;
@@ -552,13 +552,13 @@ public class JdbcStorage implements Storage {
         return groups.subList(0, HISTOGRAM_PAGE);
     }
 
-    private List<String> extractGroupIds(List<GroupEntity> groups) {
+    protected List<String> extractGroupIds(List<GroupEntity> groups) {
         return groups.stream()
                     .map( g-> g.getId())
                     .collect(toList());
     }
 
-    private StatDetails createDetails(String detailsId, List<GroupEntity> groups, List<StatEntity> stats) {
+    protected StatDetails createDetails(String detailsId, List<GroupEntity> groups, List<StatEntity> stats) {
         StatDetails result = new StatDetails(detailsId, null);
         result.setInfo(storageInfo(null));
         groups.forEach( group -> {
@@ -577,7 +577,7 @@ public class JdbcStorage implements Storage {
         return result;
     }
 
-    private Histogram createHistogram(List<GroupEntity> groups, List<StatEntity> topLevelStats) {
+    protected Histogram createHistogram(List<GroupEntity> groups, List<StatEntity> topLevelStats) {
         Histogram result = new Histogram();
         groups.forEach( group -> {
             Stat details = topLevelStats.stream()

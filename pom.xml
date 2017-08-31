@@ -43,6 +43,7 @@
 		<module>endoscope-example-war</module>
 		<module>endoscope-storage-gzip</module>
 		<module>endoscope-storage-jdbc</module>
+		<module>endoscope-storage-jdbc-clob</module>
 		<module>endoscope-basic-ds</module>
 		<module>endoscope-storage-test</module>
 		<module>endoscope-migration</module>
@@ -177,6 +178,11 @@
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
+				<artifactId>endoscope-storage-jdbc-clob</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
 				<artifactId>endoscope-basic-ds</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -265,6 +271,12 @@
 				<groupId>org.postgresql</groupId>
 				<artifactId>postgresql</artifactId>
 				<version>9.4-1201-jdbc41</version>
+			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>1.0.1</version>
+				<scope>test</scope>
 			</dependency>
         </dependencies>
 	</dependencyManagement>

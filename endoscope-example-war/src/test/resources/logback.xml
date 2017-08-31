@@ -8,11 +8,12 @@
         </encoder>
     </appender>
 
-
-    <logger name="com.github.endoscope" level="DEBUG" additivity="false">
+    <!--
+    <logger name="com.github.endoscope" level="DEBUG">
     </logger>
+    -->
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

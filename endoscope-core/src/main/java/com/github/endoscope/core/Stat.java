@@ -4,7 +4,11 @@ import java.beans.Transient;
 import java.util.HashMap;
 import java.util.Map;
 
-@com.fasterxml.jackson.annotation.JsonPropertyOrder({ "hits", "max", "min", "avg", "ah10", "children" })
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({ "hits", "max", "min", "avg", "ah10", "children" })
 public class Stat {
     private long hits = 0;
     private long max = -1;//-1 means it's not set
