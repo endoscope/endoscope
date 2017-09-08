@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2017 SmartRecruiters Inc. All Rights Reserved.
- */
-
 package com.github.endoscope.cdiui;
 
 import java.util.Date;
