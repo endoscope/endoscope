@@ -383,6 +383,7 @@
     var onSortTopLevel = function(a, b){
         switch(options.sortField){
             case "hits": return (a.hits - b.hits) * options.sortDirection;
+            case "err":  return (a.err - b.err)   * options.sortDirection;
             case "min":  return (a.min - b.min)   * options.sortDirection;
             case "max":  return (a.max - b.max)   * options.sortDirection;
             case "avg":  return (a.avg - b.avg)   * options.sortDirection;
@@ -643,6 +644,7 @@
         row.attr("title", id);
 
         row.find(".es-id").append(indent(level)).append(id);
+        addNumberValue( row.find(".es-err"), obj.err);
         addNumberValue( row.find(".es-max"), obj.max);
         addNumberValue( row.find(".es-min"), obj.min);
         addNumberValue( row.find(".es-avg"), obj.avg);
