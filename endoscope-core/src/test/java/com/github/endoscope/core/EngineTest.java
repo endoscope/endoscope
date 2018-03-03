@@ -30,8 +30,8 @@ public class EngineTest {
 
             ci.push("a1");
             ci.push("a11");
-            ci.pop();
-            ci.pop();
+            ci.pop(false);
+            ci.pop(false);
 
             waitUtilStatsGetCollected(ci);
 
@@ -66,14 +66,15 @@ public class EngineTest {
         engine.push("a1");
         engine.push("a11");
 
+        //current stats are empty until we pop all elements
         assertEquals(0, engine.getCurrentStats().getQueueSize());
-        engine.pop();
+        engine.pop(false);
         assertEquals(0, engine.getCurrentStats().getQueueSize());
-        engine.pop();
+        engine.pop(false);
         assertEquals(1, engine.getCurrentStats().getQueueSize());
 
-        engine.pop();//noop
-        engine.popAll();//noop
+        engine.pop(false);//noop
+        engine.popAll(false);//noop
     }
 
     @Test
@@ -82,12 +83,13 @@ public class EngineTest {
         engine.push("a1");
         engine.push("a11");
 
+        //current stats are empty until we pop all elements
         assertEquals(0, engine.getCurrentStats().getQueueSize());
-        engine.popAll();
+        engine.popAll(false);
         assertEquals(1, engine.getCurrentStats().getQueueSize());
 
-        engine.pop();//noop
-        engine.popAll();//noop
+        engine.pop(false);//noop
+        engine.popAll(false);//noop
     }
 
     @Test
@@ -115,14 +117,14 @@ public class EngineTest {
     public void should_not_allow_to_pop_stats_when_disabled(){
         Engine engine = new Engine(false, null, new NoopTasksFactory() );
 
-        engine.pop();
+        engine.pop(false);
     }
 
     @Test(expected = IllegalStateException.class)
     public void should_not_allow_to_pop_all_stats_when_disabled(){
         Engine engine = new Engine(false, null, new NoopTasksFactory() );
 
-        engine.popAll();
+        engine.popAll(false);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -250,5 +252,53 @@ public class EngineTest {
 
         assertEquals(1, map.size());
         assertNotNull(map.get("<blank>"));
+    }
+
+    @Test
+    public void should_not_report_errors_when_call_successful() {
+        Engine engine = new Engine(true, null, new NoopTasksFactory() );
+        Map<String, Stat> map = engine.getCurrentStats().lockReadStats(stats -> stats.getMap() );
+
+        engine.monitor("id", () -> "some value");
+        engine.getCurrentStats().processAllFromQueue();
+
+        assertEquals(1, map.size());
+        assertEquals(0, map.get("id").getErr());
+    }
+
+    @Test
+    public void should_collect_errors_when_call_end_with_exception() {
+        Engine engine = new Engine(true, null, new NoopTasksFactory() );
+        Map<String, Stat> map = engine.getCurrentStats().lockReadStats(stats -> stats.getMap() );
+
+        String exceptionMessage = "";
+        try{
+            engine.monitor("id", () -> { throw new RuntimeException("my error"); });
+        }catch(Exception e){
+            exceptionMessage = e.getMessage();
+        }
+        engine.getCurrentStats().processAllFromQueue();
+
+        assertEquals("my error", exceptionMessage);
+        assertEquals(1, map.size());
+        assertEquals(1, map.get("id").getErr());
+    }
+
+    @Test
+    public void should_collect_errors_when_call_end_with_exception_ex() {
+        Engine engine = new Engine(true, null, new NoopTasksFactory() );
+        Map<String, Stat> map = engine.getCurrentStats().lockReadStats(stats -> stats.getMap() );
+
+        String exceptionMessage = "";
+        try{
+            engine.monitorEx("id", () -> { throw new RuntimeException("my error"); });
+        }catch(Exception e){
+            exceptionMessage = e.getMessage();
+        }
+        engine.getCurrentStats().processAllFromQueue();
+
+        assertEquals("my error", exceptionMessage);
+        assertEquals(1, map.size());
+        assertEquals(1, map.get("id").getErr());
     }
 }

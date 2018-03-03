@@ -1,41 +1,51 @@
 {
   "id" : "a1",
   "time" : 100,
+  "err" : false,
   "children" : [ {
     "id" : "a11",
     "time" : 10,
+    "err" : false,
     "children" : [ {
       "id" : "a111",
       "time" : 2,
+      "err" : false,
       "children" : null
     }, {
       "id" : "a112",
       "time" : 3,
+      "err" : false,
       "children" : null
     }, {
       "id" : "a113",
       "time" : 5,
+      "err" : false,
       "children" : null
     } ]
   }, {
     "id" : "a11",
     "time" : 20,
+    "err" : false,
     "children" : null
   }, {
     "id" : "a13",
     "time" : 20,
+    "err" : false,
     "children" : null
   }, {
     "id" : "a13",
     "time" : 20,
+    "err" : false,
     "children" : null
   }, {
     "id" : "a13",
     "time" : 20,
+    "err" : false,
     "children" : null
   }, {
     "id" : "a111",
     "time" : 4,
+    "err" : false,
     "children" : null
   } ]
 }

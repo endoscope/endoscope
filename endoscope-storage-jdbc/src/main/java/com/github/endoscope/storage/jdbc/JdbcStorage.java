@@ -177,8 +177,9 @@ public class JdbcStorage implements Storage {
         Object[][] data = prepareStatsData(groupId, stats);
         int[] result = run.batch(conn,
                 //endoscopeStat OR endoscopeDailyStat
-                "INSERT INTO "+tablePrefix+"endoscopeStat(id, groupId, parentId, rootId, name, hits, max, min, avg, ah10, hasChildren) " +
-                "                       values( ?,       ?,        ?,      ?,    ?,    ?,   ?,   ?,   ?,    ?,           ?)",
+                "INSERT INTO " + tablePrefix
+                        + "endoscopeStat(id, groupId, parentId, rootId, name, hits, err, max, min, avg, ah10, hasChildren) "
+                        + " values(?,?,?,?,?,?,?,?,?,?,?,?)",
                 data);
         long errors = Arrays.stream(result)
                 .filter( i -> i < 0 && i != Statement.SUCCESS_NO_INFO )
@@ -201,7 +202,7 @@ public class JdbcStorage implements Storage {
             String fixedRootId = (rootId == null) ? statId : rootId;
             resultList.add(new Object[]{
                     statId, groupId, parentId, fixedRootId, statName,
-                    stat.getHits(), stat.getMax(), stat.getMin(), stat.getAvg(), stat.getAh10(),
+                    stat.getHits(), stat.getErr(), stat.getMax(), stat.getMin(), stat.getAvg(), stat.getAh10(),
                     stat.getChildren() != null ? 1 : 0
             });
             if( stat.getChildren() != null ){

@@ -31,6 +31,7 @@ public class Schema {
                             "  rootId VARCHAR(36), " +
                             "  name VARCHAR(255), " +
                             "  hits INT, " +
+                            "  err INT, " +
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
@@ -46,6 +47,7 @@ public class Schema {
                             "  rootId VARCHAR(36), " +
                             "  name VARCHAR(255), " +
                             "  hits INT, " +
+                            "  err INT, " +
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
@@ -81,6 +83,7 @@ public class Schema {
                             "  rootId VARCHAR(36), " +
                             "  name VARCHAR(255), " +
                             "  hits INT, " +
+                            "  err INT, " +
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
@@ -96,6 +99,7 @@ public class Schema {
                             "  rootId VARCHAR(36), " +
                             "  name VARCHAR(255), " +
                             "  hits INT, " +
+                            "  err INT, " +
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +

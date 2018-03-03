@@ -1,17 +1,18 @@
 package com.github.endoscope.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+
 import com.github.endoscope.properties.Properties;
 import com.github.endoscope.util.JsonUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-
 import static com.github.endoscope.util.DateUtil.parseDateTime;
 import static com.github.endoscope.util.PropertyTestUtil.withProperty;
+import static org.junit.Assert.assertEquals;
 
 public class StatsTest {
     final JsonUtil jsonUtil = new JsonUtil(true);
@@ -45,7 +46,7 @@ public class StatsTest {
         String result = jsonUtil.toJson(stats.getMap());
 
         String expected = getResourceString(output);
-        Assert.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
@@ -79,9 +80,9 @@ public class StatsTest {
     @Test
     public void should_increment_lost(){
         Stats s = new Stats();
-        Assert.assertEquals(0, s.getLost());
+        assertEquals(0, s.getLost());
         s.threadSafeIncrementLost();
-        Assert.assertEquals(1, s.getLost());
+        assertEquals(1, s.getLost());
     }
 
     @Test
@@ -89,19 +90,19 @@ public class StatsTest {
         Stats s = new Stats();
         Assert.assertNull(s.getFatalError());
         s.setFatalError("error");
-        Assert.assertEquals("error", s.getFatalError());
+        assertEquals("error", s.getFatalError());
     }
 
     @Test
     public void should_get_stats_left(){
         Stats s = new Stats();
-        Assert.assertEquals(Properties.getMaxStatCount(), s.getStatsLeft());
+        assertEquals(Properties.getMaxStatCount(), s.getStatsLeft());
 
         Context parent = new Context("id", 13);
         parent.addChild(new Context("id2", 133));
         s.store(parent);
         
-        Assert.assertEquals(Properties.getMaxStatCount() - 3, s.getStatsLeft());
+        assertEquals(Properties.getMaxStatCount() - 3, s.getStatsLeft());
     }
 
     @Test
@@ -109,14 +110,14 @@ public class StatsTest {
         Stats s1 = StatTestUtil.buildRandomStats(3);
         Stats s2 = s1.deepCopy();
 
-        Assert.assertEquals(s1, s2);
+        assertEquals(s1, s2);
     }
 
     @Test
     public void should_merge_dates(){
         Stats result = new Stats();
-        Assert.assertEquals(null, result.getStartDate());
-        Assert.assertEquals(null, result.getEndDate());
+        assertEquals(null, result.getStartDate());
+        assertEquals(null, result.getEndDate());
 
         Stats stats1 = new Stats();
         stats1.setStartDate(dt("2000-01-01 08:00:00"));
@@ -124,8 +125,8 @@ public class StatsTest {
         result.merge(stats1, true);
 
         //non-null values should override null values
-        Assert.assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
-        Assert.assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
+        assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
+        assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
 
         //smaller range of date will not update result
         Stats stats2 = new Stats();
@@ -134,8 +135,8 @@ public class StatsTest {
         result.merge(stats2, true);
 
         //no change
-        Assert.assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
-        Assert.assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
+        assertEquals(dt("2000-01-01 08:00:00"), result.getStartDate());
+        assertEquals(dt("2000-01-01 09:00:00"), result.getEndDate());
 
         //wider range should update result
         Stats stats3 = new Stats();
@@ -144,11 +145,35 @@ public class StatsTest {
         result.merge(stats3, true);
 
         //updated
-        Assert.assertEquals(dt("2000-01-01 07:00:00"), result.getStartDate());
-        Assert.assertEquals(dt("2000-01-01 10:00:00"), result.getEndDate());
+        assertEquals(dt("2000-01-01 07:00:00"), result.getStartDate());
+        assertEquals(dt("2000-01-01 10:00:00"), result.getEndDate());
     }
 
     private Date dt(String date){
         return parseDateTime(date);
+    }
+
+    @Test
+    public void should_store_child_error_count() {
+        Context parent = new Context();
+        parent.setId("parent");
+        parent.setTime(100);
+        parent.setErr(true);
+
+        Context child = new Context();
+        child.setId("child");
+        child.setTime(10);
+        child.setErr(true);
+
+        parent.addChild(child);
+
+        Stats stats = new Stats();
+
+        //when
+        stats.store(parent);
+
+        //then
+        assertEquals(1, stats.getMap().get("parent").getErr());
+        assertEquals(1, stats.getMap().get("parent").getChild("child").getErr());
     }
 }

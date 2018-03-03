@@ -84,7 +84,7 @@ public class Engine {
         return id;
     }
 
-    protected void pop(){
+    protected void pop(boolean completedWithException){
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
@@ -93,6 +93,7 @@ public class Engine {
         }
         Context context = stack.pop();
         context.setTime(System.currentTimeMillis() - context.getTime());
+        context.setErr(completedWithException);
 
         if( stack.isEmpty() ){
             currentStats.add(context);
@@ -100,7 +101,10 @@ public class Engine {
         }
     }
 
-    protected void popAll(){
+    /*
+     * It should always pop last element - but in case we made error we need to make sure we clean the stack.
+     */
+    protected void popAll(boolean completedWithException){
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
@@ -108,6 +112,7 @@ public class Engine {
         while(!stack.isEmpty()){
             context = stack.pop();
             context.setTime(System.currentTimeMillis() - context.getTime());
+            context.setErr(completedWithException);
         }
         if( context != null ){
             currentStats.add(context);
@@ -144,14 +149,17 @@ public class Engine {
         }
 
         boolean first = false;
+        boolean completedWithException = true;
         try {
             first = push(id);
-            return supplier.get();
+            T value = supplier.get();
+            completedWithException = false;
+            return value;
         } finally {
             if( first ){
-                popAll();
+                popAll(completedWithException);
             }else {
-                pop();
+                pop(completedWithException);
             }
         }
     }
@@ -170,14 +178,17 @@ public class Engine {
         }
 
         boolean first = false;
+        boolean completedWithException = true;
         try {
             first = push(id);
-            return supplier.get();
+            T value = supplier.get();
+            completedWithException = false;
+            return value;
         } finally {
             if( first ){
-                popAll();
+                popAll(completedWithException);
             }else {
-                pop();
+                pop(completedWithException);
             }
         }
     }

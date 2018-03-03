@@ -57,6 +57,7 @@ public class Stats {
         Stat root = getOrAddParent(context);
         if( root != null ){
             root.update(context.getTime());
+            root.updateErr(context.isErr());
             store(context, root, firstPass);
         }
     }
@@ -77,6 +78,7 @@ public class Stats {
                 if( childStat != null ){
                     subcalls.put(child.getId(), perParent);
                     childStat.update(child.getTime());
+                    childStat.updateErr(child.isErr());
 
                     //recurse and update next level of child stats
                     store(child, childStat, firstPass);

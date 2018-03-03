@@ -1,15 +1,5 @@
 package com.github.endoscope.storage.gzip;
 
-import com.github.endoscope.core.Stat;
-import com.github.endoscope.core.Stats;
-import com.github.endoscope.storage.Filters;
-import com.github.endoscope.storage.Histogram;
-import com.github.endoscope.storage.StatDetails;
-import com.github.endoscope.storage.Storage;
-import com.github.endoscope.util.JsonUtil;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +17,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import com.github.endoscope.core.Stat;
+import com.github.endoscope.core.Stats;
+import com.github.endoscope.storage.Filters;
+import com.github.endoscope.storage.Histogram;
+import com.github.endoscope.storage.StatDetails;
+import com.github.endoscope.storage.Storage;
+import com.github.endoscope.util.JsonUtil;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -95,6 +95,7 @@ public class GzipStorage implements Storage {
             GzipFileInfo info = GzipFileInfo.safeParse(name);
             return info != null && info.match(from, to, instance, type);
         });
+        Arrays.sort(arr);
         return Arrays.asList(arr);
     }
 

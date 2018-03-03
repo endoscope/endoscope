@@ -1,11 +1,12 @@
 package com.github.endoscope.storage;
 
-import com.github.endoscope.core.Stat;
-
 import java.util.Date;
+
+import com.github.endoscope.core.Stat;
 
 public class StatHistory {
     private long hits = 0;
+    private long err = 0;
     private long max = -1;//-1 means it's not set
     private long min = 0;
     private long avg = 0;
@@ -14,6 +15,7 @@ public class StatHistory {
 
     public StatHistory(Stat stat, Date startDate, Date endDate) {
         hits = stat.getHits();
+        err = stat.getErr();
         max = stat.getMax();
         min = stat.getMin();
         avg = stat.getAvg();
@@ -28,6 +30,14 @@ public class StatHistory {
 
     public void setHits(long hits) {
         this.hits = hits;
+    }
+
+    public long getErr() {
+        return err;
+    }
+
+    public void setErr(long err) {
+        this.err = err;
     }
 
     public long getMax() {

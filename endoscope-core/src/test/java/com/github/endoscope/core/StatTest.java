@@ -1,34 +1,39 @@
 package com.github.endoscope.core;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import static com.github.endoscope.core.StatTestUtil.buildRandomStat;
 import static java.util.stream.IntStream.range;
+import static org.junit.Assert.assertEquals;
 
 public class StatTest {
 
     @Test
     public void should_set_and_get(){
         Stat s = new Stat();
+
         s.setHits(13);
-        Assert.assertEquals(13, s.getHits());
+        assertEquals(13, s.getHits());
+
+        s.setErr(12);
+        assertEquals(12, s.getErr());
 
         s.setMax(14);
-        Assert.assertEquals(14, s.getMax());
+        assertEquals(14, s.getMax());
 
         s.setMin(15);
-        Assert.assertEquals(15, s.getMin());
+        assertEquals(15, s.getMin());
 
         s.setAvg(16);
-        Assert.assertEquals(16, s.getAvg());
+        assertEquals(16, s.getAvg());
 
         s.setAh10(17);
-        Assert.assertEquals(17, s.getAh10());
+        assertEquals(17, s.getAh10());
 
         Map m = new HashMap<>();
         s.setChildren(m);
@@ -64,30 +69,48 @@ public class StatTest {
     }
 
     @Test
+    public void should_update_err(){
+        Stat s = new Stat();
+
+        assertEquals(0, s.getErr());
+
+        s.updateErr(true);
+        assertEquals(1, s.getErr());
+
+        s.updateErr(false);
+        assertEquals(1, s.getErr());
+    }
+
+    @Test
     public void should_update_stat(){
         Stat s = new Stat();
 
         s.update(10);
         s.updateAvgHits(100);
+        s.updateErr(true);
 
-        Assert.assertEquals(10, s.getMax());
-        Assert.assertEquals(10, s.getMin());
-        Assert.assertEquals(10, s.getAvg(), 0.00001);
-        Assert.assertEquals(1, s.getHits());
-        Assert.assertEquals(1000, s.getAh10());
-        Assert.assertEquals(100, s.avgParent, 0.00001);
+        assertEquals(10, s.getMax());
+        assertEquals(10, s.getMin());
+        assertEquals(10, s.getAvg(), 0.00001);
+        assertEquals(1, s.getHits());
+        assertEquals(1000, s.getAh10());
+        assertEquals(100, s.avgParent, 0.00001);
+        assertEquals(1, s.getErr());
 
         s.update(20);
         s.updateAvgHits(200);
+        s.updateErr(true);
 
-        Assert.assertEquals(20, s.getMax());
-        Assert.assertEquals(10, s.getMin());
-        Assert.assertEquals(15, s.getAvg(), 0.00001);
-        Assert.assertEquals(2, s.getHits());
-        Assert.assertEquals(1500, s.getAh10());
-        Assert.assertEquals(150, s.avgParent, 0.00001);
+        assertEquals(20, s.getMax());
+        assertEquals(10, s.getMin());
+        assertEquals(15, s.getAvg(), 0.00001);
+        assertEquals(2, s.getHits());
+        assertEquals(1500, s.getAh10());
+        assertEquals(150, s.avgParent, 0.00001);
+        assertEquals(2, s.getErr());
     }
 
+    //Not exactly efficient but did the job
     @Test
     public void should_not_loose_precision(){
         Stat s = new Stat();
@@ -99,18 +122,18 @@ public class StatTest {
             s.updateAvgHits(r);
         });
 
-        System.out.println("max: " + s.getMax());
-        System.out.println("min: " + s.getMin());
-        System.out.println("avg: " + s.getAvg());
-        System.out.println("hits: " + s.getHits());
-        System.out.println("getAh10(): " + s.getAh10());
-        System.out.println("avgParent: " + s.avgParent);
+//        System.out.println("max: " + s.getMax());
+//        System.out.println("min: " + s.getMin());
+//        System.out.println("avg: " + s.getAvg());
+//        System.out.println("hits: " + s.getHits());
+//        System.out.println("getAh10(): " + s.getAh10());
+//        System.out.println("avgParent: " + s.avgParent);
 
         //with such amount of samples we should be around the 500 - accept 0.5% difference
         Assert.assertTrue(s.getMax() > 995);
         Assert.assertTrue(s.getMin() < 5);
         Assert.assertTrue(s.getAvg() < 505 && s.getAvg() > 445);
-        Assert.assertEquals(100000000, s.getHits());
+        assertEquals(100000000, s.getHits());
         Assert.assertTrue(s.getAh10() < 5050 && s.getAh10() > 4450 );
         Assert.assertTrue(s.avgParent < 505 && s.avgParent > 445);
     }
@@ -120,10 +143,10 @@ public class StatTest {
         Stat s1 = new Stat();
         Stat s2 = new Stat();
 
-        Assert.assertEquals(s1, s2);
+        assertEquals(s1, s2);
 
         s1.merge(s2);
-        Assert.assertEquals(s1, s2);
+        assertEquals(s1, s2);
     }
 
     @Test
@@ -135,19 +158,34 @@ public class StatTest {
 
             s1.merge(s2);
 
-            Assert.assertEquals(s1, s2);
+            assertEquals(s1, s2);
         });
     }
 
     @Test
     public void should_merge_hits(){
-        Stat s1 = new Stat(); s1.setHits(10);
-        Stat s2 = new Stat(); s2.setHits(13);
+        Stat s1 = new Stat();
+        s1.setHits(10);
+        Stat s2 = new Stat();
+        s2.setHits(13);
 
         s1.merge(s2);
 
-        Assert.assertEquals(23, s1.getHits());
-        Assert.assertEquals(13, s2.getHits());
+        assertEquals(23, s1.getHits());
+        assertEquals(13, s2.getHits());
+    }
+
+    @Test
+    public void should_merge_err(){
+        Stat s1 = new Stat();
+        s1.setErr(10);
+        Stat s2 = new Stat();
+        s2.setErr(13);
+
+        s1.merge(s2);
+
+        assertEquals(23, s1.getErr());
+        assertEquals(13, s2.getErr());
     }
 
     @Test
@@ -157,8 +195,8 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(23, s1.getParentCount());
-        Assert.assertEquals(13, s2.getParentCount());
+        assertEquals(23, s1.getParentCount());
+        assertEquals(13, s2.getParentCount());
     }
 
     @Test
@@ -168,14 +206,14 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(13, s1.getMax());
+        assertEquals(13, s1.getMax());
 
         Stat s3 = new Stat(); s3.setMax(13);
         Stat s4 = new Stat(); s4.setMax(10);
 
         s3.merge(s4);
 
-        Assert.assertEquals(13, s3.getMax());
+        assertEquals(13, s3.getMax());
     }
 
     @Test
@@ -185,14 +223,14 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(10, s1.getMin());
+        assertEquals(10, s1.getMin());
 
         Stat s3 = new Stat(); s3.setMin(13);
         Stat s4 = new Stat(); s4.setMin(10);
 
         s3.merge(s4);
 
-        Assert.assertEquals(10, s3.getMin());
+        assertEquals(10, s3.getMin());
     }
 
     @Test
@@ -202,7 +240,7 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(20, s1.getAvg());
+        assertEquals(20, s1.getAvg());
     }
 
     @Test
@@ -212,7 +250,7 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(0, Stat.compareDoubleLowPrecision(20.0, s1.getAvgParent()));
+        assertEquals(0, Stat.compareDoubleLowPrecision(20.0, s1.getAvgParent()));
     }
 
     @Test
@@ -225,9 +263,9 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(s1.getChildren(), s2.getChildren());
-        Assert.assertEquals(1, s1.getChildren().size());
-        Assert.assertEquals(child, s1.getChildren().get("child"));
+        assertEquals(s1.getChildren(), s2.getChildren());
+        assertEquals(1, s1.getChildren().size());
+        assertEquals(child, s1.getChildren().get("child"));
     }
 
     @Test
@@ -242,8 +280,8 @@ public class StatTest {
         s1.merge(s2);
 
         Assert.assertNull(s2.getChildren());
-        Assert.assertEquals(1, s1.getChildren().size());
-        Assert.assertEquals(child, s1.getChildren().get("child"));
+        assertEquals(1, s1.getChildren().size());
+        assertEquals(child, s1.getChildren().get("child"));
     }
 
     @Test
@@ -266,8 +304,8 @@ public class StatTest {
 
         s1.merge(s2);
 
-        Assert.assertEquals(1, s1.getChildren().size());
-        Assert.assertEquals(mergedChild, s1.getChildren().get("child"));
+        assertEquals(1, s1.getChildren().size());
+        assertEquals(mergedChild, s1.getChildren().get("child"));
     }
 
     @Test
@@ -275,6 +313,6 @@ public class StatTest {
         Stat s1 = buildRandomStat(2);
         Stat s2 = s1.deepCopy();
 
-        Assert.assertEquals(s1, s2);
+        assertEquals(s1, s2);
     }
 }

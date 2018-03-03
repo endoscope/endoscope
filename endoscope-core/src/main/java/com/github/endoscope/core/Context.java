@@ -10,6 +10,7 @@ import java.util.List;
 public class Context {
     private String id;
     private long time;
+    private boolean err;
     private List<Context> children;
 
     public Context() {
@@ -49,5 +50,13 @@ public class Context {
 
     public void setChildren(List<Context> children) {
         this.children = children;
+    }
+
+    public boolean isErr() {
+        return err;
+    }
+
+    public void setErr(boolean err) {
+        this.err = err;
     }
 }

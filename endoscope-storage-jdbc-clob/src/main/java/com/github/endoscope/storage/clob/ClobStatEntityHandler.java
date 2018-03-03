@@ -17,9 +17,9 @@ import org.apache.commons.io.IOUtils;
 
 public class ClobStatEntityHandler implements ResultSetHandler<List<StatEntity>> {
     //index is safer as column names are sometimes upper cased and sometimes not - depends on DB
-    public static final String STAT_FIELDS = "id, groupId, name, hits, max, min, avg, ah10, hasChildren, children";
-    //                                         1,       2,    3,    4,    5,   6,   7,   8,           9,       10
-    public static final String STAT_FIELDS_TOP_LEVEL = "id, groupId, name, hits, max, min, avg, ah10, hasChildren";
+    public static final String STAT_FIELDS =           "id, groupId, name, hits, err, max, min, avg, ah10, hasChildren, children";
+    public static final String STAT_FIELDS_TOP_LEVEL = "id, groupId, name, hits, err, max, min, avg, ah10, hasChildren";
+    //                                                   1,       2,    3,    4,   5,   6,   7,   8,    9,          10,       11
 
     private boolean topLevelOnly = false;
     private JsonUtil jsonUtil = new JsonUtil();
@@ -53,11 +53,12 @@ public class ClobStatEntityHandler implements ResultSetHandler<List<StatEntity>>
 
             Stat stat = se.getStat();
             stat.setHits(rs.getLong(4));
-            stat.setMax(rs.getLong(5));
-            stat.setMin(rs.getLong(6));
-            stat.setAvg(rs.getLong(7));
-            stat.setAh10(rs.getLong(8));
-            Long hasChildren = rs.getLong(9);
+            stat.setErr(rs.getLong(5));
+            stat.setMax(rs.getLong(6));
+            stat.setMin(rs.getLong(7));
+            stat.setAvg(rs.getLong(8));
+            stat.setAh10(rs.getLong(9));
+            Long hasChildren = rs.getLong(10);
             if( hasChildren > 0 ){
                 if( topLevelOnly ){
                     stat.ensureChildrenMap();
@@ -65,7 +66,7 @@ public class ClobStatEntityHandler implements ResultSetHandler<List<StatEntity>>
                     //not supported by Postgresql driver - we need to use regular string
                     // Clob clob = rs.getClob(10);
                     // String json = readString(clob);
-                    String json = rs.getString(10);
+                    String json = rs.getString(11);
                     StatMapWrapper data = jsonUtil.fromJson(StatMapWrapper.class, json);
                     stat.setChildren(data.getMap());
                 }

@@ -34,6 +34,7 @@ public abstract class StorageTestCases {
         Stat stat = new Stat();
         for( long time : times ){
             stat.update(time);
+            stat.updateErr(time%2 ==0);
         }
         return stat;
     }
@@ -103,6 +104,7 @@ public abstract class StorageTestCases {
         assertTrue(ids.containsAll(asList(id1, id2, id3)));
     }
 
+//    @Ignore
     @Test
     public void should_find_two_stats_in_bigger_range() throws IOException{
         String id1 = storage.save(stats(dt(year+"-01-01 08:00:00"), dt(year+"-01-01 08:15:00")), null, null);

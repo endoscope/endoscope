@@ -39,7 +39,9 @@ public class ClobJdbcStorage extends JdbcStorage {
     protected void insertStats(Stats stats, Connection conn, String groupId) throws SQLException {
         //one record per each top level stat and all children as a JSON
 
-        final String sql = "INSERT INTO " + tablePrefix + "endoscopeStat(id, groupId, rootId, name, hits, max, min, avg, ah10, hasChildren, children) values(?,?,?,?,?,?,?,?,?,?,?)";
+        final String sql = "INSERT INTO " + tablePrefix
+                + "endoscopeStat(id, groupId, rootId, name, hits, err, max, min, avg, ah10, hasChildren, children) "
+                + " values(?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stats.getMap().forEach((statName, stat) -> {
@@ -52,18 +54,19 @@ public class ClobJdbcStorage extends JdbcStorage {
                     stmt.setObject(3, statId);//rootId
                     stmt.setObject(4, statName);
                     stmt.setObject(5, stat.getHits());
-                    stmt.setObject(6, stat.getMax());
-                    stmt.setObject(7, stat.getMin());
-                    stmt.setObject(8, stat.getAvg());
-                    stmt.setObject(9, stat.getAh10());
-                    stmt.setObject(10, stat.getChildren() != null ? 1 : 0);
+                    stmt.setObject(6, stat.getErr());
+                    stmt.setObject(7, stat.getMax());
+                    stmt.setObject(8, stat.getMin());
+                    stmt.setObject(9, stat.getAvg());
+                    stmt.setObject(10, stat.getAh10());
+                    stmt.setObject(11, stat.getChildren() != null ? 1 : 0);
 
                     String json = getJsonData(stat);
                     //not supported by Postgresql driver - we need to use regular string
                     // Clob clob = conn.createClob();
                     // clob.setString(1, json);
                     // stmt.setClob(11, clob);
-                    stmt.setString(11, json);
+                    stmt.setString(12, json);
 
                     stmt.addBatch();
 
