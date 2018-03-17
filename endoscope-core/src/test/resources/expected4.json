@@ -5,7 +5,6 @@
     "max" : 100,
     "min" : 100,
     "avg" : 100,
-    "ah10" : 0,
     "children" : {
       "a11" : {
         "hits" : 2,
@@ -13,7 +12,6 @@
         "max" : 20,
         "min" : 10,
         "avg" : 15,
-        "ah10" : 20,
         "children" : null
       }
     }

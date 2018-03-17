@@ -5,7 +5,6 @@
     "max" : 100,
     "min" : 100,
     "avg" : 100,
-    "ah10" : 0,
     "children" : {
       "a11" : {
         "hits" : 2,
@@ -13,7 +12,6 @@
         "max" : 20,
         "min" : 10,
         "avg" : 15,
-        "ah10" : 20,
         "children" : {
           "a111" : {
             "hits" : 1,
@@ -21,7 +19,6 @@
             "max" : 2,
             "min" : 2,
             "avg" : 2,
-            "ah10" : 5,
             "children" : null
           },
           "a112" : {
@@ -30,7 +27,6 @@
             "max" : 3,
             "min" : 3,
             "avg" : 3,
-            "ah10" : 5,
             "children" : null
           },
           "a113" : {
@@ -39,7 +35,6 @@
             "max" : 5,
             "min" : 5,
             "avg" : 5,
-            "ah10" : 5,
             "children" : null
           }
         }
@@ -50,7 +45,6 @@
         "max" : 20,
         "min" : 20,
         "avg" : 20,
-        "ah10" : 30,
         "children" : null
       },
       "a111" : {
@@ -59,7 +53,6 @@
         "max" : 4,
         "min" : 4,
         "avg" : 4,
-        "ah10" : 10,
         "children" : null
       }
     }
@@ -70,7 +63,6 @@
     "max" : 20,
     "min" : 10,
     "avg" : 15,
-    "ah10" : 0,
     "children" : {
       "a111" : {
         "hits" : 1,
@@ -78,7 +70,6 @@
         "max" : 2,
         "min" : 2,
         "avg" : 2,
-        "ah10" : 5,
         "children" : null
       },
       "a112" : {
@@ -87,7 +78,6 @@
         "max" : 3,
         "min" : 3,
         "avg" : 3,
-        "ah10" : 5,
         "children" : null
       },
       "a113" : {
@@ -96,7 +86,6 @@
         "max" : 5,
         "min" : 5,
         "avg" : 5,
-        "ah10" : 5,
         "children" : null
       }
     }
@@ -107,7 +96,6 @@
     "max" : 20,
     "min" : 20,
     "avg" : 20,
-    "ah10" : 0,
     "children" : null
   },
   "a111" : {
@@ -116,7 +104,6 @@
     "max" : 4,
     "min" : 2,
     "avg" : 3,
-    "ah10" : 0,
     "children" : null
   },
   "a112" : {
@@ -125,7 +112,6 @@
     "max" : 3,
     "min" : 3,
     "avg" : 3,
-    "ah10" : 0,
     "children" : null
   },
   "a113" : {
@@ -134,7 +120,6 @@
     "max" : 5,
     "min" : 5,
     "avg" : 5,
-    "ah10" : 0,
     "children" : null
   }
 }

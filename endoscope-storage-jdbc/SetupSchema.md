@@ -23,7 +23,6 @@ H2 schema
         max INT, 
         min INT, 
         avg INT, 
-        ah10 INT, 
         hasChildren INT 
     );
     
@@ -57,7 +56,6 @@ Oracle schema
          max NUMBER, 
          min NUMBER, 
          avg NUMBER, 
-         ah10 NUMBER, 
          hasChildren NUMBER 
      );
      
@@ -95,7 +93,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric 
      );
      CREATE INDEX endo_st_g_p_n ON public.endoscopeStat(groupId, parentId, name);
@@ -128,7 +125,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric 
      );
      CREATE INDEX endo_st_day_g_p_n ON public.day_endoscopeStat(groupId, parentId, name);
@@ -158,7 +154,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric 
      );
      CREATE INDEX endo_st_week_g_p_n ON public.week_endoscopeStat(groupId, parentId, name);
@@ -188,7 +183,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric 
      );
      CREATE INDEX endo_st_month_g_p_n ON public.month_endoscopeStat(groupId, parentId, name);

@@ -22,7 +22,6 @@ H2 schema
         max INT, 
         min INT, 
         avg INT, 
-        ah10 INT, 
         hasChildren INT,
         children TEXT
     );
@@ -52,7 +51,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric,
          children TEXT
      );
@@ -85,7 +83,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric,
          children TEXT
      );
@@ -115,7 +112,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric,
          children TEXT
      );
@@ -145,7 +141,6 @@ PostgreSQL schema
          max numeric, 
          min numeric, 
          avg numeric, 
-         ah10 numeric, 
          hasChildren numeric,
          children TEXT
      );

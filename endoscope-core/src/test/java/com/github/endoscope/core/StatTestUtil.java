@@ -14,8 +14,6 @@ public class StatTestUtil {
         s.setMax(rlong());
         s.setMin(rlong());
         s.setAvg(rlong());
-        s.setParentCount(rlong());
-        s.setAvgParent(rdouble());
 
         if( maxChildren > 0){
             int numChildren = r.nextInt(maxChildren);

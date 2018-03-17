@@ -35,7 +35,6 @@ public class Schema {
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
-                            "  ah10 INT, " +
                             "  hasChildren INT " +
                             ")");
 
@@ -51,7 +50,6 @@ public class Schema {
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
-                            "  ah10 INT, " +
                             "  hasChildren INT " +
                             ")");
         } catch (SQLException e) {
@@ -87,7 +85,6 @@ public class Schema {
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
-                            "  ah10 INT, " +
                             "  hasChildren INT, " +
                             "  children CLOB " +
                             ")");
@@ -103,7 +100,6 @@ public class Schema {
                             "  max INT, " +
                             "  min INT, " +
                             "  avg INT, " +
-                            "  ah10 INT, " +
                             "  hasChildren INT " +
                             ")");
         } catch (SQLException e) {

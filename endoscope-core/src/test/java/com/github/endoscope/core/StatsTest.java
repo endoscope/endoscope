@@ -65,11 +65,6 @@ public class StatsTest {
     }
 
     @Test
-    public void should_collect_stats_5_avg_parent_hits(){
-        process("/input5.json", "/expected5.json");
-    }
-
-    @Test
     public void should_limit_number_of_stats(){
         //stats over limit will be ignored
         withProperty(Properties.MAX_STAT_COUNT, "2", ()->{

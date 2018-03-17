@@ -32,9 +32,6 @@ public class StatTest {
         s.setAvg(16);
         assertEquals(16, s.getAvg());
 
-        s.setAh10(17);
-        assertEquals(17, s.getAh10());
-
         Map m = new HashMap<>();
         s.setChildren(m);
         Assert.assertSame(m, s.getChildren());
@@ -86,27 +83,21 @@ public class StatTest {
         Stat s = new Stat();
 
         s.update(10);
-        s.updateAvgHits(100);
         s.updateErr(true);
 
         assertEquals(10, s.getMax());
         assertEquals(10, s.getMin());
         assertEquals(10, s.getAvg(), 0.00001);
         assertEquals(1, s.getHits());
-        assertEquals(1000, s.getAh10());
-        assertEquals(100, s.avgParent, 0.00001);
         assertEquals(1, s.getErr());
 
         s.update(20);
-        s.updateAvgHits(200);
         s.updateErr(true);
 
         assertEquals(20, s.getMax());
         assertEquals(10, s.getMin());
         assertEquals(15, s.getAvg(), 0.00001);
         assertEquals(2, s.getHits());
-        assertEquals(1500, s.getAh10());
-        assertEquals(150, s.avgParent, 0.00001);
         assertEquals(2, s.getErr());
     }
 
@@ -119,23 +110,18 @@ public class StatTest {
         range(0, 100000000).forEach( i -> {
             long r = random.nextInt(1000);
             s.update(r);
-            s.updateAvgHits(r);
         });
 
 //        System.out.println("max: " + s.getMax());
 //        System.out.println("min: " + s.getMin());
 //        System.out.println("avg: " + s.getAvg());
 //        System.out.println("hits: " + s.getHits());
-//        System.out.println("getAh10(): " + s.getAh10());
-//        System.out.println("avgParent: " + s.avgParent);
 
         //with such amount of samples we should be around the 500 - accept 0.5% difference
         Assert.assertTrue(s.getMax() > 995);
         Assert.assertTrue(s.getMin() < 5);
         Assert.assertTrue(s.getAvg() < 505 && s.getAvg() > 445);
         assertEquals(100000000, s.getHits());
-        Assert.assertTrue(s.getAh10() < 5050 && s.getAh10() > 4450 );
-        Assert.assertTrue(s.avgParent < 505 && s.avgParent > 445);
     }
 
     @Test
@@ -189,17 +175,6 @@ public class StatTest {
     }
 
     @Test
-    public void should_merge_parent_count(){
-        Stat s1 = new Stat(); s1.setParentCount(10);
-        Stat s2 = new Stat(); s2.setParentCount(13);
-
-        s1.merge(s2);
-
-        assertEquals(23, s1.getParentCount());
-        assertEquals(13, s2.getParentCount());
-    }
-
-    @Test
     public void should_merge_max(){
         Stat s1 = new Stat(); s1.setMax(10);
         Stat s2 = new Stat(); s2.setMax(13);
@@ -241,16 +216,6 @@ public class StatTest {
         s1.merge(s2);
 
         assertEquals(20, s1.getAvg());
-    }
-
-    @Test
-    public void should_merge_avg_parent(){
-        Stat s1 = new Stat(); s1.setParentCount(2); s1.setAvgParent(10.0);
-        Stat s2 = new Stat(); s2.setParentCount(2); s2.setAvgParent(30.0);
-
-        s1.merge(s2);
-
-        assertEquals(0, Stat.compareDoubleLowPrecision(20.0, s1.getAvgParent()));
     }
 
     @Test

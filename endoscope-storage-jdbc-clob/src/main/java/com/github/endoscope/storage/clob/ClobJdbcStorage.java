@@ -40,8 +40,8 @@ public class ClobJdbcStorage extends JdbcStorage {
         //one record per each top level stat and all children as a JSON
 
         final String sql = "INSERT INTO " + tablePrefix
-                + "endoscopeStat(id, groupId, rootId, name, hits, err, max, min, avg, ah10, hasChildren, children) "
-                + " values(?,?,?,?,?,?,?,?,?,?,?,?)";
+                + "endoscopeStat(id, groupId, rootId, name, hits, err, max, min, avg, hasChildren, children) "
+                + " values(?,?,?,?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stats.getMap().forEach((statName, stat) -> {
@@ -58,15 +58,14 @@ public class ClobJdbcStorage extends JdbcStorage {
                     stmt.setObject(7, stat.getMax());
                     stmt.setObject(8, stat.getMin());
                     stmt.setObject(9, stat.getAvg());
-                    stmt.setObject(10, stat.getAh10());
-                    stmt.setObject(11, stat.getChildren() != null ? 1 : 0);
+                    stmt.setObject(10, stat.getChildren() != null ? 1 : 0);
 
                     String json = getJsonData(stat);
                     //not supported by Postgresql driver - we need to use regular string
                     // Clob clob = conn.createClob();
                     // clob.setString(1, json);
                     // stmt.setClob(11, clob);
-                    stmt.setString(12, json);
+                    stmt.setString(11, json);
 
                     stmt.addBatch();
 

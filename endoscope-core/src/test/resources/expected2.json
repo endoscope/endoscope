@@ -5,7 +5,6 @@
     "max" : 100,
     "min" : 100,
     "avg" : 100,
-    "ah10" : 0,
     "children" : {
       "a11" : {
         "hits" : 1,
@@ -13,7 +12,6 @@
         "max" : 10,
         "min" : 10,
         "avg" : 10,
-        "ah10" : 10,
         "children" : {
           "a111" : {
             "hits" : 1,
@@ -21,7 +19,6 @@
             "max" : 2,
             "min" : 2,
             "avg" : 2,
-            "ah10" : 10,
             "children" : null
           }
         }
@@ -34,7 +31,6 @@
     "max" : 10,
     "min" : 10,
     "avg" : 10,
-    "ah10" : 0,
     "children" : {
       "a111" : {
         "hits" : 1,
@@ -42,7 +38,6 @@
         "max" : 2,
         "min" : 2,
         "avg" : 2,
-        "ah10" : 10,
         "children" : null
       }
     }
@@ -53,7 +48,6 @@
     "max" : 2,
     "min" : 2,
     "avg" : 2,
-    "ah10" : 0,
     "children" : null
   }
 }

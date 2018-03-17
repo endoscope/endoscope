@@ -11,8 +11,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 
 public class StatEntityHandler implements ResultSetHandler<List<StatEntity>> {
     //index is safer as column names are sometimes upper cased and sometimes not - depends on DB
-    public static final String STAT_FIELDS = "id, groupId, parentId, name, hits, err, max, min, avg, ah10, hasChildren";
-    //                                         1,       2,        3,    4,    5,   6,   7,   8,   9,   10,          11
+    public static final String STAT_FIELDS = "id, groupId, parentId, name, hits, err, max, min, avg, hasChildren";
+    //                                         1,       2,        3,    4,    5,   6,   7,   8,   9,          10
 
     public List<StatEntity> handle(ResultSet rs) throws SQLException {
         List<StatEntity> result = new ArrayList<>();
@@ -30,9 +30,8 @@ public class StatEntityHandler implements ResultSetHandler<List<StatEntity>> {
             stat.setMax(rs.getLong(7));
             stat.setMin(rs.getLong(8));
             stat.setAvg(rs.getLong(9));
-            stat.setAh10(rs.getLong(10));
 
-            Long hasChildren = rs.getLong(11);
+            Long hasChildren = rs.getLong(10);
             if( hasChildren > 0 ){
                 stat.ensureChildrenMap();
             }

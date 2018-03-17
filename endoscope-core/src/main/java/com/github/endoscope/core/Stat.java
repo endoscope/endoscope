@@ -8,28 +8,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({"hits", "err", "max", "min", "avg", "ah10", "children"})
+@JsonPropertyOrder({"hits", "err", "max", "min", "avg", "children"})
 public class Stat {
     private long hits = 0;
     private long err = 0;
     private long max = -1;//-1 means it's not set
     private long min = 0;
     private double avg = 0;
-
-    /*
-        Average hits per parent. For example:
-        1) parentMethod calls childMethod 2 times
-        2) parentMethod calls childMethod 4 times
-
-        In such case we should get:
-            parentCount==2
-            avgParent==3.0
-
-        Notice that we increment parentCount by one - thats the difference from hits
-        and allows us to calulate average number of hits
-     */
-    private long parentCount = 0;
-    double avgParent = 0;
 
     private Map<String, Stat> children;
 
@@ -76,46 +61,12 @@ public class Stat {
         this.avg = avg;
     }
 
-    /**
-     * Average hits per parent x10 (1 digit of precision)
-     * Short name for JSON - no @JsonProperty in this module
-     *
-     * @return
-     */
-    public long getAh10() {
-        return Math.round(avgParent * 10.0f);
-    }
-
-    public void setAh10(long ah10) {
-        avgParent = ((float) ah10) / 10f;
-    }
-
     public Map<String, Stat> getChildren() {
         return children;
     }
 
     public void setChildren(Map<String, Stat> children) {
         this.children = children;
-    }
-
-    @Transient
-    public long getParentCount() {
-        return parentCount;
-    }
-
-    @Transient
-    public void setParentCount(long parentCount) {
-        this.parentCount = parentCount;
-    }
-
-    @Transient
-    public double getAvgParent() {
-        return avgParent;
-    }
-
-    @Transient
-    public void setAvgParent(double avgParent) {
-        this.avgParent = avgParent;
     }
 
     public void ensureChildrenMap() {
@@ -156,11 +107,6 @@ public class Stat {
         }
     }
 
-    public void updateAvgHits(long hitsPerParent) {
-        avgParent = (avgParent * parentCount + hitsPerParent) / (parentCount + 1);
-        parentCount++;
-    }
-
     /**
      * Warning:
      * If you merge to empty stats you will most likely skip min value - it will stay 0.
@@ -189,11 +135,6 @@ public class Stat {
         if (hits + inc.hits > 0) {
             avg = (avg * hits + inc.avg * inc.hits) / (hits + inc.hits);
             hits += inc.hits;
-        }
-
-        if (parentCount + inc.parentCount > 0) {
-            avgParent = (avgParent * parentCount + inc.avgParent * inc.parentCount) / (parentCount + inc.parentCount);
-            parentCount += inc.parentCount;
         }
 
         if (withChildren) {
@@ -248,8 +189,6 @@ public class Stat {
         if (max != stat.max) return false;
         if (min != stat.min) return false;
         if (compareDoubleLowPrecision(stat.avg, avg) != 0) return false;
-        if (parentCount != stat.parentCount) return false;
-        if (compareDoubleLowPrecision(stat.avgParent, avgParent) != 0) return false;
         return children != null ? children.equals(stat.children) : stat.children == null;
     }
 
@@ -275,8 +214,6 @@ public class Stat {
         result = 31 * result + (int) (min ^ (min >>> 32));
         temp = Double.doubleToLongBits(avg);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (int) (parentCount ^ (parentCount >>> 32));
-        temp = Double.doubleToLongBits(avgParent);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (children != null ? children.hashCode() : 0);
         return result;
@@ -290,8 +227,6 @@ public class Stat {
                 ", max=" + max +
                 ", min=" + min +
                 ", avg=" + avg +
-                ", parentCount=" + parentCount +
-                ", avgParent=" + avgParent +
                 ", children=" + children +
                 '}';
     }

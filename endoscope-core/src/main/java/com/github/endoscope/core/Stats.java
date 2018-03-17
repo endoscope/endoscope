@@ -63,12 +63,9 @@ public class Stats {
     }
 
     private void store(Context context, final Stat parentStat, boolean firstPass){
-        Map<String, Long> subcalls = new HashMap<>();
         if( context.getChildren() != null ){
             //first collect number of calls per parent
             context.getChildren().stream().forEach( child -> {
-                Long perParent = subcalls.getOrDefault(child.getId(), 0L) + 1;
-
                 //update child stats
                 Stat childStat = parentStat.getChild(child.getId());
                 if( childStat == null && statsLeft > 0 ){
@@ -76,7 +73,6 @@ public class Stats {
                     statsLeft--;
                 }
                 if( childStat != null ){
-                    subcalls.put(child.getId(), perParent);
                     childStat.update(child.getTime());
                     childStat.updateErr(child.isErr());
 
@@ -98,13 +94,6 @@ public class Stats {
                         store(child, false);
                     }
                 }
-            });
-        }
-
-        if( parentStat.getChildren() != null ){
-            parentStat.getChildren().forEach((statId,childStat) ->{
-                Long perParent = subcalls.getOrDefault(statId, 0L);
-                childStat.updateAvgHits(perParent);
             });
         }
     }

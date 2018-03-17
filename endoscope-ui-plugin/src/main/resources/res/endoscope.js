@@ -633,14 +633,9 @@
             row.addClass("es-expanded");
         }
         row.attr("data-level", level);
-        if(level == 0){
-            row.attr("data-id", id);
-            row.addClass("es-parent");
-            row.find(".es-count").append(obj.hits);
-        } else {
-            row.addClass("es-child es-sel");
-            row.find(".es-count").append(obj.ah10/10);
-        }
+        row.attr("data-id", id);
+        row.addClass("es-parent");
+        row.find(".es-count").append(obj.hits);
         row.attr("title", id);
 
         row.find(".es-id").append(indent(level)).append(id);
