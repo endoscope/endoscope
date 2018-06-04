@@ -630,11 +630,19 @@
         if( obj.children ){
             row.addClass("es-has-children");
             //autoexpand all children
-            row.addClass("es-expanded");
+            if( level > 0) {
+                row.addClass("es-expanded");
+            }
         }
         row.attr("data-level", level);
-        row.attr("data-id", id);
-        row.addClass("es-parent");
+
+        if(level == 0){
+            row.attr("data-id", id);
+            row.addClass("es-parent");
+        } else {
+            row.addClass("es-child es-sel");
+        }
+
         row.find(".es-count").append(obj.hits);
         row.attr("title", id);
 
