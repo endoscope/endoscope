@@ -178,3 +178,9 @@ You may serve static files from disk instead from JAR resources by settings foll
     endoscope.dev.res.dir=/path_to_sources/endoscope/cdi-simple-ui/src/main/resources/res
     
 UI code is not the masterpiece... yet. I've got some plans to clean it up... in the future.
+
+Normalization of URLs
+---------------------
+If you monitor outgoing HTTP calls you might might want to normalize paths first by replacing parameters with 
+constant values. It will allow to group similar calls together. You could use com.github.endoscope.util.UrlCleanupUtil
+or write your own normalization procedure.
