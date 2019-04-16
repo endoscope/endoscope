@@ -3,8 +3,8 @@ package com.github.endoscope.properties;
 import com.github.endoscope.util.AppIdentificationUtil;
 
 public class Properties {
-    public static String MAX_STAT_COUNT = "endoscope.max.stat.count";
-    public static String QUEUE_MAX_SIZE = "endoscope.max.queue.size";
+    public static String MAX_STAT_COUNT = "endoscope.max-stat-count";
+    public static String QUEUE_MAX_SIZE = "endoscope.max-queue-size";
     public static String EXCLUDED_PACKAGES = "endoscope.excluded-packages";
     public static String SUPPORTED_NAMES = "endoscope.supported-names";
 
@@ -14,23 +14,23 @@ public class Properties {
     public static String SCANNED_PACKAGES = "endoscope.scanned-packages";
 
     //After successful save memory statistics get's cleaned
-    public static String SAVE_FREQ_MINUTES = "endoscope.save.feq.minutes";//set to <= 0 in order to disable
-    public static String STORAGE_CLASS = "endoscope.storage.class";
-    public static String STORAGE_CLASS_INIT_PARAM = "endoscope.storage.class.init.param";
-    public static String MAX_ID_LENGTH = "endoscope.max.id.length";
-    public static String DEV_RESOURCES_DIR = "endoscope.dev.res.dir";
-    public static String APP_TYPE = "endoscope.app.type";
-    public static String APP_INSTANCE = "endoscope.app.instance";
-    public static String DEPRECATED_APP_GROUP = "endoscope.app.group";//now it's instance
-    public static String AGGREGATE_SUB_CALLS = "endoscope.aggregate.sub.calls";
-    public static String DAYS_TO_KEEP = "endoscope.days.to.keep";//set <= 0 to disable
+    public static String SAVE_FREQ_MINUTES = "endoscope.save-feq-minutes";//set to <= 0 in order to disable
+    public static String STORAGE_CLASS = "endoscope.storage-class";
+    public static String STORAGE_CLASS_INIT_PARAM = "endoscope.storage-class-init-param";
+    public static String MAX_ID_LENGTH = "endoscope.max-id-length";
+    public static String DEV_RESOURCES_DIR = "endoscope.dev-res-dir";
+    public static String APP_TYPE = "endoscope.app-type";
+    public static String APP_INSTANCE = "endoscope.app-instance";
+    public static String DEPRECATED_APP_GROUP = "endoscope.app-group";//now it's instance
+    public static String AGGREGATE_SUB_CALLS = "endoscope.aggregate-sub-calls";
+    public static String DAYS_TO_KEEP = "endoscope.days-to-keep";//set <= 0 to disable
 
     /*
      Credentials format is: "username:password"
      By default it works with endoscope exposed at /endoscope/* path.
      If you use different path configure com.github.endoscope.cdiui.SecurityFilter in web.xml with your own settings.
     */
-    public static String AUTH_CREDENTIALS = "endoscope.auth.credentials";
+    public static String AUTH_CREDENTIALS = "endoscope.auth-credentials";
 
     public static String DEFAULT_MAX_STAT_COUNT = "300000";
     public static String DEFAULT_SUPPORTED_NAMES = ".*(Bean|Service|Controller|Ejb|EJB)";
@@ -46,7 +46,15 @@ public class Properties {
 
     private static String safeGetProperty(String name, String defaultValue){
         try{
-            String value = propertyProvider.get(name, defaultValue);
+            String value = propertyProvider.get(name, null);
+            if (value == null){
+                //Fallback to old names (not so friendly for YAML)
+                //it used to be:        endoscope.storage.class.init.param
+                //while new version is: endoscope.storage-class-init-param
+
+                String oldStyleName = name.replaceAll("-", ".");
+                value = propertyProvider.get(oldStyleName, defaultValue);
+            }
             if( value != null ){
                 value = value.trim();
             }
