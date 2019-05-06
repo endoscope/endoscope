@@ -31,7 +31,7 @@ public class Endoscope {
      * Groups operations under one identifier (next element on monitoring stack).
      *
      * @param id operation identifier
-     * @return supplier result
+     * @param runnable result runnable
      */
     public static void monitor(String id, Runnable runnable) {
         ENGINE.monitor(id, runnable);
