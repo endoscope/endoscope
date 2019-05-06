@@ -16,23 +16,23 @@ public class Engine {
     private AsyncTasksFactory currentStatsAsyncTasks;
     private int maxIdLength = Properties.getMaxIdLength();
 
-    public Engine(){
-        if( isEnabled()) {
+    public Engine() {
+        if (isEnabled()) {
             storage = new StorageFactory().safeCreate();//may return null
             currentStats = new CurrentStats();
             currentStatsAsyncTasks = new CurrentStatsAsyncTasks(currentStats, storage);
         }
     }
 
-    protected Engine(boolean enabled, Storage storage, AsyncTasksFactory tasksFactory){
+    protected Engine(boolean enabled, Storage storage, AsyncTasksFactory tasksFactory) {
         this.enabled = enabled;
         this.storage = storage;
         currentStats = new CurrentStats();
         currentStatsAsyncTasks = tasksFactory;
     }
 
-    public boolean isEnabled(){
-        if( enabled == null ){
+    public boolean isEnabled() {
+        if (enabled == null) {
             enabled = Properties.isEnabled();
         }
         return enabled;
@@ -42,17 +42,17 @@ public class Engine {
         this.enabled = enabled;
     }
 
-    private void checkEnabled(){
-        if( !isEnabled() ){
+    private void checkEnabled() {
+        if (!isEnabled()) {
             throw new IllegalStateException("feature not enabled");
         }
     }
+
     /**
-     *
      * @param id required, might get cut if too long
      * @return true if it was first element pushed to call stack
      */
-    protected boolean push(String id){
+    protected boolean push(String id) {
         checkEnabled();
 
         id = prepareId(id);
@@ -60,42 +60,42 @@ public class Engine {
 
         LinkedList<Context> stack = contextStack.get();
         boolean first = false;
-        if( stack == null ){
+        if (stack == null) {
             first = true;
             stack = new LinkedList<>();
             contextStack.set(stack);
         }
         Context parent = stack.peek();
-        if( parent != null ){
+        if (parent != null) {
             parent.addChild(context);
         }
         stack.push(context);
         return first;
     }
 
-    private String prepareId(String id){
+    private String prepareId(String id) {
         id = StringUtils.trimToNull(id);
-        if( id == null ){
+        if (id == null) {
             return "<blank>";
         }
-        if( id.length() > maxIdLength ){
+        if (id.length() > maxIdLength) {
             return id.substring(0, maxIdLength);
         }
         return id;
     }
 
-    protected void pop(boolean completedWithException){
+    protected void pop(boolean completedWithException) {
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
-        if( stack.isEmpty() ){
+        if (stack.isEmpty()) {
             return;
         }
         Context context = stack.pop();
         context.setTime(System.currentTimeMillis() - context.getTime());
         context.setErr(completedWithException);
 
-        if( stack.isEmpty() ){
+        if (stack.isEmpty()) {
             currentStats.add(context);
             currentStatsAsyncTasks.triggerAsyncTask();
         }
@@ -104,17 +104,17 @@ public class Engine {
     /*
      * It should always pop last element - but in case we made error we need to make sure we clean the stack.
      */
-    protected void popAll(boolean completedWithException){
+    protected void popAll(boolean completedWithException) {
         checkEnabled();
 
         LinkedList<Context> stack = contextStack.get();
         Context context = null;
-        while(!stack.isEmpty()){
+        while (!stack.isEmpty()) {
             context = stack.pop();
             context.setTime(System.currentTimeMillis() - context.getTime());
             context.setErr(completedWithException);
         }
-        if( context != null ){
+        if (context != null) {
             currentStats.add(context);
             currentStatsAsyncTasks.triggerAsyncTask();
         }
@@ -125,7 +125,7 @@ public class Engine {
         return currentStats;
     }
 
-    public Storage getStorage(){
+    public Storage getStorage() {
         checkEnabled();
         return storage;
     }
@@ -135,10 +135,23 @@ public class Engine {
     }
 
     /**
-     * Return result provided by supplier.
-     * If endoscope is enabled additionally monitor operation.
+     * Groups operations under one identifier (next element on monitoring stack).
      *
-     * @param id operation identifier
+     * @param id       operation identifier
+     * @param runnable result runnable
+     * @return supplier result
+     */
+    public void monitor(String id, Runnable runnable) {
+        monitor(id, () -> {
+            runnable.run();
+            return null;
+        });
+    }
+
+    /**
+     * Groups operations under one identifier (next element on monitoring stack).
+     *
+     * @param id       operation identifier
      * @param supplier result supplier
      * @param <T>
      * @return supplier result
@@ -156,9 +169,9 @@ public class Engine {
             completedWithException = false;
             return value;
         } finally {
-            if( first ){
+            if (first) {
                 popAll(completedWithException);
-            }else {
+            } else {
                 pop(completedWithException);
             }
         }
@@ -167,7 +180,7 @@ public class Engine {
     /**
      * Similar to #monitor(String, Supplier) but declared with thrown Exception.
      *
-     * @param id operation identifier
+     * @param id       operation identifier
      * @param supplier result supplier that may throw Exception
      * @param <T>
      * @return supplier result
@@ -185,9 +198,9 @@ public class Engine {
             completedWithException = false;
             return value;
         } finally {
-            if( first ){
+            if (first) {
                 popAll(completedWithException);
-            }else {
+            } else {
                 pop(completedWithException);
             }
         }

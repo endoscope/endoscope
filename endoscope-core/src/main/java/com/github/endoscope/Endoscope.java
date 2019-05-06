@@ -16,8 +16,7 @@ public class Endoscope {
     }
 
     /**
-     * Return result provided by supplier.
-     * If endoscope is enabled additionally monitor operation.
+     * Groups operations under one identifier (next element on monitoring stack).
      *
      * @param id operation identifier
      * @param supplier result supplier
@@ -26,6 +25,16 @@ public class Endoscope {
      */
     public static <T> T monitor(String id, Supplier<T> supplier) {
         return ENGINE.monitor(id, supplier);
+    }
+
+    /**
+     * Groups operations under one identifier (next element on monitoring stack).
+     *
+     * @param id operation identifier
+     * @return supplier result
+     */
+    public static void monitor(String id, Runnable runnable) {
+        ENGINE.monitor(id, runnable);
     }
 
     /**
